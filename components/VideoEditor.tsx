@@ -9,7 +9,7 @@ import { processClips, downloadBlob } from '@/lib/ffmpegUtils'
 import { generateClipThumbnail, createThumbnailFromClip } from '@/lib/thumbnailUtils'
 import { getClipIndexAtTime, getYouTubeVideoId } from '@/lib/videoUtils'
 import { toast } from 'sonner'
-import YouTube, { Options, YouTubePlayer } from 'react-youtube'
+import YouTube, { YouTubePlayer } from 'react-youtube'
 
 import { VideoUpload } from './VideoUpload'
 import { VideoPlayer } from './VideoPlayer'
@@ -45,6 +45,16 @@ export function VideoEditor() {
       ? getYouTubeVideoId(state.videoSource)
       : null
 
+  const isClipExportableSource = !!state.videoSource
+
+  const selectedClip = state.selectedClipId
+    ? sortedClips.find(c => c.id === state.selectedClipId)
+    : undefined
+
+  const exportDisabledReason = !isClipExportableSource
+    ? 'No video source is loaded. Upload or paste a direct or platform URL to export.'
+    : undefined
+
   const youtubePlayerRef = useRef<YouTubePlayer | null>(null)
   const youtubeTimeUpdaterRef = useRef<number | null>(null)
   const [isYouTubeReady, setIsYouTubeReady] = useState(false)
@@ -74,7 +84,7 @@ export function VideoEditor() {
     []
   )
 
-  const youTubeOptions: Options = {
+  const youTubeOptions: any = {
     width: '100%',
     height: '400',
     playerVars: {
@@ -253,6 +263,12 @@ export function VideoEditor() {
   }, [isYouTubePlatform, state.currentTime, syncYouTubePlayerTime])
 
   useEffect(() => {
+    if (!selectedClip || !state.videoSource || isYouTubePlatform || isFacebookPlatform) return
+
+    setCurrentTime(selectedClip.startTime)
+  }, [selectedClip?.id, selectedClip?.startTime, state.videoSource, isYouTubePlatform, isFacebookPlatform, setCurrentTime])
+
+  useEffect(() => {
     if (!isYouTubePlatform) return
 
     setIsYouTubeReady(false)
@@ -286,7 +302,7 @@ export function VideoEditor() {
       for (const clip of clipsNeedingThumbnail) {
         if (isCancelled) return
         try {
-          const thumb = await generateClipThumbnail(state.videoSource as Blob | string, clip.startTime)
+          const thumb = await generateClipThumbnail(state.videoSource as Blob | string, clip.startTime + 0.5)
           if (isCancelled) return
           updateClip({ ...clip, thumbnailUrl: thumb })
         } catch (error) {
@@ -313,8 +329,18 @@ export function VideoEditor() {
         return
       }
 
-      // Export is allowed for both internal and external sources (when the source is fetchable).
-      // YouTube/Facebook may still fail at fetch time due to CORS or unsupported remote formats.
+      if (!isClipExportableSource) {
+        const message =
+          exportDisabledReason ||
+          'Export is unavailable for this source. Use a local file or direct video URL (MP4/WebM) instead.'
+        setExportProgress({
+          isExporting: false,
+          progress: 0,
+          error: message,
+        })
+        toast.error(message)
+        return
+      }
 
       setExportProgress({
         isExporting: true,
@@ -337,7 +363,7 @@ export function VideoEditor() {
           }
         )
 
-        await downloadBlob(outputBlob, state.videoFileName?.replace(/\.[^.]+$/, '') || 'exported-video')
+        await downloadBlob(outputBlob, 'final-output')
 
         setExportProgress({
           isExporting: false,
@@ -489,27 +515,6 @@ export function VideoEditor() {
                       Clip selection preview is available, but export is disabled until you provide a direct video source.
                     </p>
                   </div>
-                  {state.videoDuration <= 0 && (
-                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <label className="text-sm">Set video duration (seconds)</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="number"
-                          min={1}
-                          className="input input-bordered flex-1"
-                          value={state.videoDuration || ''}
-                          onChange={(e) => {
-                            const value = Number(e.target.value)
-                            if (!Number.isNaN(value) && value > 0) {
-                              setVideoDuration(value)
-                            }
-                          }}
-                          placeholder="e.g., 600"
-                        />
-                        <span className="text-xs text-muted-foreground self-center">Recommended for timeline</span>
-                      </div>
-                    </div>
-                  )}
                 </div>
               ) : (
                 <VideoPlayer
@@ -521,6 +526,8 @@ export function VideoEditor() {
                     setPlaying(false)
                     setIsSequencePlaying(false)
                   }}
+                  clipStart={selectedClip?.startTime}
+                  clipEnd={selectedClip?.endTime}
                 />
               )}
             </div>
@@ -614,14 +621,20 @@ export function VideoEditor() {
                 <div className="space-y-3">
                   <Button
                     onClick={() => setExportDialogOpen(true)}
-                    disabled={exportProgress.isExporting}
+                    disabled={exportProgress.isExporting || !isClipExportableSource}
                     className="w-full"
                     size="lg"
                   >
                     <FileDown className="w-4 h-4 mr-2" />
                     Export Video
                   </Button>
-                
+
+                  {exportDisabledReason && (
+                    <p className="text-xs text-red-600 dark:text-red-300 text-center">
+                      {exportDisabledReason}
+                    </p>
+                  )}
+
                   <p className="text-xs text-muted-foreground text-center">
                     All processing happens locally in your browser
                   </p>
@@ -639,6 +652,8 @@ export function VideoEditor() {
         clips={sortedClips}
         onExport={handleExport}
         progress={exportProgress}
+        isExportAllowed={isClipExportableSource}
+        exportDisabledReason={exportDisabledReason}
       />
     </div>
   )

@@ -12,6 +12,8 @@ interface VideoPlayerProps {
   currentTime?: number
   muted?: boolean
   controls?: boolean
+  clipStart?: number
+  clipEnd?: number
 }
 
 export function VideoPlayer({
@@ -24,6 +26,8 @@ export function VideoPlayer({
   currentTime = 0,
   muted = false,
   controls = true,
+  clipStart,
+  clipEnd,
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -50,11 +54,31 @@ export function VideoPlayer({
     if (!video) return
 
     const handleTimeUpdate = () => {
+      if (clipEnd !== undefined && video.currentTime >= clipEnd) {
+        video.pause()
+        video.currentTime = clipEnd
+        onPause?.()
+        onTimeUpdate?.(clipEnd)
+        return
+      }
+
+      if (clipStart !== undefined && video.currentTime < clipStart) {
+        video.currentTime = clipStart
+        return
+      }
+
       onTimeUpdate?.(video.currentTime)
     }
 
     const handleDurationChange = () => {
       onDurationUpdate?.(video.duration)
+    }
+
+    const handleLoadedMetadata = () => {
+      onDurationChange()
+      if (clipStart !== undefined && clipStart <= video.duration) {
+        video.currentTime = clipStart
+      }
     }
 
     const handlePlay = () => {
@@ -73,19 +97,19 @@ export function VideoPlayer({
     video.addEventListener('timeupdate', handleTimeUpdate)
     video.addEventListener('waiting', handleWaiting)
     video.addEventListener('durationchange', handleDurationChange)
-    video.addEventListener('loadedmetadata', handleDurationChange)
+    video.addEventListener('loadedmetadata', handleLoadedMetadata)
     video.addEventListener('play', handlePlay)
     video.addEventListener('pause', handlePause)
 
     return () => {
       video.removeEventListener('timeupdate', handleTimeUpdate)
       video.removeEventListener('durationchange', handleDurationChange)
-      video.removeEventListener('loadedmetadata', handleDurationChange)
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata)
       video.removeEventListener('play', handlePlay)
       video.removeEventListener('pause', handlePause)
       video.removeEventListener('waiting', handleWaiting)
     }
-  }, [onTimeUpdate, onDurationUpdate, onPlay, onPause])
+  }, [onTimeUpdate, onDurationUpdate, onPlay, onPause, clipStart, clipEnd])
 
   // Handle currentTime updates
   useEffect(() => {

@@ -1,9 +1,18 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { toBlobURL } from '@ffmpeg/util'
 import { VideoClip } from './types'
+import { detectVideoPlatform } from './videoUtils'
 
 let ffmpegInstance: FFmpeg | null = null
 let isFFmpegLoaded = false
+
+async function safeDeleteFile(ffmpeg: FFmpeg, file: string) {
+  try {
+    await ffmpeg.deleteFile(file)
+  } catch {
+    // ignore – file may not exist
+  }
+}
 
 export async function initFFmpeg(): Promise<FFmpeg> {
   if (ffmpegInstance && isFFmpegLoaded) {
@@ -28,16 +37,121 @@ export async function initFFmpeg(): Promise<FFmpeg> {
   }
 }
 
-async function writeInputVideo(ffmpeg: FFmpeg, videoSource: Blob | string, inputFileName: string) {
-  if (videoSource instanceof Blob) {
-    const arrayBuffer = await videoSource.arrayBuffer()
-    ffmpeg.writeFile(inputFileName, new Uint8Array(arrayBuffer))
-  } else {
-    const response = await fetch(videoSource)
-    if (!response.ok) throw new Error(`Failed to fetch video: ${response.statusText}`)
-    const arrayBuffer = await response.arrayBuffer()
-    ffmpeg.writeFile(inputFileName, new Uint8Array(arrayBuffer))
+async function fetchWithTimeout(url: string, timeout: number): Promise<Response> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeout)
+  try {
+    return await fetch(url, { signal: controller.signal })
+  } finally {
+    clearTimeout(timer)
   }
+}
+
+async function readStreamToArrayBuffer(
+  stream: ReadableStream<Uint8Array>,
+  totalBytes: number | null,
+  onProgress?: (loaded: number, total?: number) => void
+): Promise<ArrayBuffer> {
+  const reader = stream.getReader()
+  const chunks: Uint8Array[] = []
+  let loaded = 0
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    if (!value) continue
+
+    chunks.push(value)
+    loaded += value.byteLength
+
+    if (onProgress) {
+      onProgress(loaded, totalBytes ?? undefined)
+    }
+  }
+
+  const result = new Uint8Array(loaded)
+  let offset = 0
+  for (const chunk of chunks) {
+    result.set(chunk, offset)
+    offset += chunk.byteLength
+  }
+
+  return result.buffer
+}
+
+async function fetchVideoSource(
+  videoSource: Blob | string,
+  onProgress?: (loaded: number, total?: number) => void,
+  quality: 'low' | 'medium' | 'high' = 'medium'
+): Promise<ArrayBuffer> {
+  if (videoSource instanceof Blob) {
+    return await videoSource.arrayBuffer()
+  }
+
+  const platform = detectVideoPlatform(videoSource)
+  if (platform === 'youtube' || platform === 'facebook') {
+    const proxyUrl = `/api/yt-clip?url=${encodeURIComponent(videoSource)}&quality=${quality}`
+
+    let response: Response
+    try {
+      response = await fetchWithTimeout(proxyUrl, 60000)
+    } catch (err) {
+      // retry once on transient failure
+      response = await fetchWithTimeout(proxyUrl, 60000)
+    }
+
+    if (!response.ok) {
+      const body = await response.text().catch(() => '')
+      throw new Error(`Failed to fetch external video source from proxy (${response.status}): ${body || response.statusText}`)
+    }
+
+    const contentType = response.headers.get('content-type') || ''
+    if (!contentType.toLowerCase().includes('video')) {
+      const textBody = await response.text().catch(() => '')
+      throw new Error(`Proxy returned non-video response (${contentType}): ${textBody.slice(0, 512)}`)
+    }
+
+    const contentLengthHeader = response.headers.get('content-length')
+    const contentLength = contentLengthHeader ? parseInt(contentLengthHeader, 10) : null
+
+    if (response.body) {
+      return await readStreamToArrayBuffer(response.body, contentLength, onProgress)
+    }
+
+    return await response.arrayBuffer()
+  }
+
+  let response: Response
+  try {
+    response = await fetchWithTimeout(videoSource, 60000)
+  } catch (err) {
+    response = await fetchWithTimeout(videoSource, 60000)
+  }
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch video: ${response.statusText}`)
+  }
+
+  const contentLengthHeader = response.headers.get('content-length')
+  const contentLength = contentLengthHeader ? parseInt(contentLengthHeader, 10) : null
+
+  if (response.body) {
+    return await readStreamToArrayBuffer(response.body, contentLength, onProgress)
+  }
+
+  return await response.arrayBuffer()
+}
+
+
+async function writeInputVideo(
+  ffmpeg: FFmpeg,
+  videoSource: Blob | string,
+  inputFileName: string,
+  onProgress?: (loaded: number, total?: number) => void,
+  quality: 'low' | 'medium' | 'high' = 'medium'
+) {
+  const arrayBuffer = await fetchVideoSource(videoSource, onProgress, quality)
+  await ffmpeg.writeFile(inputFileName, new Uint8Array(arrayBuffer))
 }
 
 function getClipFilename(index: number): string {
@@ -53,7 +167,7 @@ function clipWithInfo(clip: VideoClip): VideoClip {
 
 async function concatClipFiles(ffmpeg: FFmpeg, files: string[], outputFileName: string) {
   const concatContent = files.map(file => `file '${file}'`).join('\n')
-  ffmpeg.writeFile('concat.txt', new TextEncoder().encode(concatContent))
+  await ffmpeg.writeFile('concat.txt', new TextEncoder().encode(concatContent))
 
   await ffmpeg.exec([
     '-f', 'concat',
@@ -75,13 +189,14 @@ async function extractClip(
   method: 'copy' | 'reencode',
   crf: number
 ) {
-  const duration = Number((clip.endTime - clip.startTime).toFixed(3))
+  const startTime = Number(clip.startTime.toFixed(3))
+  const endTime = Number(clip.endTime.toFixed(3))
 
   if (method === 'copy') {
     await ffmpeg.exec([
-      '-ss', String(clip.startTime),
+      '-ss', String(startTime),
       '-i', inputFileName,
-      '-t', String(duration),
+      '-to', String(endTime),
       '-c', 'copy',
       '-avoid_negative_ts', '1',
       '-y',
@@ -89,11 +204,11 @@ async function extractClip(
     ])
   } else {
     await ffmpeg.exec([
-      '-ss', String(clip.startTime),
+      '-ss', String(startTime),
       '-i', inputFileName,
-      '-t', String(duration),
+      '-to', String(endTime),
       '-c:v', 'libx264',
-      '-preset', 'ultrafast',
+      '-preset', 'veryfast',
       '-crf', String(crf),
       '-c:a', 'aac',
       '-b:a', '128k',
@@ -113,11 +228,7 @@ async function readOutputBlob(ffmpeg: FFmpeg, fileName: string): Promise<Blob> {
 
 async function cleanupFiles(ffmpeg: FFmpeg, files: string[]) {
   for (const file of files) {
-    try {
-      ffmpeg.deleteFile(file)
-    } catch (error) {
-      // ignore cleanup errors
-    }
+    await safeDeleteFile(ffmpeg, file)
   }
 }
 
@@ -145,17 +256,77 @@ export async function processClipsDirect(
     throw new Error('No clips selected.')
   }
 
-  try {
-    onProgress?.(5, 'Initializing importer...')
+  let currentStage = 'extracting'
+  const progressHandler = ({ progress }: { progress: number }) => {
+    if (!onProgress) return
+    const ratio = progress || 0
 
-    if (typeof (ffmpeg as any).isRunning === 'function' && (ffmpeg as any).isRunning()) {
-      await (ffmpeg as any).terminate()
+    if (currentStage === 'extracting') {
+      const pct = 20 + Math.round(ratio * 40)
+      onProgress(Math.min(70, pct), 'extracting clips')
+    } else if (currentStage === 'merging') {
+      const pct = 70 + Math.round(ratio * 20)
+      onProgress(Math.min(95, pct), 'merging clips')
+    } else if (currentStage === 'finalizing') {
+      const pct = 95 + Math.round(ratio * 5)
+      onProgress(Math.min(99, pct), 'finalizing')
+    }
+  }
+
+  let manualProgress = 20
+  let progressInterval: ReturnType<typeof setInterval> | null = null
+
+  try {
+    onProgress?.(5, 'fetching video')
+
+    // This interval provides UI movement when ffmpeg emits sparse progress events
+    progressInterval = setInterval(() => {
+      if (!onProgress) return
+      if (currentStage === 'extracting') {
+        manualProgress = Math.min(60, manualProgress + 2)
+        onProgress(manualProgress, 'extracting clips')
+      } else if (currentStage === 'merging') {
+        manualProgress = Math.min(90, manualProgress + 1)
+        onProgress(manualProgress, 'merging clips')
+      } else if (currentStage === 'finalizing') {
+        manualProgress = Math.min(98, manualProgress + 1)
+        onProgress(manualProgress, 'finalizing')
+      }
+    }, 2000)
+
+    // Cleanup from prior runs to avoid FS conflict
+    const allCandidates = ['input.mp4', 'output.mp4', 'concat.txt', ...sortedClips.map((_, i) => `clip_${i}.mp4`)]
+    for (const file of allCandidates) {
+      await safeDeleteFile(ffmpeg, file)
     }
 
-    await writeInputVideo(ffmpeg, videoSource, inputFileName)
+    const downloadQuality: 'low' | 'medium' | 'high' =
+      quality === 'fast' ? 'low' : quality === 'slow' ? 'high' : 'medium'
 
-    // Attempt fast stream copy (no re-encode)
-    onProgress?.(12, 'Fast path: stream copy attempt')
+    await writeInputVideo(
+      ffmpeg,
+      videoSource,
+      inputFileName,
+      (loaded, total) => {
+        if (!onProgress) return
+
+        if (total && total > 0) {
+          const progressValue = 5 + Math.round((loaded / total) * 15)
+          onProgress(Math.min(20, progressValue), 'fetching video')
+        } else {
+          const progressValue = 5 + Math.round(Math.min(15, loaded / (1024 * 1024)))
+          onProgress(Math.min(20, progressValue), 'fetching video')
+        }
+      },
+      downloadQuality
+    )
+
+    onProgress?.(20, 'extracting clips')
+
+    ffmpeg.on('progress', progressHandler)
+
+    onProgress?.(20, 'extracting clips')
+
     const streamCopyFiles: string[] = []
     let streamCopySuccess = true
 
@@ -165,7 +336,7 @@ export async function processClipsDirect(
       tempFiles.push(clipFile)
 
       try {
-        onProgress?.(12 + (i / sortedClips.length) * 18, `Stream copying clip ${i + 1}/${sortedClips.length}`)
+        onProgress?.(20 + Math.round((i / sortedClips.length) * 20), `extracting clip ${i + 1}/${sortedClips.length}`)
         await extractClip(ffmpeg, inputFileName, clip, clipFile, 'copy', crf)
         streamCopyFiles.push(clipFile)
       } catch (e) {
@@ -177,10 +348,12 @@ export async function processClipsDirect(
 
     if (streamCopySuccess && streamCopyFiles.length > 0) {
       try {
+        currentStage = 'merging'
+        onProgress?.(60, 'merging clips')
         await concatClipFiles(ffmpeg, streamCopyFiles, outputFileName)
-        onProgress?.(65, 'Stream copy concatenation done')
+        onProgress?.(80, 'finalizing')
         const blob = await readOutputBlob(ffmpeg, outputFileName)
-        onProgress?.(100, 'Export completed with stream copy')
+        onProgress?.(100, 'done')
         return blob
       } catch (e) {
         streamCopySuccess = false
@@ -188,8 +361,7 @@ export async function processClipsDirect(
       }
     }
 
-    // Step 2: partial re-encode each clip edges (fast fallback)
-    onProgress?.(67, 'Partial encode fallback')
+    onProgress?.(65, 'extracting clips')
     const reencodedFiles: string[] = []
 
     for (let i = 0; i < sortedClips.length; i += 1) {
@@ -197,42 +369,31 @@ export async function processClipsDirect(
       const clipFile = getClipFilename(i)
 
       try {
-        onProgress?.(67 + (i / sortedClips.length) * 20, `Re-encoding clip ${i + 1}/${sortedClips.length}`)
+        onProgress?.(65 + Math.round((i / sortedClips.length) * 20), `re-encoding clip ${i + 1}/${sortedClips.length}`)
         await extractClip(ffmpeg, inputFileName, clip, clipFile, 'reencode', crf)
         reencodedFiles.push(clipFile)
       } catch (e) {
-        console.warn('Partial encode failed for clip', clip, e)
-        throw new Error('Partial encode failed, falling back to full encode')
+        console.warn('Re-encode failed for clip', clip, e)
+        throw new Error('Re-encode failed, falling back to full encode')
       }
     }
 
-    try {
-      await concatClipFiles(ffmpeg, reencodedFiles, outputFileName)
-      const blob = await readOutputBlob(ffmpeg, outputFileName)
-      onProgress?.(95, 'Partial encode concatenation done')
-      onProgress?.(100, 'Export completed with partial encode')
-      return blob
-    } catch (e) {
-      console.warn('Partial encode concatenation failed, will try full encode:', e)
+    const sourceFiles = reencodedFiles.length > 0 ? reencodedFiles : streamCopyFiles
+    if (sourceFiles.length === 0) {
+      throw new Error('No clip artifacts available for concat')
     }
 
-    // Step 3: Full encode pipeline (all clips through libx264)
-    onProgress?.(70, 'Full encode fallback')
+    currentStage = 'merging'
+    onProgress?.(70, 'merging clips')
 
-    const concatFiles = reencodedFiles.length > 0 ? reencodedFiles : streamCopyFiles
-    if (concatFiles.length === 0) {
-      throw new Error('No clip artifacts available for full encode')
-    }
-
-    // Rebuild concat file with selected segments
-    ffmpeg.writeFile('concat.txt', new TextEncoder().encode(concatFiles.map(id => `file '${id}'`).join('\n')))
+    await ffmpeg.writeFile('concat.txt', new TextEncoder().encode(sourceFiles.map(id => `file '${id}'`).join('\n')))
 
     await ffmpeg.exec([
       '-f', 'concat',
       '-safe', '0',
       '-i', 'concat.txt',
       '-c:v', 'libx264',
-      '-preset', 'ultrafast',
+      '-preset', 'veryfast',
       '-crf', String(crf),
       '-c:a', 'aac',
       '-b:a', '128k',
@@ -242,16 +403,29 @@ export async function processClipsDirect(
       outputFileName,
     ])
 
+    currentStage = 'finalizing'
+    onProgress?.(90, 'finalizing')
+
     const finalBlob = await readOutputBlob(ffmpeg, outputFileName)
-    onProgress?.(100, 'Full encode complete')
+    onProgress?.(100, 'done')
 
     return finalBlob
   } catch (error) {
     console.error('processClipsDirect error:', error)
+    // Reset FFmpeg instance so next export gets a clean state
+    isFFmpegLoaded = false
+    ffmpegInstance = null
     throw error
   } finally {
+    if (progressInterval) {
+      clearInterval(progressInterval)
+      progressInterval = null
+    }
+
     try {
+      ffmpeg.off('progress', progressHandler)
       await cleanupFiles(ffmpeg, tempFiles)
+      await safeDeleteFile(ffmpeg, 'concat.txt')
     } catch (cleanupError) {
       console.warn('Unable to fully clean FFmpeg FS:', cleanupError)
     }

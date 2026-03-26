@@ -17,6 +17,7 @@ import { AlertCircle, Download } from 'lucide-react'
 import { ExportProgress } from '@/lib/types'
 import { VideoClip } from '@/lib/types'
 import { formatTime, calculateTotalDuration } from '@/lib/videoUtils'
+import { toast } from 'sonner'
 
 interface ExportDialogProps {
   open: boolean
@@ -24,6 +25,8 @@ interface ExportDialogProps {
   clips: VideoClip[]
   onExport: (quality: string) => Promise<void>
   progress: ExportProgress
+  isExportAllowed?: boolean
+  exportDisabledReason?: string
 }
 
 export function ExportDialog({
@@ -32,6 +35,8 @@ export function ExportDialog({
   clips,
   onExport,
   progress,
+  isExportAllowed = true,
+  exportDisabledReason,
 }: ExportDialogProps) {
   const [selectedQuality, setSelectedQuality] = useState('medium')
   const [fileName, setFileName] = useState('exported-video')
@@ -42,6 +47,13 @@ export function ExportDialog({
       alert('Please enter a file name')
       return
     }
+
+    if (!isExportAllowed) {
+      const reason = exportDisabledReason || 'Export is disabled for this source.'
+      alert(reason)
+      return
+    }
+
     await onExport(selectedQuality)
   }
 
@@ -146,6 +158,13 @@ export function ExportDialog({
             </p>
           </div>
 
+          {/* Export availability */}
+          {!isExportAllowed && (
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-900 text-sm text-amber-800 dark:text-amber-200">
+              {exportDisabledReason || 'This source is not exportable. Use a local file or direct video URL (MP4/WebM).'}
+            </div>
+          )}
+
           {/* Buttons */}
           <div className="flex gap-3">
             <Button
@@ -158,7 +177,7 @@ export function ExportDialog({
             </Button>
             <Button
               onClick={handleExport}
-              disabled={progress.isExporting || clips.length === 0}
+              disabled={progress.isExporting || clips.length === 0 || !isExportAllowed}
               className="flex-1"
             >
               <Download className="w-4 h-4 mr-2" />
