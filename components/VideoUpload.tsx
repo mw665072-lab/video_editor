@@ -162,11 +162,11 @@ export function VideoUpload({ onVideoLoaded, isLoading = false }: VideoUploadPro
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-6 rounded-xl border border-slate-800/50 p-2">
         <Button
           variant={uploadMethod === 'file' ? 'default' : 'outline'}
           onClick={() => setUploadMethod('file')}
-          className="flex-1"
+          className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 hover:text-white bg-slate-900/60 font-semibold"
         >
           <Upload className="w-4 h-4 mr-2" />
           Upload File
@@ -174,7 +174,7 @@ export function VideoUpload({ onVideoLoaded, isLoading = false }: VideoUploadPro
         <Button
           variant={uploadMethod === 'url' ? 'default' : 'outline'}
           onClick={() => setUploadMethod('url')}
-          className="flex-1"
+          className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 hover:text-white bg-slate-900/60 font-semibold"
         >
           <LinkIcon className="w-4 h-4 mr-2" />
           Load from URL
@@ -185,7 +185,7 @@ export function VideoUpload({ onVideoLoaded, isLoading = false }: VideoUploadPro
         <div
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
-          className="border-2 border-dashed border-border rounded-lg p-12 text-center hover:border-primary transition-colors cursor-pointer"
+          className="border-2 border-dashed border-slate-600 rounded-xl p-12 text-center hover:border-cyan-300 transition-colors duration-200 cursor-pointer bg-slate-900/40"
           onClick={() => fileInputRef.current?.click()}
         >
           <input
@@ -226,16 +226,18 @@ export function VideoUpload({ onVideoLoaded, isLoading = false }: VideoUploadPro
             <Button
               onClick={handleLoadFromURL}
               disabled={urlLoading || !urlInput.trim()}
+              className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 hover:text-white bg-slate-900/60 font-semibold"
+
             >
               {urlLoading ? 'Loading...' : 'Load'}
             </Button>
           </div>
-          <div className="flex gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-900">
+          {/* <div className="flex gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-900">
             <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-amber-800 dark:text-amber-200">
               Ensure the video URL supports CORS or the video player may not work properly.
             </p>
-          </div>
+          </div> */}
         </div>
       )}
     </div>

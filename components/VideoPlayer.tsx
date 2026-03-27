@@ -130,11 +130,11 @@ export function VideoPlayer({
   }, [muted])
 
   return (
-    <div className="w-full bg-black rounded-lg overflow-hidden">
-      <div className="aspect-video bg-black flex items-center justify-center">
+    <div className="w-full rounded-2xl border border-slate-800 bg-slate-900 overflow-hidden shadow-lg">
+      <div className="aspect-video min-h-[360px] bg-black flex items-center justify-center">
         <video
           ref={videoRef}
-          className="w-full h-full"
+          className="w-full h-full rounded-lg"
           controls={controls}
           crossOrigin="anonymous"
         />

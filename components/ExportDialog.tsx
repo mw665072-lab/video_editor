@@ -59,18 +59,18 @@ export function ExportDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-slate-950 border border-slate-700 shadow-2xl">
         <DialogHeader>
-          <DialogTitle>Export Video</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-slate-50">Export Video</DialogTitle>
+          <DialogDescription className="text-slate-300">
             Configure export settings for your edited video
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Summary */}
-          <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-border">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="p-3 bg-slate-900 rounded-lg border border-slate-700">
+            <div className="grid grid-cols-2 gap-4 text-sm text-slate-200">
               <div>
                 <p className="text-muted-foreground mb-1">Clips</p>
                 <p className="font-semibold">{clips.length}</p>
@@ -92,6 +92,8 @@ export function ExportDialog({
                 onChange={(e) => setFileName(e.target.value)}
                 placeholder="exported-video"
                 disabled={progress.isExporting}
+                // placeholder color should be white
+                className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 bg-slate-900/60 hover:text-white text-white font-semibold placeholder:text-white"
               />
               <span className="text-muted-foreground py-2">.mp4</span>
             </div>
@@ -104,7 +106,10 @@ export function ExportDialog({
           <div className="space-y-2">
             <Label htmlFor="quality">Export Quality</Label>
             <Select value={selectedQuality} onValueChange={setSelectedQuality} disabled={progress.isExporting}>
-              <SelectTrigger id="quality">
+              <SelectTrigger
+                id="quality"
+                className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 bg-slate-900/60 hover:text-white text-white font-semibold placeholder:text-white"
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -126,17 +131,17 @@ export function ExportDialog({
 
           {/* Progress */}
           {progress.isExporting && (
-            <div className="space-y-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-900">
+            <div className="space-y-3 p-3 bg-slate-900 rounded-lg border border-cyan-500/20">
               <div className="flex justify-between text-sm">
-                <span className="text-blue-900 dark:text-blue-200 font-medium">
+                <span className="text-cyan-200 font-medium">
                   {progress.currentStep || 'Processing...'}
                 </span>
-                <span className="text-blue-900 dark:text-blue-200 font-medium">
+                <span className="text-cyan-200 font-medium">
                   {Math.round(progress.progress)}%
                 </span>
               </div>
-              <Progress value={progress.progress} className="h-2" />
-              <p className="text-xs text-blue-700 dark:text-blue-300">
+              <Progress value={progress.progress} className="h-2 bg-slate-700" />
+              <p className="text-xs text-cyan-100/80">
                 Please keep this window open while processing
               </p>
             </div>

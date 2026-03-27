@@ -108,18 +108,23 @@ export function ClipList({
 
   if (clips.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        <p>No clips selected yet</p>
-        <p className="text-xs mt-1">Select clips on the timeline to get started</p>
+      <div className="h-full min-h-[220px] flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-600 bg-slate-900/50 p-6 text-center">
+        <p className="text-lg font-semibold text-slate-100">No clips selected yet</p>
+        <p className="mt-2 text-sm text-slate-300 max-w-[260px]">
+          Select clips on the timeline to get started or use the Add Clip button.
+        </p>
+        <p className="mt-3 text-xs text-slate-400">
+          This area will show your selected clips, durations, and reorder controls.
+        </p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="font-semibold">Selected Clips ({clips.length})</h3>
-        <div className="text-sm text-muted-foreground">
+    <div className="space-y-4  rounded-2xl border border-slate-700 bg-slate-900/80 p-3 shadow-lg">
+      <div className="flex items-center justify-between">
+        <h3 className="text-base font-semibold text-slate-200">Selected Clips ({clips.length})</h3>
+        <div className="text-sm text-slate-400">
           Total: {formatTime(totalDuration)}
         </div>
       </div>
@@ -132,105 +137,109 @@ export function ClipList({
             onDragStart={(e) => handleDragStart(e, clip.id)}
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, clip.id)}
-            className={`p-3 rounded-lg border-2 transition-all cursor-move ${
+            className={`p-3 rounded-xl border transition-all cursor-move min-h-[104px] ${
               selectedClipId === clip.id
-                ? 'border-primary bg-primary/5'
+                ? 'border-cyan-400 bg-cyan-500/10 ring-1 ring-cyan-500/40'
                 : draggedId === clip.id
-                  ? 'border-primary/50 opacity-50'
-                  : 'border-border hover:border-primary/50'
+                  ? 'border-cyan-300/40 opacity-70'
+                  : 'border-slate-700 bg-slate-950/70 hover:border-cyan-300'
             }`}
             onClick={() => onClipSelect?.(clip.id)}
           >
-            <div className="flex items-start gap-3">
-              <div className="text-muted-foreground mt-1">
-                <GripVertical className="w-4 h-4" />
-              </div>
-
-              <div className="flex items-center gap-2 mb-2">
-                {clip.thumbnailUrl ? (
-                  <img
-                    src={clip.thumbnailUrl}
-                    alt={`Clip ${index + 1} thumbnail`}
-                    className="w-16 h-10 rounded border border-border object-cover"
-                  />
-                ) : (
-                  <div className="w-16 h-10 rounded border border-border bg-slate-900/20 flex items-center justify-center text-[10px] text-muted-foreground">
-                    No thumbnail
-                  </div>
-                )}
-                <div className="text-xs text-muted-foreground">
-                  {clip.startTime.toFixed(2)}s - {clip.endTime.toFixed(2)}s
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between min-w-0">
+              <div className="flex items-start gap-3 min-w-0 flex-1">
+                <div className="text-muted-foreground mt-1 shrink-0">
+                  <GripVertical className="w-4 h-4" />
                 </div>
-              </div>
 
-              {editingId === clip.id ? (
-                <div className="flex-1 space-y-2">
-                  <div className="flex gap-2">
-                    <Input
-                      value={editValues.start}
-                      onChange={(e) =>
-                        setEditValues(v => ({ ...v, start: e.target.value }))
-                      }
-                      placeholder="00:00"
-                      className="h-8 text-sm"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleEditSave(clip)
-                        if (e.key === 'Escape') setEditingId(null)
-                      }}
-                    />
-                    <span className="text-muted-foreground text-sm mt-1">→</span>
-                    <Input
-                      value={editValues.end}
-                      onChange={(e) =>
-                        setEditValues(v => ({ ...v, end: e.target.value }))
-                      }
-                      placeholder="00:00"
-                      className="h-8 text-sm"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleEditSave(clip)
-                        if (e.key === 'Escape') setEditingId(null)
-                      }}
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="default"
-                      onClick={() => handleEditSave(clip)}
-                      className="h-8 text-xs"
-                    >
-                      Save
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setEditingId(null)}
-                      className="h-8 text-xs"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  className="flex-1 cursor-pointer hover:opacity-70"
-                  onClick={() => handleEditStart(clip)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">Clip {index + 1}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {formatTime(clip.startTime)} → {formatTime(clip.endTime)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold">
-                        {formatTime(getClipDuration(clip))}
+                <div className="min-w-0 w-full">
+                  <div className="flex items-center gap-2 mb-2 min-w-0">
+                    {clip.thumbnailUrl ? (
+                      <img
+                        src={clip.thumbnailUrl}
+                        alt={`Clip ${index + 1} thumbnail`}
+                        className="w-20 h-12 rounded-lg border border-slate-600 object-cover shrink-0"
+                      />
+                    ) : (
+                      <div className="w-20 h-12 rounded-lg border border-slate-600 bg-slate-900/25 flex items-center justify-center text-[10px] text-slate-400 shrink-0">
+                        No thumbnail
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-xs text-slate-300 truncate">
+                        {clip.startTime.toFixed(2)}s - {clip.endTime.toFixed(2)}s
                       </p>
                     </div>
                   </div>
+
+                  {editingId === clip.id ? (
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        <Input
+                          value={editValues.start}
+                          onChange={(e) =>
+                            setEditValues(v => ({ ...v, start: e.target.value }))
+                          }
+                          placeholder="00:00"
+                          className="h-8 text-sm w-[120px] flex-1 min-w-[90px]"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleEditSave(clip)
+                            if (e.key === 'Escape') setEditingId(null)
+                          }}
+                        />
+                        <span className="text-muted-foreground text-sm mt-1">→</span>
+                        <Input
+                          value={editValues.end}
+                          onChange={(e) =>
+                            setEditValues(v => ({ ...v, end: e.target.value }))
+                          }
+                          placeholder="00:00"
+                          className="h-8 text-sm w-[120px] flex-1 min-w-[90px]"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleEditSave(clip)
+                            if (e.key === 'Escape') setEditingId(null)
+                          }}
+                        />
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => handleEditSave(clip)}
+                          className="h-8 text-xs"
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingId(null)}
+                          className="h-8 text-xs"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="cursor-pointer hover:opacity-70 min-w-0"
+                      onClick={() => handleEditStart(clip)}
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2 md:gap-4">
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">Clip {index + 1}</p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {formatTime(clip.startTime)} → {formatTime(clip.endTime)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold">{formatTime(getClipDuration(clip))}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
 
               <Button
                 variant="ghost"
