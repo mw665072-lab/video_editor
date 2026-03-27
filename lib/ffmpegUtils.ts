@@ -479,6 +479,102 @@ export async function processClipsInWorker(
   })
 }
 
+async function sleep(ms: number) {
+  return new Promise<void>(resolve => setTimeout(resolve, ms))
+}
+
+export async function processClipsServer(
+  videoSource: string,
+  clips: VideoClip[],
+  quality: 'fast' | 'medium' | 'slow' = 'medium',
+  onProgress?: (progress: number, step: string) => void
+): Promise<Blob> {
+  const payload = { videoSource, clips, quality }
+
+  const apiUrl = `${window.location.origin}/api/export-video`
+  const resp = await fetch(apiUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+
+  if (!resp.ok) {
+    const err = await resp.text().catch(() => resp.statusText)
+    throw new Error(`Server export failed: ${err}`)
+  }
+
+  const { jobId } = await resp.json()
+  if (!jobId) throw new Error('Server export returned no jobId')
+
+  let lastProgress = 0
+
+  while (true) {
+    const statusResp = await fetch(`/api/export-video?jobId=${encodeURIComponent(jobId)}&action=status`)
+    if (!statusResp.ok) {
+      const err = await statusResp.text().catch(() => statusResp.statusText)
+      throw new Error(`Status request failed: ${err}`)
+    }
+
+    const status = (await statusResp.json()) as {
+      status: 'pending' | 'running' | 'done' | 'failed'
+      progress: number
+      step: string
+      error?: string
+    }
+
+    if (status.error) {
+      throw new Error(status.error)
+    }
+
+    lastProgress = status.progress
+    onProgress?.(status.progress, status.step)
+
+    if (status.status === 'done') break
+    if (status.status === 'failed') throw new Error('Export process failed on server')
+
+    await sleep(700)
+  }
+
+  const downloadResp = await fetch(`/api/export-video?jobId=${encodeURIComponent(jobId)}&action=download`)
+  if (!downloadResp.ok) {
+    const err = await downloadResp.text().catch(() => downloadResp.statusText)
+    throw new Error(`Download failed: ${err}`)
+  }
+
+  const contentLength = Number(downloadResp.headers.get('content-length') || '0')
+  const reader = downloadResp.body?.getReader()
+  if (!reader) {
+    throw new Error('Download stream unavailable')
+  }
+
+  const chunks: Uint8Array[] = []
+  let received = 0
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    if (value) {
+      chunks.push(value)
+      received += value.length
+
+      if (contentLength && contentLength > 0) {
+        const pct = 100 * (received / contentLength)
+        onProgress?.(Math.min(99, pct), 'downloading output')
+      } else {
+        onProgress?.(
+          Math.min(99, lastProgress + Math.min(99 - lastProgress, (received / (1024 * 1024)) * 20)),
+          'downloading output'
+        )
+      }
+    }
+  }
+
+  const blob = new Blob(chunks, { type: 'video/mp4' })
+  onProgress?.(100, 'done')
+
+  return blob
+}
+
 export async function processClips(
   videoSource: Blob | string,
   clips: VideoClip[],
@@ -486,10 +582,13 @@ export async function processClips(
   onProgress?: (progress: number, step: string) => void
 ): Promise<Blob> {
   try {
+    if (typeof videoSource === 'string' && /^https?:\/\//.test(videoSource)) {
+      return await processClipsServer(videoSource, clips, quality, onProgress)
+    }
     return await processClipsInWorker(videoSource, clips, quality, onProgress)
-  } catch (workerError) {
-    console.warn('Worker exports failed, fallback to direct', workerError)
-    return processClipsDirect(videoSource, clips, quality, onProgress)
+  } catch (serverError) {
+    console.warn('Server export failed, falling back to client FFmpeg:', serverError)
+    return processClipsInWorker(videoSource, clips, quality, onProgress)
   }
 }
 

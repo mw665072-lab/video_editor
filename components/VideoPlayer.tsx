@@ -75,7 +75,7 @@ export function VideoPlayer({
     }
 
     const handleLoadedMetadata = () => {
-      onDurationChange()
+      handleDurationChange()
       if (clipStart !== undefined && clipStart <= video.duration) {
         video.currentTime = clipStart
       }

@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { detectVideoPlatform, getYouTubeVideoId } from '@/lib/videoUtils'
 import path from 'path'
 import fs from 'fs'
+import os from 'os'
+import { spawn } from 'child_process'
+import { Readable } from 'stream'
 
 export const runtime = 'nodejs'
 
@@ -9,6 +12,12 @@ const CORS_HEADERS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET,OPTIONS',
   'Access-Control-Allow-Headers': '*',
+}
+
+function parseNumberParam(value: string | null): number | null {
+  if (!value) return null
+  const n = Number(value)
+  return Number.isFinite(n) ? n : null
 }
 
 export async function OPTIONS() {
@@ -153,8 +162,8 @@ async function streamYouTubeContent(
   let directUrls: string[] = []
 
   const formats = [
-    'bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/best[ext=mp4]/best',
     'best[ext=mp4]/best',
+    'bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/best[ext=mp4]/best',
     'best',
   ]
 
@@ -191,6 +200,73 @@ async function streamYouTubeContent(
   return streamYouTubeWithYtdl(url, quality)
 }
 
+async function runYtDlpCommand(args: string[]): Promise<void> {
+  const binaryPath = await ensureYtDlpBinary()
+  return new Promise((resolve, reject) => {
+    const proc = spawn(binaryPath, args, { stdio: ['ignore', 'pipe', 'pipe'] })
+
+    let stderrData = ''
+    proc.stderr.setEncoding('utf8')
+    proc.stderr.on('data', chunk => {
+      stderrData += chunk
+    })
+
+    proc.on('error', err => reject(err))
+    proc.on('close', code => {
+      if (code === 0) resolve()
+      else reject(new Error(`yt-dlp failed (code ${code}): ${stderrData.trim().slice(0, 1024)}`))
+    })
+  })
+}
+
+async function streamYouTubeSegment(rawUrl: string, start: number, end: number): Promise<Response> {
+  const url = rawUrl.includes('youtu.be') ? normalizeYouTubeUrl(rawUrl) : rawUrl
+  const tmpFileName = `yt-clip-${Date.now()}-${Math.random().toString(36).substring(2, 10)}.mp4`
+  const tmpPath = path.join(os.tmpdir(), tmpFileName)
+
+  const format = 'best[ext=mp4]/best'
+  const args = [
+    url,
+    '-f',
+    format,
+    '--no-playlist',
+    '--no-warnings',
+    '--no-check-certificate',
+    '--download-sections',
+    `*${start}-${end}`,
+    '--output',
+    tmpPath,
+  ]
+
+  try {
+    await runYtDlpCommand(args)
+  } catch (err) {
+    console.error('[yt-clip] streamYouTubeSegment yt-dlp error:', err)
+    // Fallback: try proxy path (previous behavior) so that export can still proceed, albeit longer
+    return streamYouTubeContent(url)
+  }
+
+  if (!fs.existsSync(tmpPath)) {
+    return NextResponse.json({ error: 'Segment download failed' }, { status: 502, headers: CORS_HEADERS })
+  }
+
+  const fileStream = fs.createReadStream(tmpPath)
+  const headers: Record<string, string> = {
+    'Content-Type': 'video/mp4',
+    'Content-Length': fs.statSync(tmpPath).size.toString(),
+    'Cache-Control': 'no-cache',
+    'Access-Control-Allow-Origin': '*',
+    ...CORS_HEADERS,
+  }
+
+  fileStream.on('close', () => {
+    setTimeout(() => {
+      fs.unlink(tmpPath, () => null)
+    }, 5000)
+  })
+
+  return new Response(Readable.toWeb(fileStream) as any, { status: 200, headers })
+}
 
 // ─── Route handler ─────────────────────────────────────────────────────────────
 
@@ -216,6 +292,8 @@ export async function GET(request: Request) {
   if (platform === 'youtube' || platform === 'facebook') {
     let normalizedUrl = inputUrl.trim()
     const requestedQuality = (requestUrl.searchParams.get('quality') as 'low' | 'medium' | 'high' | null) || 'medium'
+    const start = parseNumberParam(requestUrl.searchParams.get('start'))
+    const end = parseNumberParam(requestUrl.searchParams.get('end'))
 
     if (platform === 'youtube') {
       normalizedUrl = normalizeYouTubeUrl(normalizedUrl)
@@ -233,6 +311,10 @@ export async function GET(request: Request) {
     }
 
     try {
+      if (platform === 'youtube' && start !== null && end !== null && start >= 0 && end > start) {
+        return await streamYouTubeSegment(normalizedUrl, start, end)
+      }
+
       if (platform === 'youtube') {
         return await streamYouTubeContent(normalizedUrl, requestedQuality)
       }
