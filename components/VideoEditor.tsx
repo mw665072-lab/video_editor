@@ -7,7 +7,7 @@ import { useVideoEditorState } from '@/hooks/useVideoEditorState'
 import { ExportProgress, VideoClip } from '@/lib/types'
 import { processClips, downloadBlob } from '@/lib/ffmpegUtils'
 import { generateClipThumbnail, createThumbnailFromClip } from '@/lib/thumbnailUtils'
-import { getClipIndexAtTime, getYouTubeVideoId } from '@/lib/videoUtils'
+import { formatTime, getClipIndexAtTime, getYouTubeVideoId } from '@/lib/videoUtils'
 import { toast } from 'sonner'
 import YouTube, { YouTubePlayer } from 'react-youtube'
 
@@ -56,7 +56,9 @@ export function VideoEditor() {
     : undefined
 
   const youtubePlayerRef = useRef<YouTubePlayer | null>(null)
+  const htmlVideoRef = useRef<HTMLVideoElement | null>(null)
   const youtubeTimeUpdaterRef = useRef<number | null>(null)
+  const rafRef = useRef<number | null>(null)
   const [isYouTubeReady, setIsYouTubeReady] = useState(false)
   const [showYouTubeLoadingHint, setShowYouTubeLoadingHint] = useState(false)
 
@@ -196,17 +198,50 @@ export function VideoEditor() {
     setIsSequencePlaying(false)
   }, [setPlaying, state.videoSourceType, clearYouTubeTimeUpdater])
 
+  useEffect(() => {
+    if (!state.isPlaying || !htmlVideoRef.current) {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
+      }
+      return
+    }
+
+    const step = () => {
+      const video = htmlVideoRef.current
+      if (!video) return
+
+      const playbackTime = video.currentTime
+      if (Math.abs(playbackTime - state.currentTime) > 0.05) {
+        setCurrentTime(playbackTime)
+      }
+
+      rafRef.current = requestAnimationFrame(step)
+    }
+
+    rafRef.current = requestAnimationFrame(step)
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
+      }
+    }
+  }, [state.isPlaying, state.currentTime, setCurrentTime])
+
   const handleAddClip = useCallback(() => {
     if (state.videoDuration === 0) {
       toast.error('Please load a video first')
       return
     }
 
-    // Default to selecting first 10 seconds or quarter of video
-    const defaultEnd = Math.min(10, state.videoDuration * 0.25)
-    addClip(0, defaultEnd)
-    toast.success('Clip added to timeline')
-  }, [state.videoDuration, addClip])
+    const videoCurrentTime = htmlVideoRef.current?.currentTime ?? state.currentTime ?? 0
+    const clampedStart = Math.min(Math.max(0, videoCurrentTime), state.videoDuration)
+    const defaultDuration = 10
+    const clampedEnd = Math.min(clampedStart + defaultDuration, state.videoDuration)
+
+    addClip(clampedStart, clampedEnd)
+    toast.success(`Clip added: ${formatTime(clampedStart)} → ${formatTime(clampedEnd)}`)
+  }, [state.videoDuration, state.currentTime, addClip])
 
   useEffect(() => {
     if (!isSequencePlaying || !state.isPlaying || !sortedClips.length) return
@@ -528,6 +563,7 @@ export function VideoEditor() {
                   }}
                   clipStart={selectedClip?.startTime}
                   clipEnd={selectedClip?.endTime}
+                  videoRef={htmlVideoRef}
                 />
               )}
             </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useMemo } from 'react'
 import { formatTime, pixelsToTime, timeToPixels } from '@/lib/videoUtils'
 import { VideoClip } from '@/lib/types'
 
@@ -17,9 +17,10 @@ interface TimelineProps {
 
 const PIXELS_PER_SECOND = 50
 const FRAME_RATE = 30
+const SNAP_INTERVAL = 0.1
 
 function snapTimeToFrame(time: number): number {
-  return Number((Math.round(time * FRAME_RATE) / FRAME_RATE).toFixed(3))
+  return Number((Math.round(time / SNAP_INTERVAL) * SNAP_INTERVAL).toFixed(3))
 }
 
 export function Timeline({
@@ -33,13 +34,37 @@ export function Timeline({
   onClipEndChange,
 }: TimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const trackRef = useRef<HTMLDivElement>(null)
+  const translateXRef = useRef(0)
+  const containerWidthRef = useRef(0)
+  const clipDragRef = useRef<{
+    clipId: string
+    startTime: number
+    endTime: number
+    startPointerX: number
+  } | null>(null)
+  const [scale, setScale] = useState(PIXELS_PER_SECOND)
   const [isDragging, setIsDragging] = useState(false)
   const [draggedHandle, setDraggedHandle] = useState<{
     clipId: string
     side: 'start' | 'end'
   } | null>(null)
 
-  const totalWidth = timeToPixels(duration, PIXELS_PER_SECOND)
+  const totalWidth = timeToPixels(duration, scale)
+
+  const visibleClips = useMemo(() => {
+    const containerWidth = containerWidthRef.current || 0
+    const left = translateXRef.current
+    const right = left + containerWidth
+
+    if (containerWidth === 0) return clips
+
+    return clips.filter((clip) => {
+      const start = timeToPixels(clip.startTime, scale)
+      const end = timeToPixels(clip.endTime, scale)
+      return end >= left - 80 && start <= right + 80
+    })
+  }, [clips, scale])
 
   const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (draggedHandle) return
@@ -47,8 +72,8 @@ export function Timeline({
     const rect = containerRef.current?.getBoundingClientRect()
     if (!rect) return
 
-    const x = e.clientX - rect.left
-    const time = snapTimeToFrame(pixelsToTime(x, PIXELS_PER_SECOND))
+    const x = e.clientX - rect.left + translateXRef.current
+    const time = snapTimeToFrame(pixelsToTime(x, scale))
     onTimeChange(Math.max(0, Math.min(time, duration)))
   }
 
@@ -63,15 +88,61 @@ export function Timeline({
     setDraggedHandle({ clipId, side })
   }
 
+  const handleClipDragStart = (e: React.PointerEvent<HTMLDivElement>, clip: VideoClip) => {
+    if (draggedHandle) return
+
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+    clipDragRef.current = {
+      clipId: clip.id,
+      startTime: clip.startTime,
+      endTime: clip.endTime,
+      startPointerX: e.clientX,
+    }
+  }
+
   useEffect(() => {
     if (!isDragging) return
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!containerRef.current || !draggedHandle) return
 
-      const rect = containerRef.current.getBoundingClientRect()
-      const x = e.clientX - rect.left
-      const time = snapTimeToFrame(Math.max(0, Math.min(pixelsToTime(x, PIXELS_PER_SECOND), duration)))
+      const container = containerRef.current
+      const track = trackRef.current
+      if (!container || !track || !draggedHandle) return
+
+      const rect = container.getBoundingClientRect()
+      const x = e.clientX - rect.left + translateXRef.current
+      const time = snapTimeToFrame(Math.max(0, Math.min(pixelsToTime(x, scale), duration)))
+
+      const dragClip = clipDragRef.current
+      if (dragClip) {
+        const clipObject = clips.find(c => c.id === dragClip.clipId)
+        if (!clipObject) return
+
+        const deltaTime = (e.clientX - dragClip.startPointerX) / scale
+        let nextStart = dragClip.startTime + deltaTime
+        let nextEnd = dragClip.endTime + deltaTime
+
+        const sorted = [...clips].sort((a, b) => a.order - b.order)
+        const idx = sorted.findIndex((c) => c.id === clipObject.id)
+        const prevClip = sorted[idx - 1]
+        const nextClip = sorted[idx + 1]
+
+        const minStart = prevClip ? prevClip.endTime : 0
+        const maxEnd = nextClip ? nextClip.startTime : duration
+
+        if (nextStart - nextEnd === 0) return
+
+        const clipLength = clipObject.endTime - clipObject.startTime
+        nextStart = Math.max(minStart, Math.min(nextStart, maxEnd - clipLength))
+        nextEnd = nextStart + clipLength
+
+        onClipStartChange?.(clipObject.id, snapTimeToFrame(nextStart))
+        onClipEndChange?.(clipObject.id, snapTimeToFrame(nextEnd))
+        return
+      }
 
       const clip = clips.find(c => c.id === draggedHandle.clipId)
       if (!clip) return
@@ -90,6 +161,7 @@ export function Timeline({
     const handleMouseUp = () => {
       setIsDragging(false)
       setDraggedHandle(null)
+      clipDragRef.current = null
     }
 
     document.addEventListener('mousemove', handleMouseMove)
@@ -99,7 +171,50 @@ export function Timeline({
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [isDragging, draggedHandle, clips, duration, onClipStartChange, onClipEndChange])
+  }, [isDragging, draggedHandle, clips, duration, onClipStartChange, onClipEndChange, scale])
+
+  useEffect(() => {
+    const container = containerRef.current
+    const track = trackRef.current
+    if (!container || !track) return
+
+    containerWidthRef.current = container.clientWidth
+
+    const resizeObserver = new ResizeObserver(() => {
+      containerWidthRef.current = container.clientWidth
+    })
+    resizeObserver.observe(container)
+
+    let rafId: number
+
+    const update = () => {
+      const cw = containerWidthRef.current || container.clientWidth
+      const playheadPx = currentTime * scale
+      const maxTransform = Math.max(0, totalWidth - cw)
+      const desired = Math.min(maxTransform, Math.max(0, playheadPx - cw * 0.45))
+
+      if (Math.abs(desired - translateXRef.current) > 0.5) {
+        translateXRef.current = desired
+        track.style.transform = `translateX(-${desired}px)`
+      }
+
+      rafId = requestAnimationFrame(update)
+    }
+
+    rafId = requestAnimationFrame(update)
+
+    return () => {
+      cancelAnimationFrame(rafId)
+      resizeObserver.disconnect()
+    }
+  }, [currentTime, scale, totalWidth])
+
+  const handleZoom = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (!e.ctrlKey) return
+    e.preventDefault()
+    const factor = e.deltaY > 0 ? 0.9 : 1.1
+    setScale((prev) => Math.max(10, Math.min(300, prev * factor)))
+  }
 
   return (
     <div className="w-full space-y-2">
@@ -113,21 +228,31 @@ export function Timeline({
         <div
           ref={containerRef}
           onClick={handleContainerClick}
-          className="relative h-32 cursor-pointer overflow-x-auto"
-          style={{ width: totalWidth > 600 ? totalWidth : '100%' }}
+          onWheel={handleZoom}
+          className="relative h-32 cursor-pointer overflow-hidden"
+          style={{ width: '100%' }}
         >
-          {/* Playback cursor */}
           <div
-            className="absolute top-0 bottom-0 w-0.5 bg-primary z-20 pointer-events-none transition-all"
+            ref={trackRef}
+            className="relative h-full"
             style={{
-              left: `${timeToPixels(currentTime, PIXELS_PER_SECOND)}px`,
+              width: `${totalWidth}px`,
+              transform: 'translateX(0px)',
+              transition: 'transform 0.1s ease-out',
             }}
-          />
+          >
+            {/* Playback cursor */}
+            <div
+              className="absolute top-0 bottom-0 w-0.5 bg-primary z-20 pointer-events-none transition-all"
+              style={{
+                left: `${timeToPixels(currentTime, scale)}px`,
+              }}
+            />
 
           {/* Clips visualization */}
-          {clips.map((clip) => {
-            const startPixels = timeToPixels(clip.startTime, PIXELS_PER_SECOND)
-            const endPixels = timeToPixels(clip.endTime, PIXELS_PER_SECOND)
+          {visibleClips.map((clip) => {
+            const startPixels = timeToPixels(clip.startTime, scale)
+            const endPixels = timeToPixels(clip.endTime, scale)
             const widthPixels = endPixels - startPixels
             const isSelected = selectedClipId === clip.id
 
@@ -138,7 +263,8 @@ export function Timeline({
                   e.stopPropagation()
                   onClipSelect?.(clip.id)
                 }}
-                className={`absolute top-4 h-20 rounded cursor-move border-2 transition-all ${
+                onPointerDown={(e) => handleClipDragStart(e, clip)}
+                className={`absolute top-4 h-20 rounded cursor-grab border-2 transition-all ${
                   isSelected
                     ? 'border-primary bg-primary/20'
                     : 'border-primary/50 bg-primary/10 hover:border-primary'
@@ -181,7 +307,7 @@ export function Timeline({
               length: Math.floor(duration / 10) + 1,
             }).map((_, i) => {
               const time = i * 10
-              const pixels = timeToPixels(time, PIXELS_PER_SECOND)
+              const pixels = timeToPixels(time, scale)
               return (
                 <div
                   key={i}
@@ -197,6 +323,7 @@ export function Timeline({
             })}
           </div>
         </div>
+      </div>
       </div>
 
       {clips.length > 0 && (

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type RefObject } from 'react'
 
 interface VideoPlayerProps {
   src: Blob | string | null
@@ -14,6 +14,7 @@ interface VideoPlayerProps {
   controls?: boolean
   clipStart?: number
   clipEnd?: number
+  videoRef?: RefObject<HTMLVideoElement | null>
 }
 
 export function VideoPlayer({
@@ -28,8 +29,10 @@ export function VideoPlayer({
   controls = true,
   clipStart,
   clipEnd,
+  videoRef: externalVideoRef,
 }: VideoPlayerProps) {
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const localVideoRef = useRef<HTMLVideoElement>(null)
+  const videoRef = externalVideoRef ?? localVideoRef
 
   // Handle source changes
   useEffect(() => {
