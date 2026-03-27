@@ -48,12 +48,12 @@ async function fetchWithTimeout(url: string, timeout: number): Promise<Response>
 }
 
 async function readStreamToArrayBuffer(
-  stream: ReadableStream<Uint8Array>,
+  stream: ReadableStream<Uint8Array> | any,
   totalBytes: number | null,
   onProgress?: (loaded: number, total?: number) => void
 ): Promise<ArrayBuffer> {
   const reader = stream.getReader()
-  const chunks: Uint8Array[] = []
+  const chunks: any | Uint8Array[] = []
   let loaded = 0
 
   while (true) {
@@ -569,7 +569,7 @@ export async function processClipsServer(
     }
   }
 
-  const blob = new Blob(chunks, { type: 'video/mp4' })
+const blob = new Blob(chunks as BlobPart[], { type: 'video/mp4' })
   onProgress?.(100, 'done')
 
   return blob
