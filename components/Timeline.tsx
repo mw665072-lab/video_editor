@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect, useState, useMemo } from 'react'
+import React, { useRef, useEffect, useState, useMemo } from 'react'
 import { formatTime, pixelsToTime, timeToPixels } from '@/lib/videoUtils'
 import { VideoClip } from '@/lib/types'
 
@@ -23,7 +23,7 @@ function snapTimeToFrame(time: number): number {
   return Number((Math.round(time / SNAP_INTERVAL) * SNAP_INTERVAL).toFixed(3))
 }
 
-export function Timeline({
+function TimelineComponent({
   duration,
   clips,
   currentTime,
@@ -182,29 +182,29 @@ export function Timeline({
 
     const resizeObserver = new ResizeObserver(() => {
       containerWidthRef.current = container.clientWidth
-    })
-    resizeObserver.observe(container)
-
-    let rafId: number
-
-    const update = () => {
-      const cw = containerWidthRef.current || container.clientWidth
+      // trigger immediate scroll update
+      const cw = containerWidthRef.current
       const playheadPx = currentTime * scale
       const maxTransform = Math.max(0, totalWidth - cw)
       const desired = Math.min(maxTransform, Math.max(0, playheadPx - cw * 0.45))
-
       if (Math.abs(desired - translateXRef.current) > 0.5) {
         translateXRef.current = desired
         track.style.transform = `translateX(-${desired}px)`
       }
+    })
 
-      rafId = requestAnimationFrame(update)
+    resizeObserver.observe(container)
+
+    const cw = containerWidthRef.current || container.clientWidth
+    const playheadPx = currentTime * scale
+    const maxTransform = Math.max(0, totalWidth - cw)
+    const desired = Math.min(maxTransform, Math.max(0, playheadPx - cw * 0.45))
+    if (Math.abs(desired - translateXRef.current) > 0.5) {
+      translateXRef.current = desired
+      track.style.transform = `translateX(-${desired}px)`
     }
 
-    rafId = requestAnimationFrame(update)
-
     return () => {
-      cancelAnimationFrame(rafId)
       resizeObserver.disconnect()
     }
   }, [currentTime, scale, totalWidth])
@@ -334,3 +334,6 @@ export function Timeline({
     </div>
   )
 }
+
+export const Timeline = React.memo(TimelineComponent)
+

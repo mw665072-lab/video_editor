@@ -9,6 +9,23 @@ import crypto from 'crypto'
 
 export const runtime = 'nodejs'
 
+const CORS_HEADERS: Record<string, string> = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Credentials': 'false',
+  'Vary': 'Origin',
+}
+
+function jsonCors(body: unknown, status = 200) {
+  return NextResponse.json(body, { status, headers: CORS_HEADERS })
+}
+
+function createCorsResponse(body: BodyInit | null, status = 200, headers?: HeadersInit) {
+  const mergedHeaders = { ...CORS_HEADERS, ...(headers || {}) }
+  return new NextResponse(body, { status, headers: mergedHeaders })
+}
+
 interface ExportJob {
   status: 'pending' | 'running' | 'done' | 'failed'
   progress: number
@@ -274,6 +291,10 @@ async function processExportJob(jobId: string, videoSource: string, clips: any[]
   }
 }
 
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS })
+}
+
 export async function GET(request: Request) {
   cleanupExpiredJobs()
 
@@ -282,28 +303,30 @@ export async function GET(request: Request) {
   const action = url.searchParams.get('action') || 'status'
 
   if (!jobId) {
-    return NextResponse.json({ error: 'Missing jobId' }, { status: 400 })
+    return jsonCors({ error: 'Missing jobId' }, 400)
   }
 
   const job = exportJobs.get(jobId)
   if (!job) {
-    return NextResponse.json({ error: 'Job not found or expired' }, { status: 404 })
+    return jsonCors({ error: 'Job not found or expired' }, 404)
   }
 
   if (action === 'download') {
     if (job.status !== 'done' || !job.outputPath) {
-      return NextResponse.json({ error: 'Job is not ready for download' }, { status: 409 })
+      return jsonCors({ error: 'Job is not ready for download' }, 409)
     }
 
     const fileStream = fs.createReadStream(job.outputPath)
     const headers = new Headers({
       'Content-Type': 'video/mp4',
       'Content-Disposition': `attachment; filename="export-${jobId}.mp4"`,
+      ...CORS_HEADERS,
     })
+    headers.set('Vary', 'Origin')
     return new NextResponse(Readable.toWeb(fileStream) as any, { status: 200, headers })
   }
 
-  return NextResponse.json({
+  return jsonCors({
     status: job.status,
     progress: job.progress,
     step: job.step,
@@ -315,7 +338,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null)
   if (!body) {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return jsonCors({ error: 'Invalid JSON body' }, 400)
   }
 
   const videoSource = String(body.videoSource || '')
@@ -323,11 +346,11 @@ export async function POST(request: Request) {
   const quality = String(body.quality || 'medium')
 
   if (!videoSource) {
-    return NextResponse.json({ error: 'Missing videoSource' }, { status: 400 })
+    return jsonCors({ error: 'Missing videoSource' }, 400)
   }
 
   if (clips.length === 0) {
-    return NextResponse.json({ error: 'Missing clips array' }, { status: 400 })
+    return jsonCors({ error: 'Missing clips array' }, 400)
   }
 
   const jobId = crypto.randomUUID()
@@ -350,5 +373,5 @@ export async function POST(request: Request) {
     }
   })
 
-  return NextResponse.json({ jobId })
+  return jsonCors({ jobId })
 }

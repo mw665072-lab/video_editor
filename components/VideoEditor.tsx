@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useVideoEditorState } from '@/hooks/useVideoEditorState'
@@ -57,36 +57,101 @@ export function VideoEditor() {
 
   const youtubePlayerRef = useRef<YouTubePlayer | null>(null)
   const htmlVideoRef = useRef<HTMLVideoElement | null>(null)
-  const youtubeTimeUpdaterRef = useRef<number | null>(null)
-  const rafRef = useRef<number | null>(null)
+  const playerTimeRef = useRef<number>(0)
+  const lastSyncTimeRef = useRef<number>(0)
+  const syncIntervalRef = useRef<number | null>(null)
+  const activeClipIndexRef = useRef<number>(0)
+  const bufferingTimerRef = useRef<number | null>(null)
+
   const [isYouTubeReady, setIsYouTubeReady] = useState(false)
   const [showYouTubeLoadingHint, setShowYouTubeLoadingHint] = useState(false)
+  const [showExternalPreview, setShowExternalPreview] = useState(true)
+  const [isBuffering, setIsBuffering] = useState(false)
 
-  const clearYouTubeTimeUpdater = useCallback(() => {
-    if (youtubeTimeUpdaterRef.current !== null) {
-      window.clearInterval(youtubeTimeUpdaterRef.current)
-      youtubeTimeUpdaterRef.current = null
+  const clearSyncInterval = useCallback(() => {
+    if (syncIntervalRef.current !== null) {
+      window.clearInterval(syncIntervalRef.current)
+      syncIntervalRef.current = null
     }
   }, [])
 
-  const syncYouTubePlayerTime = useCallback(
-    (time: number) => {
-      const player = youtubePlayerRef.current
-      if (!player) return
+  const setBufferingState = useCallback((buffering: boolean) => {
+    if (bufferingTimerRef.current !== null) {
+      window.clearTimeout(bufferingTimerRef.current)
+      bufferingTimerRef.current = null
+    }
 
-      try {
-        const playerTime = player.getCurrentTime()
-        if (Math.abs(playerTime - time) > 0.5) {
-          player.seekTo(time, true)
-        }
-      } catch {
-        // ignore unavailable player state until ready
+    if (buffering) {
+      bufferingTimerRef.current = window.setTimeout(() => {
+        setIsBuffering(true)
+      }, 300)
+      return
+    }
+
+    setIsBuffering(false)
+  }, [])
+
+  const syncUIFromPlayerTime = useCallback(
+    (time: number) => {
+      playerTimeRef.current = time
+      const now = performance.now()
+      if (now - lastSyncTimeRef.current >= 250) {
+        lastSyncTimeRef.current = now
+        setCurrentTime(time)
       }
     },
-    []
+    [setCurrentTime]
   )
 
-  const youTubeOptions: any = {
+  const getLivePlayerTime = useCallback((): number => {
+    if (isYouTubePlatform && youtubePlayerRef.current && isYouTubeReady) {
+      try {
+        return youtubePlayerRef.current.getCurrentTime() ?? playerTimeRef.current
+      } catch {
+        return playerTimeRef.current
+      }
+    }
+    if (htmlVideoRef.current) {
+      return htmlVideoRef.current.currentTime
+    }
+    return playerTimeRef.current
+  }, [isYouTubePlatform, isYouTubeReady])
+
+  const safeSeek = useCallback(
+    (time: number) => {
+      const clamped = Math.max(0, Math.min(time, state.videoDuration || Number.MAX_VALUE))
+      playerTimeRef.current = clamped
+
+      if (isYouTubePlatform && youtubePlayerRef.current && isYouTubeReady) {
+        try {
+          const current = youtubePlayerRef.current.getCurrentTime() || 0
+          if (Math.abs(current - clamped) > 0.5) {
+            youtubePlayerRef.current.seekTo(clamped, true)
+          }
+        } catch {
+          // ignore unavailable player state
+        }
+      } else if (htmlVideoRef.current) {
+        const current = htmlVideoRef.current.currentTime
+        if (Math.abs(current - clamped) > 0.5) {
+          htmlVideoRef.current.currentTime = clamped
+        }
+      }
+
+      setCurrentTime(clamped)
+    },
+    [isYouTubePlatform, isYouTubeReady, setCurrentTime, state.videoDuration]
+  )
+
+  const handleTimeChange = useCallback(
+    (time: number) => {
+      const trimmed = Math.max(0, Math.min(time, state.videoDuration))
+      safeSeek(trimmed)
+    },
+    [safeSeek, state.videoDuration]
+  )
+
+  const youTubeOptions = useMemo(() => ({
     width: '100%',
     height: '400',
     playerVars: {
@@ -94,10 +159,9 @@ export function VideoEditor() {
       controls: 1,
       rel: 0,
       modestbranding: 1,
-      // Keep start fixed so frequent currentTime updates don't cause YouTube re-initialization/re-seek
       start: 0,
     },
-  }
+  }), [])
 
   const handleYouTubeReady = useCallback(
     (event: { target: YouTubePlayer }) => {
@@ -118,11 +182,12 @@ export function VideoEditor() {
 
       updateDuration()
 
-      if (state.currentTime > 0) {
-        event.target.seekTo(state.currentTime, true)
+      const initialTime = playerTimeRef.current > 0 ? playerTimeRef.current : state.currentTime
+      if (initialTime > 0) {
+        safeSeek(initialTime)
       }
     },
-    [setVideoDuration, state.currentTime, state.videoDuration]
+    [safeSeek, setVideoDuration, state.currentTime, state.videoDuration]
   )
 
   const [exportDialogOpen, setExportDialogOpen] = useState(false)
@@ -132,32 +197,49 @@ export function VideoEditor() {
   })
   const [isSequencePlaying, setIsSequencePlaying] = useState(false)
   const [activeClipIndex, setActiveClipIndex] = useState<number>(0)
+  const [clipDurationSeconds, setClipDurationSeconds] = useState(10)
 
   const handleYouTubeStateChange = useCallback(
     (event: { data: number; target: YouTubePlayer }) => {
       const player = event.target
       const playerState = event.data
-      console.log('YouTube state change', { playerState })
+
+      let current = playerTimeRef.current
+      try {
+        current = player.getCurrentTime() ?? current
+      } catch {
+        // ignore
+      }
+
+      playerTimeRef.current = current
+      syncUIFromPlayerTime(current)
 
       if (playerState === 1) {
         setPlaying(true)
-        clearYouTubeTimeUpdater()
-        youtubeTimeUpdaterRef.current = window.setInterval(() => {
-          const current = player.getCurrentTime()
-          setCurrentTime(current)
-        }, 200)
+        setBufferingState(false)
       } else if (playerState === 2) {
         setPlaying(false)
-        clearYouTubeTimeUpdater()
+        setBufferingState(false)
+      } else if (playerState === 3) {
+        setBufferingState(true)
       } else if (playerState === 0) {
-        const current = player.getCurrentTime()
-        setCurrentTime(current)
-        if (isSequencePlaying) {
-          // sequence manager useEffect will advance clip
+        setPlaying(false)
+        setBufferingState(false)
+
+        if (isSequencePlaying && sortedClips.length > 0) {
+          const nextIdx = activeClipIndexRef.current + 1
+          if (sortedClips[nextIdx]) {
+            activeClipIndexRef.current = nextIdx
+            setActiveClipIndex(nextIdx)
+            safeSeek(sortedClips[nextIdx].startTime)
+            youtubePlayerRef.current?.playVideo()
+          } else {
+            setIsSequencePlaying(false)
+          }
         }
       }
     },
-    [setCurrentTime, setPlaying, clearYouTubeTimeUpdater, isSequencePlaying]
+    [isSequencePlaying, safeSeek, setCurrentTime, setPlaying, setBufferingState, sortedClips, syncUIFromPlayerTime]
   )
 
   const getEmbedUrl = () => {
@@ -167,6 +249,14 @@ export function VideoEditor() {
     return ''
   }
 
+
+  const handlePlayerTimeUpdate = useCallback(
+    (time: number) => {
+      playerTimeRef.current = time
+      syncUIFromPlayerTime(time)
+    },
+    [syncUIFromPlayerTime]
+  )
 
   const handlePlaySequence = useCallback(() => {
     if (!sortedClips.length || !state.videoSource) {
@@ -191,42 +281,69 @@ export function VideoEditor() {
   const handleStopSequence = useCallback(() => {
     if (state.videoSourceType === 'youtube' && youtubePlayerRef.current) {
       youtubePlayerRef.current.pauseVideo()
-      clearYouTubeTimeUpdater()
+    }
+
+    if (htmlVideoRef.current) {
+      htmlVideoRef.current.pause()
     }
 
     setPlaying(false)
     setIsSequencePlaying(false)
-  }, [setPlaying, state.videoSourceType, clearYouTubeTimeUpdater])
+  }, [setPlaying, state.videoSourceType])
 
   useEffect(() => {
-    if (!state.isPlaying || !htmlVideoRef.current) {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current)
-        rafRef.current = null
-      }
+    if (!state.videoSource) {
       return
     }
 
-    const step = () => {
-      const video = htmlVideoRef.current
-      if (!video) return
+    clearSyncInterval()
 
-      const playbackTime = video.currentTime
-      if (Math.abs(playbackTime - state.currentTime) > 0.05) {
-        setCurrentTime(playbackTime)
+    syncIntervalRef.current = window.setInterval(() => {
+      const current = getLivePlayerTime()
+      playerTimeRef.current = current
+      syncUIFromPlayerTime(current)
+
+      if (!isSequencePlaying || !sortedClips.length) {
+        return
       }
 
-      rafRef.current = requestAnimationFrame(step)
-    }
+      const activeIndex = activeClipIndexRef.current
+      const activeClip = sortedClips[activeIndex]
 
-    rafRef.current = requestAnimationFrame(step)
+      if (!activeClip) {
+        activeClipIndexRef.current = 0
+        setActiveClipIndex(0)
+        return
+      }
+
+      if (current < activeClip.startTime) {
+        safeSeek(activeClip.startTime)
+        return
+      }
+
+      if (current >= activeClip.endTime - 0.2) {
+        const next = sortedClips[activeIndex + 1]
+
+        if (next) {
+          activeClipIndexRef.current = activeIndex + 1
+          setActiveClipIndex(activeIndex + 1)
+          safeSeek(next.startTime)
+
+          if (state.videoSourceType === 'youtube' && youtubePlayerRef.current) {
+            youtubePlayerRef.current.playVideo()
+          } else if (htmlVideoRef.current) {
+            htmlVideoRef.current.play()
+          }
+        } else {
+          handleStopSequence()
+        }
+      }
+    }, 250)
+
     return () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current)
-        rafRef.current = null
-      }
+      clearSyncInterval()
     }
-  }, [state.isPlaying, state.currentTime, setCurrentTime])
+  }, [state.videoSource, getLivePlayerTime, syncUIFromPlayerTime, isSequencePlaying, sortedClips, safeSeek, state.videoSourceType, handleStopSequence])
 
   const handleAddClip = useCallback(() => {
     if (state.videoDuration === 0) {
@@ -234,80 +351,33 @@ export function VideoEditor() {
       return
     }
 
-    const videoCurrentTime = htmlVideoRef.current?.currentTime ?? state.currentTime ?? 0
-    const clampedStart = Math.min(Math.max(0, videoCurrentTime), state.videoDuration)
-    const defaultDuration = 10
-    const clampedEnd = Math.min(clampedStart + defaultDuration, state.videoDuration)
+    const liveTime = getLivePlayerTime() || playerTimeRef.current || 0
+    const start = Math.min(Math.max(0, liveTime), state.videoDuration)
+    const end = Math.min(start + clipDurationSeconds, state.videoDuration)
 
-    addClip(clampedStart, clampedEnd)
-    toast.success(`Clip added: ${formatTime(clampedStart)} → ${formatTime(clampedEnd)}`)
-  }, [state.videoDuration, state.currentTime, addClip])
+    addClip(start, end)
+    toast.success(`Clip added: ${formatTime(start)} → ${formatTime(end)} (${clipDurationSeconds}s)`)    
+  }, [state.videoDuration, addClip, getLivePlayerTime, clipDurationSeconds])
 
-  useEffect(() => {
-    if (!isSequencePlaying || !state.isPlaying || !sortedClips.length) return
 
-    const idx = getClipIndexAtTime(sortedClips, state.currentTime)
 
-    if (idx === -1) {
-      const firstClip = sortedClips[0]
-      const lastClip = sortedClips[sortedClips.length - 1]
 
-      if (state.currentTime < firstClip.startTime) {
-        setCurrentTime(firstClip.startTime)
-        setActiveClipIndex(0)
-        return
-      }
-
-      if (state.currentTime >= lastClip.endTime) {
-        handleStopSequence()
-        return
-      }
-
-      const nextClipIndex = sortedClips.findIndex(c => c.startTime > state.currentTime)
-      if (nextClipIndex !== -1) {
-        setActiveClipIndex(nextClipIndex)
-        setCurrentTime(sortedClips[nextClipIndex].startTime)
-        return
-      }
-
-      handleStopSequence()
-      return
-    }
-
-    if (idx !== activeClipIndex) {
-      setActiveClipIndex(idx)
-    }
-
-    const clip = sortedClips[idx]
-
-    if (state.currentTime >= clip.endTime - 0.08) {
-      const nextClip = sortedClips[idx + 1]
-      if (nextClip) {
-        setCurrentTime(nextClip.startTime)
-        setActiveClipIndex(idx + 1)
-      } else {
-        handleStopSequence()
-      }
-    }
-  }, [isSequencePlaying, state.currentTime, state.isPlaying, sortedClips, activeClipIndex, setCurrentTime, handleStopSequence])
-
-  useEffect(() => {
-    if (!isYouTubePlatform || !youtubePlayerRef.current) return
-
-    syncYouTubePlayerTime(state.currentTime)
-  }, [isYouTubePlatform, state.currentTime, syncYouTubePlayerTime])
 
   useEffect(() => {
     if (!selectedClip || !state.videoSource || isYouTubePlatform || isFacebookPlatform) return
 
-    setCurrentTime(selectedClip.startTime)
-  }, [selectedClip?.id, selectedClip?.startTime, state.videoSource, isYouTubePlatform, isFacebookPlatform, setCurrentTime])
+    safeSeek(selectedClip.startTime)
+  }, [selectedClip?.id, selectedClip?.startTime, state.videoSource, isYouTubePlatform, isFacebookPlatform, safeSeek])
 
   useEffect(() => {
-    if (!isYouTubePlatform) return
+    if (!isYouTubePlatform) {
+      setShowExternalPreview(true)
+      return
+    }
 
     setIsYouTubeReady(false)
     setShowYouTubeLoadingHint(true)
+    setShowExternalPreview(true)
 
     const hintTimer = window.setTimeout(() => {
       setShowYouTubeLoadingHint(false)
@@ -321,9 +391,9 @@ export function VideoEditor() {
 
   useEffect(() => {
     return () => {
-      clearYouTubeTimeUpdater()
+      clearSyncInterval()
     }
-  }, [clearYouTubeTimeUpdater])
+  }, [clearSyncInterval])
 
   useEffect(() => {
     if (!state.videoSource || !sortedClips.length) return
@@ -465,7 +535,11 @@ export function VideoEditor() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Preview</h2>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-3">
+                  {isBuffering && (
+                    <span className="text-xs text-warning">Buffering...</span>
+                  )}
+                  <div className="flex gap-2">
                   <Button
                     size="sm"
                     onClick={handlePlaySequence}
@@ -483,53 +557,69 @@ export function VideoEditor() {
                   </Button>
                 </div>
               </div>
+            </div>
 
               {isYouTubePlatform && youtubeVideoId ? (
                 <div className="rounded-lg border border-border overflow-hidden">
-                  <YouTube
-                    videoId={youtubeVideoId}
-                    opts={youTubeOptions}
-                    onReady={handleYouTubeReady}
-                    onStateChange={handleYouTubeStateChange}
-                    onError={() => {
-                      setIsYouTubeReady(false)
-                      toast.error('YouTube player error: unable to load video')
-                    }}
-                  />
-                  {!isYouTubeReady && (
-                    <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-300 dark:border-blue-800">
-                      <p className="text-sm font-medium">Loading YouTube preview...</p>
-                      <p className="text-xs text-muted-foreground">
-                        This may take a moment. Check your URL and network policy if loading fails.
+                  {!showExternalPreview ? (
+                    <div className="p-4 bg-slate-50 dark:bg-slate-950/20">
+                      <p className="mb-2 text-sm font-medium">YouTube link detected.</p>
+                      <p className="text-xs text-muted-foreground mb-4">
+                        Preview loading for YouTube can generate many network requests.
+                        Use this button to load the embedded player only when needed.
                       </p>
+                      <Button onClick={() => setShowExternalPreview(true)} size="sm">
+                        Load YouTube Preview
+                      </Button>
                     </div>
-                  )}
-                  <div className="p-3 bg-yellow-100 dark:bg-yellow-950/20 rounded-lg border border-yellow-300 dark:border-yellow-800">
-                    <p className="text-sm font-medium">YouTube link detected.</p>
-                    <p className="text-xs text-muted-foreground">
-                      Clip sequence preview is enabled for YouTube; export stays disabled for external sources.
-                    </p>
-                  </div>
-                  {state.videoDuration <= 0 && (
-                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <label className="text-sm">Set video duration (seconds)</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="number"
-                          min={1}
-                          className="input input-bordered flex-1"
-                          value={state.videoDuration || ''}
-                          onChange={(e) => {
-                            const value = Number(e.target.value)
-                            if (!Number.isNaN(value) && value > 0) {
-                              setVideoDuration(value)
-                            }
-                          }}
-                          placeholder="e.g., 600"
-                        />
-                        <span className="text-xs text-muted-foreground self-center">Recommended for timeline</span>
+                  ) : (
+                    <>
+                      <YouTube
+                        videoId={youtubeVideoId}
+                        opts={youTubeOptions}
+                        onReady={handleYouTubeReady}
+                        onStateChange={handleYouTubeStateChange}
+                        onError={() => {
+                          setIsYouTubeReady(false)
+                          toast.error('YouTube player error: unable to load video')
+                        }}
+                      />
+                      {!isYouTubeReady && (
+                        <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-300 dark:border-blue-800">
+                          <p className="text-sm font-medium">Loading YouTube preview...</p>
+                          <p className="text-xs text-muted-foreground">
+                            This may take a moment. Check your URL and network policy if loading fails.
+                          </p>
+                        </div>
+                      )}
+                      <div className="p-3 bg-yellow-100 dark:bg-yellow-950/20 rounded-lg border border-yellow-300 dark:border-yellow-800">
+                        <p className="text-sm font-medium">YouTube link detected.</p>
+                        <p className="text-xs text-muted-foreground">
+                          Clip sequence preview is enabled for YouTube; export stays disabled for external sources.
+                        </p>
                       </div>
-                    </div>
+                      {state.videoDuration <= 0 && (
+                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <label className="text-sm">Set video duration (seconds)</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="number"
+                              min={1}
+                              className="input input-bordered flex-1"
+                              value={state.videoDuration || ''}
+                              onChange={(e) => {
+                                const value = Number(e.target.value)
+                                if (!Number.isNaN(value) && value > 0) {
+                                  setVideoDuration(value)
+                                }
+                              }}
+                              placeholder="e.g., 600"
+                            />
+                            <span className="text-xs text-muted-foreground self-center">Recommended for timeline</span>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               ) : isFacebookPlatform ? (
@@ -555,12 +645,17 @@ export function VideoEditor() {
                 <VideoPlayer
                   src={state.videoSource}
                   currentTime={state.currentTime}
-                  onTimeUpdate={setCurrentTime}
-                  onPlay={() => setPlaying(true)}
+                  onTimeUpdate={handlePlayerTimeUpdate}
+                  onPlay={() => {
+                    setPlaying(true)
+                    setBufferingState(false)
+                  }}
                   onPause={() => {
                     setPlaying(false)
                     setIsSequencePlaying(false)
+                    setBufferingState(false)
                   }}
+                  onBuffering={setBufferingState}
                   clipStart={selectedClip?.startTime}
                   clipEnd={selectedClip?.endTime}
                   videoRef={htmlVideoRef}
@@ -582,7 +677,7 @@ export function VideoEditor() {
                 duration={state.videoDuration}
                 clips={sortedClips}
                 currentTime={state.currentTime}
-                onTimeChange={setCurrentTime}
+                onTimeChange={handleTimeChange}
                 onClipSelect={selectClip}
                 selectedClipId={state.selectedClipId}
                 onClipStartChange={(clipId, startTime) => {
@@ -600,21 +695,30 @@ export function VideoEditor() {
               />
             </div>
 
+            {/* Clip duration selector + actions */}
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium">Clip length:</label>
+              <select
+                value={clipDurationSeconds}
+                onChange={(e) => setClipDurationSeconds(Number(e.target.value))}
+                className="input input-bordered input-sm"
+              >
+                {[5, 10, 15, 30, 60].map((sec) => (
+                  <option key={sec} value={sec}>
+                    {sec} seconds
+                  </option>
+                ))}
+              </select>
+              <span className="text-xs text-muted-foreground">Choose a default clip duration</span>
+            </div>
+
             {/* Quick Actions */}
             {sortedClips.length > 0 && (
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    const newClip = {
-                      ...sortedClips[sortedClips.length - 1],
-                      startTime: state.currentTime,
-                      endTime: Math.min(state.currentTime + 10, state.videoDuration),
-                    }
-                    addClip(newClip.startTime, newClip.endTime)
-                    toast.success('New clip added')
-                  }}
+                  onClick={() => handleAddClip()}
                 >
                   Add Clip at Current Time
                 </Button>

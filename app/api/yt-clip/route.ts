@@ -11,7 +11,9 @@ export const runtime = 'nodejs'
 const CORS_HEADERS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET,OPTIONS',
-  'Access-Control-Allow-Headers': '*',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Credentials': 'false',
+  'Vary': 'Origin',
 }
 
 function parseNumberParam(value: string | null): number | null {
