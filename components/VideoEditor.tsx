@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useVideoEditorState } from '@/hooks/useVideoEditorState'
 import { ExportProgress, VideoClip } from '@/lib/types'
-import { processClips, downloadBlob } from '@/lib/ffmpegUtils'
+import { exportVideo, getExportStatus, downloadExportedVideo } from '@/lib/api'
 import { generateClipThumbnail, createThumbnailFromClip } from '@/lib/thumbnailUtils'
 import { formatTime, getClipIndexAtTime, getYouTubeVideoId } from '@/lib/videoUtils'
 import { toast } from 'sonner'
@@ -45,7 +45,10 @@ export function VideoEditor() {
       ? getYouTubeVideoId(state.videoSource)
       : null
 
-  const isClipExportableSource = !!state.videoSource
+  const isClipExportableSource =
+    !!state.videoSource &&
+    state.videoSourceType !== 'file' &&
+    state.videoSourceType !== 'unknown'
 
   const selectedClip = state.selectedClipId
     ? sortedClips.find(c => c.id === state.selectedClipId)
@@ -195,6 +198,7 @@ export function VideoEditor() {
     isExporting: false,
     progress: 0,
   })
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [isSequencePlaying, setIsSequencePlaying] = useState(false)
   const [activeClipIndex, setActiveClipIndex] = useState<number>(0)
   const [clipDurationSeconds, setClipDurationSeconds] = useState(10)
@@ -454,21 +458,54 @@ export function VideoEditor() {
       })
 
       try {
-        const outputBlob = await processClips(
-          state.videoSource,
-          sortedClips,
-          quality as 'fast' | 'medium' | 'slow',
-          (progress, step) => {
-            setExportProgress({
-              isExporting: true,
-              progress,
-              currentStep: step,
-              error: undefined,
-            })
-          }
-        )
+        const sourceUrl = String(state.videoSource || '')
+        const clipsPayload = sortedClips.map((clip) => ({
+          startTime: clip.startTime,
+          endTime: clip.endTime,
+          order: clip.order,
+        }))
 
-        await downloadBlob(outputBlob, 'final-output')
+        const { jobId } = await exportVideo(sourceUrl, clipsPayload)
+
+        const pollInterval = 1500
+        let status = await getExportStatus(jobId)
+
+        while (status.status === 'pending' || status.status === 'running') {
+          setExportProgress({
+            isExporting: true,
+            progress: status.progress ?? 0,
+            currentStep: status.step || 'Processing...',
+          })
+
+          await new Promise((resolve) => setTimeout(resolve, pollInterval))
+          status = await getExportStatus(jobId)
+        }
+
+        if (status.status === 'failed') {
+          throw new Error(status.error || 'Export failed')
+        }
+
+        if (status.status !== 'done' || !status.downloadUrl) {
+          throw new Error('Export did not complete successfully')
+        }
+
+        setExportProgress({
+          isExporting: true,
+          progress: 98,
+          currentStep: 'Downloading generated video...',
+        })
+
+        const blob = await downloadExportedVideo(status.downloadUrl)
+        const objectUrl = URL.createObjectURL(blob)
+        setPreviewUrl(objectUrl)
+
+        const fileName = `exported-video-${Date.now()}.mp4`
+        const link = document.createElement('a')
+        link.href = objectUrl
+        link.download = fileName
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
 
         setExportProgress({
           isExporting: false,
@@ -479,13 +516,14 @@ export function VideoEditor() {
         toast.success('Video exported successfully')
         setExportDialogOpen(false)
 
-        // Reset progress after a delay
         setTimeout(() => {
           setExportProgress({
             isExporting: false,
             progress: 0,
           })
-        }, 2000)
+        }, 4000)
+
+        clearVideo()
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
         setExportProgress({
@@ -496,7 +534,7 @@ export function VideoEditor() {
         toast.error(errorMessage)
       }
     },
-    [sortedClips, state.videoSource, state.videoFileName]
+    [sortedClips, state.videoSource, state.videoFileName, clearVideo]
   )
 
   return (
@@ -775,7 +813,7 @@ export function VideoEditor() {
                 <div className="space-y-3">
                   <Button
                     onClick={() => setExportDialogOpen(true)}
-                    disabled={exportProgress.isExporting || !isClipExportableSource}
+                    // disabled={exportProgress.isExporting || !isClipExportableSource}
                     className="w-full whitespace-nowrap bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 shadow-lg"
                     size="lg"
                   >
@@ -789,8 +827,22 @@ export function VideoEditor() {
                     </p>
                   )}
 
+                  {previewUrl && (
+                    <div className="rounded-lg border border-slate-700 bg-slate-800/60 p-3">
+                      <p className="text-sm text-slate-200 mb-2">Clipped preview</p>
+                      <video src={previewUrl} controls className="w-full rounded-md" />
+                      <a
+                        href={previewUrl}
+                        download="clip-export.mp4"
+                        className="mt-2 inline-block text-sm text-cyan-300 hover:text-cyan-200"
+                      >
+                        Download clipped video
+                      </a>
+                    </div>
+                  )}
+
                   <p className="text-xs text-muted-foreground text-center">
-                    All processing happens locally in your browser
+                    All processing happens on the backend server and result is streamed to browser.
                   </p>
                 </div>
               </>

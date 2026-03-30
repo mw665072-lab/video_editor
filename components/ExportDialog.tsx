@@ -91,7 +91,7 @@ export function ExportDialog({
                 value={fileName}
                 onChange={(e) => setFileName(e.target.value)}
                 placeholder="exported-video"
-                disabled={progress.isExporting}
+                // disabled={progress.isExporting}
                 // placeholder color should be white
                 className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 bg-slate-900/60 hover:text-white text-white font-semibold placeholder:text-white"
               />
