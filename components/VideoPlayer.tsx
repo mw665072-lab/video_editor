@@ -131,7 +131,7 @@ export function VideoPlayer({
 
   return (
     <div className="w-full rounded-2xl border border-slate-800 bg-slate-900 overflow-hidden shadow-lg">
-      <div className="aspect-video min-h-[360px] bg-black flex items-center justify-center">
+      <div className="w-full min-h-[220px] sm:min-h-[300px] md:min-h-[360px] bg-black flex items-center justify-center">
         <video
           ref={videoRef}
           className="w-full h-full rounded-lg"

@@ -19,8 +19,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="h-screen overflow-hidden bg-slate-950 text-white p-6 md:p-12">
-      <div className="mx-auto grid h-full w-full max-w-[1340px] gap-6 lg:grid-cols-[220px_1fr]">
+    <main className="min-h-screen bg-slate-950 text-white p-4 sm:p-6 md:p-10">
+      <div className="mx-auto grid min-h-screen w-full max-w-[1340px] gap-5 lg:grid-cols-[220px_1fr]">
         <aside>
           <Sidebar />
         </aside>

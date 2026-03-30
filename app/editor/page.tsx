@@ -45,13 +45,13 @@ export default function EditorPage() {
 
   return (
     <ErrorBoundary>
-      <main className="h-screen overflow-hidden px-4 py-6 lg:px-8 lg:py-10">
-        <div className="mx-auto grid h-full w-full max-w-[1340px] grid-cols-1 gap-6 lg:grid-cols-[220px_1fr]">
-          <aside className="order-2 lg:order-1">
+      <main className="min-h-screen px-3 py-6 lg:px-8 lg:py-10">
+        <div className="mx-auto grid min-h-[calc(100vh-2rem)] w-full max-w-[1340px] grid-cols-1 gap-6 lg:grid-cols-[220px_1fr]">
+          <aside className="order-1 lg:order-1">
             <Sidebar />
           </aside>
 
-          <section className="order-1 bg-[#020617] lg:order-2 h-full overflow-hidden">
+          <section className="order-2 bg-[#020617] lg:order-2 h-full overflow-hidden">
             <div className="h-full overflow-auto rounded-3xl border border-slate-800 bg-slate-900/70 p-4 shadow-[0_20px_45px_rgba(3,17,37,.55)] backdrop-blur-xl">
               <VideoEditor />
             </div>

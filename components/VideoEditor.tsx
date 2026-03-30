@@ -156,12 +156,16 @@ export function VideoEditor() {
 
   const youTubeOptions = useMemo(() => ({
     width: '100%',
-    height: '400',
+    height: '100%',
     playerVars: {
       autoplay: 0,
       controls: 1,
       rel: 0,
       modestbranding: 1,
+      disablekb: 0,
+      iv_load_policy: 3,
+      wmode: 'opaque',
+      fs: 1,
       start: 0,
     },
   }), [])
@@ -540,7 +544,7 @@ export function VideoEditor() {
   )
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-5 lg:p-8">
+    <div className="min-h-screen bg-slate-950 text-white p-4 sm:p-6 lg:p-8 overflow-x-hidden">
       <div className="mx-auto max-w-[1340px] space-y-5">
         {/* Header */}
         <div className="rounded-2xl mb-4 border border-slate-800/70 bg-slate-900/70 p-4 backdrop-blur shadow-xl backdrop-saturate-150">
@@ -573,9 +577,9 @@ export function VideoEditor() {
         </div>
       ) : (
         // Editor Layout
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Main Editor Area */}
-          <div className="xl:col-span-8 space-y-4">
+          <div className="lg:col-span-8 xl:col-span-8 space-y-4">
             {/* Video Player */}
             <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 shadow-lg">
               <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-700">
@@ -607,7 +611,7 @@ export function VideoEditor() {
             </div>
 
               {isYouTubePlatform && youtubeVideoId ? (
-                <div className="rounded-xl border border-slate-700 pt-2 bg-slate-900/80 overflow-hidden shadow-inner">
+                <div className="rounded-xl border border-slate-700 bg-slate-900/80 overflow-hidden shadow-inner">
                   {!showExternalPreview ? (
                     <div className="p-4 bg-slate-900 rounded-lg border border-slate-700">
                       <p className="mb-2 text-sm font-semibold text-slate-100">YouTube link detected</p>
@@ -625,16 +629,19 @@ export function VideoEditor() {
                     </div>
                   ) : (
                     <>
-                      <YouTube
-                        videoId={youtubeVideoId}
-                        opts={youTubeOptions}
-                        onReady={handleYouTubeReady}
-                        onStateChange={handleYouTubeStateChange}
-                        onError={() => {
-                          setIsYouTubeReady(false)
-                          toast.error('YouTube player error: unable to load video')
-                        }}
-                      />
+                      <div className="relative w-full min-h-[220px] sm:min-h-[280px] md:min-h-[340px] max-h-[66vh] overflow-hidden rounded-lg bg-black">
+                        <YouTube
+                          videoId={youtubeVideoId}
+                          opts={youTubeOptions}
+                          onReady={handleYouTubeReady}
+                          onStateChange={handleYouTubeStateChange}
+                          onError={() => {
+                            setIsYouTubeReady(false)
+                            toast.error('YouTube player error: unable to load video')
+                          }}
+                          className="absolute inset-0 h-full w-full"
+                        />
+                      </div>
                       {!isYouTubeReady && (
                         <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-300 dark:border-blue-800">
                           <p className="text-sm font-medium">Loading YouTube preview...</p>
@@ -794,7 +801,7 @@ export function VideoEditor() {
           </div>
 
           {/* Sidebar */}
-          <div className="xl:col-span-4 space-y-4">
+          <div className="lg:col-span-4 xl:col-span-4 space-y-4">
             {/* Clips Panel */}
             <div className="bg-slate-900/70 rounded-lg border border-slate-700 p-4 min-h-[340px]">
               <h2 className="text-lg font-semibold mb-4 text-slate-100">Clips</h2>

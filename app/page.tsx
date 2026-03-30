@@ -62,6 +62,7 @@ const workflowSteps = [
 
 function Nav() {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -75,18 +76,33 @@ function Nav() {
       initial={{ y: -32, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.35 }}
-      className={`fixed inset-x-0 top-0 z-50 border-b backdrop-blur transition-all ${scrolled
+      className={`fixed inset-x-0 top-0 z-50 border-b backdrop-blur transition-all bg-slate-950/70 ${scrolled
           ? "bg-gradient-to-r from-indigo-900 via-slate-950 to-black/80 border-indigo-800"
           : "bg-gradient-to-r from-slate-950/90 via-slate-900/75 to-slate-950/90 border-slate-700"
         }`}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 md:px-8">
         <span className="font-bold tracking-wider text-white drop-shadow-lg">CLIPAI</span>
+        <div className="flex items-center gap-3 md:hidden">
+          <button
+            onClick={() => setMobileNavOpen((prev) => !prev)}
+            className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-xs font-semibold text-white"
+          >
+            {mobileNavOpen ? 'Close' : 'Menu'}
+          </button>
+        </div>
         <div className="hidden items-center gap-8 text-sm text-slate-100 md:flex">
           <a href="#features" className="text-slate-100 hover:text-cyan-300 transition">Features</a>
           <a href="#howitworks" className="text-slate-100 hover:text-cyan-300 transition">How it works</a>
           <a href="#pricing" className="text-slate-100 hover:text-cyan-300 transition">Pricing</a>
         </div>
+        {mobileNavOpen && (
+          <div className="absolute left-4 right-4 top-full mt-2 z-50 rounded-xl border border-slate-700 bg-slate-900/95 p-3 shadow-lg md:hidden">
+            <a onClick={() => setMobileNavOpen(false)} href="#features" className="block px-3 py-2 text-sm text-slate-100 hover:bg-slate-800 rounded-lg">Features</a>
+            <a onClick={() => setMobileNavOpen(false)} href="#howitworks" className="block px-3 py-2 text-sm text-slate-100 hover:bg-slate-800 rounded-lg">How it works</a>
+            <a onClick={() => setMobileNavOpen(false)} href="#pricing" className="block px-3 py-2 text-sm text-slate-100 hover:bg-slate-800 rounded-lg">Pricing</a>
+          </div>
+        )}
         <Button
          onClick={() => router.push("/editor")}
           size="sm"

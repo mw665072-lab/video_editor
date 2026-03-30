@@ -162,11 +162,11 @@ export function VideoUpload({ onVideoLoaded, isLoading = false }: VideoUploadPro
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <div className="flex gap-2 mb-6 rounded-xl border border-slate-800/50 p-2">
+      <div className="flex flex-col sm:flex-row gap-2 mb-6 rounded-xl border border-slate-800/50 p-2">
         <Button
           variant={uploadMethod === 'file' ? 'default' : 'outline'}
           onClick={() => setUploadMethod('file')}
-          className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 hover:text-white bg-slate-900/60 font-semibold"
+          className="w-full sm:flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 hover:text-white bg-slate-900/60 font-semibold"
         >
           <Upload className="w-4 h-4 mr-2" />
           Upload File
@@ -185,7 +185,7 @@ export function VideoUpload({ onVideoLoaded, isLoading = false }: VideoUploadPro
         <div
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
-          className="border-2 border-dashed border-slate-600 rounded-xl p-12 text-center hover:border-cyan-300 transition-colors duration-200 cursor-pointer bg-slate-900/40"
+          className="border-2 border-dashed border-slate-600 rounded-xl p-10 text-center hover:border-cyan-300 transition-colors duration-200 cursor-pointer bg-slate-900/40"
           onClick={() => fileInputRef.current?.click()}
         >
           <input
@@ -210,7 +210,7 @@ export function VideoUpload({ onVideoLoaded, isLoading = false }: VideoUploadPro
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Input
               type="url"
               placeholder="Enter video URL"
