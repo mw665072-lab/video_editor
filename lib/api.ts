@@ -7,7 +7,7 @@ export interface ClipPayload {
 }
 
 export async function clipVideo(payload: ClipPayload): Promise<Blob> {
-  const response = await fetch(`${BASE_URL}/api/clip-video`, {
+  const response = await requestWithAuth('/api/clip-video', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -33,7 +33,7 @@ export async function exportVideo(
   videoSource: string,
   clips: Array<{ startTime: number; endTime: number; order?: number }>
 ): Promise<{ jobId: string }> {
-  const response = await fetch(`${BASE_URL}/api/export-video`, {
+  const response = await requestWithAuth('/api/export-video', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -56,7 +56,9 @@ export async function getExportStatus(jobId: string): Promise<{
   error?: string
   downloadUrl?: string
 }> {
-  const response = await fetch(`${BASE_URL}/api/export-video?jobId=${encodeURIComponent(jobId)}`)
+  const response = await requestWithAuth(`/api/export-video?jobId=${encodeURIComponent(jobId)}`, {
+    method: 'GET',
+  })
   if (!response.ok) {
     const text = await response.text().catch(() => '')
     throw new Error(`Export status request failed: ${response.status} ${response.statusText} ${text}`)
@@ -66,8 +68,8 @@ export async function getExportStatus(jobId: string): Promise<{
 }
 
 export async function downloadExportedVideo(downloadUrl: string): Promise<Blob> {
-  const normalizedUrl = downloadUrl.startsWith('/') ? `${BASE_URL}${downloadUrl}` : downloadUrl
-  const response = await fetch(normalizedUrl)
+  const normalizedUrl = downloadUrl.startsWith('/') ? downloadUrl : downloadUrl
+  const response = await requestWithAuth(normalizedUrl, { method: 'GET' })
   if (!response.ok) {
     const text = await response.text().catch(() => '')
     throw new Error(`Download request failed: ${response.status} ${response.statusText} ${text}`)
@@ -76,10 +78,192 @@ export async function downloadExportedVideo(downloadUrl: string): Promise<Blob> 
   return response.blob()
 }
 
+export async function recordDownload(): Promise<void> {
+  const response = await requestWithAuth('/api/download-clip', { method: 'POST' })
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`Record download failed: ${response.status} ${response.statusText} ${text}`)
+  }
+}
+
 export async function health(): Promise<{ status: string }> {
   const response = await fetch(`${BASE_URL}/api/health`)
   if (!response.ok) {
     throw new Error('Health check failed')
+  }
+  return response.json()
+}
+
+const ACCESS_TOKEN_KEY = 'clipai_access_token'
+
+const getAccessToken = () => (typeof window === 'undefined' ? null : window.localStorage.getItem(ACCESS_TOKEN_KEY))
+const setAccessToken = (token: string) => {
+  if (typeof window !== 'undefined') window.localStorage.setItem(ACCESS_TOKEN_KEY, token)
+}
+const clearAccessToken = () => {
+  if (typeof window !== 'undefined') window.localStorage.removeItem(ACCESS_TOKEN_KEY)
+}
+
+const redirectToLogin = () => {
+  if (typeof window !== 'undefined') {
+    window.location.href = '/auth/login'
+  }
+}
+
+async function refreshToken() {
+  const response = await fetch(`${BASE_URL}/api/auth/refresh-token`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+  if (!response.ok) {
+    clearAccessToken()
+    redirectToLogin()
+    throw new Error('Unable to refresh session')
+  }
+
+  const data = await response.json()
+  if (!data.accessToken) {
+    clearAccessToken()
+    redirectToLogin()
+    throw new Error('No access token received')
+  }
+  setAccessToken(data.accessToken)
+  return data.accessToken
+}
+
+const ensureAuthResponse = (response: Response): Response => {
+  if (response.status === 401) {
+    clearAccessToken()
+    redirectToLogin()
+    throw new Error('Unauthorized. Redirecting to login.')
+  }
+  return response
+}
+
+async function requestWithAuth(input: RequestInfo, init: RequestInit = {}) {
+  const token = getAccessToken()
+  const headers = new Headers(init.headers instanceof Headers ? init.headers : init.headers || {})
+
+  if (token) headers.set('Authorization', `Bearer ${token}`)
+
+  const url = typeof input === 'string' ? `${BASE_URL}${input}` : ''
+  const response = await fetch(url, {
+    ...init,
+    headers,
+    credentials: 'include',
+  })
+
+  if (response.status === 401) {
+    const newToken = await refreshToken()
+    headers.set('Authorization', `Bearer ${newToken}`)
+    const retry = await fetch(url, {
+      ...init,
+      headers,
+      credentials: 'include',
+    })
+    return ensureAuthResponse(retry)
+  }
+
+  return ensureAuthResponse(response)
+}
+
+export async function register(name: string, email: string, password: string) {
+  const response = await fetch(`${BASE_URL}/api/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, password }),
+    credentials: 'include',
+  })
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`Register failed: ${response.status} ${response.statusText} ${text}`)
+  }
+  const data = await response.json()
+  setAccessToken(data.tokens.accessToken)
+  return data
+}
+
+export async function login(email: string, password: string) {
+  const response = await fetch(`${BASE_URL}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+    credentials: 'include',
+  })
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`Login failed: ${response.status} ${response.statusText} ${text}`)
+  }
+  const data = await response.json()
+  setAccessToken(data.tokens.accessToken)
+  return data
+}
+
+export async function logout() {
+  await fetch(`${BASE_URL}/api/auth/logout`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+  clearAccessToken()
+}
+
+export async function getProfile() {
+  const response = await requestWithAuth('/api/auth/me', { method: 'GET' })
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`Profile request failed: ${response.status} ${response.statusText} ${text}`)
+  }
+  return response.json()
+}
+
+export async function forgotPassword(email: string) {
+  const response = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  })
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`Forgot password failed: ${response.status} ${response.statusText} ${text}`)
+  }
+  return response.json()
+}
+
+export async function resetPassword(token: string, newPassword: string) {
+  const response = await fetch(`${BASE_URL}/api/auth/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, newPassword }),
+  })
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`Reset password failed: ${response.status} ${response.statusText} ${text}`)
+  }
+  return response.json()
+}
+
+export async function verifyEmail(token: string) {
+  const response = await fetch(`${BASE_URL}/api/auth/verify-email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  })
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`Email verification failed: ${response.status} ${response.statusText} ${text}`)
+  }
+  return response.json()
+}
+
+export async function createSubscriptionCheckout(priceId: string) {
+  const response = await requestWithAuth('/api/subscription/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ priceId }),
+  })
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`Checkout session failed: ${response.status} ${response.statusText} ${text}`)
   }
   return response.json()
 }

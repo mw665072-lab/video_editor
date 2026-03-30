@@ -35,8 +35,15 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="h-full bg-slate-950 text-white">
-      <body className="h-full font-sans antialiased selection:bg-cyan-400 selection:text-slate-950">
+    <html
+      lang="en"
+      className="h-full"
+      style={{ backgroundColor: '#020617', color: '#e2e8f0' }}
+    >
+      <body
+        className="h-full font-sans antialiased selection:bg-cyan-400 selection:text-slate-950"
+        style={{ backgroundColor: '#020617', color: '#e2e8f0' }}
+      >
         <div className="min-h-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
           {children}
         </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { clipVideo } from '@/lib/api'
+import { clipVideo, recordDownload } from '@/lib/api'
 
 export function ClipVideoForm() {
   const [url, setUrl] = useState('')
@@ -37,6 +37,14 @@ export function ClipVideoForm() {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDownloadRecord = async () => {
+    try {
+      await recordDownload()
+    } catch (err) {
+      console.error('Failed to record download:', err)
     }
   }
 
@@ -87,6 +95,7 @@ export function ClipVideoForm() {
           <a
             href={clipUrl}
             download={fileName}
+            onClick={handleDownloadRecord}
             className="block rounded-lg bg-emerald-600 px-4 py-2 text-center text-sm font-semibold text-white"
           >
             Download Clipped Video

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useVideoEditorState } from '@/hooks/useVideoEditorState'
 import { ExportProgress, VideoClip } from '@/lib/types'
-import { exportVideo, getExportStatus, downloadExportedVideo } from '@/lib/api'
+import { exportVideo, getExportStatus, downloadExportedVideo, recordDownload } from '@/lib/api'
 import { generateClipThumbnail, createThumbnailFromClip } from '@/lib/thumbnailUtils'
 import { formatTime, getClipIndexAtTime, getYouTubeVideoId } from '@/lib/videoUtils'
 import { toast } from 'sonner'
@@ -507,6 +507,8 @@ export function VideoEditor() {
         link.click()
         document.body.removeChild(link)
 
+        // Usage is recorded server-side in the export endpoint for this flow.
+        // Avoid calling recordDownload() here to prevent double count.
         setExportProgress({
           isExporting: false,
           progress: 100,
