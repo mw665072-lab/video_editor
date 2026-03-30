@@ -6,8 +6,20 @@ import { Sidebar } from '@/components/Sidebar'
 
 const plans = [
   { key: 'FREE', label: 'Free', priceLabel: '$0', features: ['5 clips/month', '5 downloads/month'] },
-  { key: 'BASIC', label: 'Basic', priceLabel: '$6 / month', priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_BASIC_ID, features: ['500 downloads/month', 'Priority processing'] },
-  { key: 'PRO', label: 'Pro', priceLabel: '$8 / month', priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_ID, features: ['700 downloads/month', 'Faster clips', 'No watermark'] },
+  {
+    key: 'BASIC',
+    label: 'Basic',
+    priceLabel: '$6 / month',
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_BASIC_ID || process.env.NEXT_PUBLIC_STRIPE_PRICE_BASIC,
+    features: ['500 downloads/month', 'Priority processing'],
+  },
+  {
+    key: 'PRO',
+    label: 'Pro',
+    priceLabel: '$8 / month',
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_ID || process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO,
+    features: ['700 downloads/month', 'Faster clips', 'No watermark'],
+  },
 ]
 
 export default function BillingPage() {

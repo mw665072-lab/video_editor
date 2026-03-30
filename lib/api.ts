@@ -205,6 +205,9 @@ export async function logout() {
     credentials: 'include',
   })
   clearAccessToken()
+  if (typeof window !== 'undefined') {
+    window.location.href = '/'
+  }
 }
 
 export async function getProfile() {

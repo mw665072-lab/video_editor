@@ -15,7 +15,7 @@ export default function DashboardPage() {
 
   const onLogout = async () => {
     await logout()
-    window.location.href = '/auth/login'
+    window.location.href = '/'
   }
 
   return (
