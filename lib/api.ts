@@ -60,7 +60,7 @@ export async function getExportStatus(jobId: string): Promise<{
   progress: number
   step?: string
   error?: string
-  downloadUrl?: string
+  downloadUrls?: string[]
 }> {
   const response = await requestWithAuth(`/api/export-video?jobId=${encodeURIComponent(jobId)}`, {
     method: 'GET',

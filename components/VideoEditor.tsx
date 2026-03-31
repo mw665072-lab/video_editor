@@ -460,7 +460,7 @@ export function VideoEditor() {
       setExportProgress({
         isExporting: true,
         progress: 0,
-        currentStep: 'Preparing...',
+        currentStep: sortedClips.length > 1 ? 'Merging clips...' : 'Preparing...',
       })
 
       try {
@@ -496,27 +496,35 @@ export function VideoEditor() {
           throw new Error(status.error || 'Export failed')
         }
 
-        if (status.status !== 'done' || !status.downloadUrl) {
+        const urls = status.downloadUrls || []
+        if (status.status !== 'done' || urls.length === 0) {
           throw new Error('Export did not complete successfully')
         }
 
         setExportProgress({
           isExporting: true,
           progress: 98,
-          currentStep: 'Downloading generated video...',
+          currentStep: 'Downloading generated video(s)...',
         })
 
-        const blob = await downloadExportedVideo(status.downloadUrl)
-        const objectUrl = URL.createObjectURL(blob)
-        setPreviewUrl(objectUrl)
-
-        const fileName = `exported-video-${Date.now()}.mp4`
-        const link = document.createElement('a')
-        link.href = objectUrl
-        link.download = fileName
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
+        for (let i = 0; i < urls.length; i++) {
+          const url = urls[i]
+          const blob = await downloadExportedVideo(url)
+          const objectUrl = URL.createObjectURL(blob)
+          setPreviewUrl(objectUrl)
+          const fileName = `exported-video-${i + 1}-${Date.now()}.mp4`
+          const link = document.createElement('a')
+          link.href = objectUrl
+          link.download = fileName
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          setExportProgress({
+            isExporting: true,
+            progress: 98 + Math.round((i / urls.length) * 2),
+            currentStep: `Downloading clip ${i + 1}/${urls.length}...`,
+          })
+        }
 
         // Usage is recorded server-side in the export endpoint for this flow.
         // Avoid calling recordDownload() here to prevent double count.
