@@ -29,16 +29,22 @@ export async function clipVideo(payload: ClipPayload): Promise<Blob> {
   return await response.blob()
 }
 
-export async function exportVideo(
-  videoSource: string,
-  clips: Array<{ startTime: number; endTime: number; order?: number }>
-): Promise<{ jobId: string }> {
+export interface ExportVideoRequest {
+  videoSource: string
+  clips?: Array<{ startTime: number; endTime: number; order?: number }>
+  startTime?: number
+  duration?: number
+  platform?: 'tiktok' | 'shorts' | 'reels'
+  resizeMode?: 'blur' | 'crop'
+}
+
+export async function exportVideo(options: ExportVideoRequest): Promise<{ jobId: string }> {
   const response = await requestWithAuth('/api/export-video', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ videoSource, clips }),
+    body: JSON.stringify(options),
   })
 
   if (!response.ok) {
@@ -72,7 +78,27 @@ export async function downloadExportedVideo(downloadUrl: string): Promise<Blob> 
   const response = await requestWithAuth(normalizedUrl, { method: 'GET' })
   if (!response.ok) {
     const text = await response.text().catch(() => '')
-    throw new Error(`Download request failed: ${response.status} ${response.statusText} ${text}`)
+
+    let friendlyError = text || `${response.status} ${response.statusText}`
+    try {
+      const parsed = JSON.parse(text)
+      if (parsed && typeof parsed === 'object' && 'error' in parsed) {
+        const errorText = String((parsed as any).error)
+        if (/download limit reached/i.test(errorText)) {
+          friendlyError = 'Download limit reached for your plan. Please upgrade to continue exporting videos.'
+        } else {
+          friendlyError = errorText
+        }
+      }
+    } catch {
+      // Not JSON, keep raw text
+    }
+
+    if (response.status === 403 && /download limit reached/i.test(friendlyError)) {
+      throw new Error('Download limit reached for your plan. Please upgrade to continue exporting videos.')
+    }
+
+    throw new Error(`Download request failed: ${response.status} ${response.statusText} ${friendlyError}`)
   }
 
   return response.blob()

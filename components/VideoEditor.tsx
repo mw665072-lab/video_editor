@@ -204,6 +204,8 @@ export function VideoEditor() {
   })
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [isSequencePlaying, setIsSequencePlaying] = useState(false)
+  const [exportPlatform, setExportPlatform] = useState<'tiktok' | 'shorts' | 'reels'>('tiktok')
+  const [exportResizeMode, setExportResizeMode] = useState<'blur' | 'crop'>('blur')
   const [activeClipIndex, setActiveClipIndex] = useState<number>(0)
   const [clipDurationSeconds, setClipDurationSeconds] = useState(10)
 
@@ -431,7 +433,7 @@ export function VideoEditor() {
   }, [state.videoSource, sortedClips, updateClip])
 
   const handleExport = useCallback(
-    async (quality: string) => {
+    async (quality: string, platform: 'tiktok' | 'shorts' | 'reels', resizeMode: 'blur' | 'crop') => {
       if (sortedClips.length === 0) {
         toast.error('Please select clips to export')
         return
@@ -469,7 +471,12 @@ export function VideoEditor() {
           order: clip.order,
         }))
 
-        const { jobId } = await exportVideo(sourceUrl, clipsPayload)
+        const { jobId } = await exportVideo({
+          videoSource: sourceUrl,
+          clips: clipsPayload,
+          platform,
+          resizeMode,
+        })
 
         const pollInterval = 1500
         let status = await getExportStatus(jobId)
@@ -765,7 +772,7 @@ export function VideoEditor() {
                 onChange={(e) => setClipDurationSeconds(Number(e.target.value))}
                 className="rounded-lg border border-slate-500 bg-slate-800 px-3 py-2 text-sm font-medium text-white outline-none transition hover:border-cyan-300"
               >
-                {[5, 10, 15, 30, 60].map((sec) => (
+                {[5, 10, 15, 20].map((sec) => (
                   <option key={sec} value={sec}>{sec} seconds</option>
                 ))}
               </select>

@@ -23,7 +23,7 @@ interface ExportDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   clips: VideoClip[]
-  onExport: (quality: string) => Promise<void>
+  onExport: (quality: string, platform: 'tiktok' | 'shorts' | 'reels', resizeMode: 'blur' | 'crop') => Promise<void>
   progress: ExportProgress
   isExportAllowed?: boolean
   exportDisabledReason?: string
@@ -39,6 +39,8 @@ export function ExportDialog({
   exportDisabledReason,
 }: ExportDialogProps) {
   const [selectedQuality, setSelectedQuality] = useState('medium')
+  const [selectedPlatform, setSelectedPlatform] = useState<'tiktok' | 'shorts' | 'reels'>('tiktok')
+  const [selectedResizeMode, setSelectedResizeMode] = useState<'blur' | 'crop'>('blur')
   const [fileName, setFileName] = useState('exported-video')
   const totalDuration = calculateTotalDuration(clips)
 
@@ -54,7 +56,7 @@ export function ExportDialog({
       return
     }
 
-    await onExport(selectedQuality)
+    await onExport(selectedQuality, selectedPlatform, selectedResizeMode)
   }
 
   return (
@@ -72,11 +74,11 @@ export function ExportDialog({
           <div className="p-3 bg-slate-900 rounded-lg border border-slate-700">
             <div className="grid grid-cols-2 gap-4 text-sm text-slate-200">
               <div>
-                <p className="text-muted-foreground mb-1">Clips</p>
+                <p className="  mb-1">Clips</p>
                 <p className="font-semibold">{clips.length}</p>
               </div>
               <div>
-                <p className="text-muted-foreground mb-1">Duration</p>
+                <p className="mb-1">Duration</p>
                 <p className="font-semibold">{formatTime(totalDuration)}</p>
               </div>
             </div>
@@ -95,11 +97,11 @@ export function ExportDialog({
                 // placeholder color should be white
                 className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 bg-slate-900/60 hover:text-white text-white font-semibold placeholder:text-white"
               />
-              <span className="text-muted-foreground py-2">.mp4</span>
+              <span className="  py-2">.mp4</span>
             </div>
-            <p className="text-xs text-muted-foreground">
+            {/* <p className="text-xs  ">
               The video will be exported as H.264 MP4
-            </p>
+            </p> */}
           </div>
 
           {/* Quality Settings */}
@@ -124,9 +126,48 @@ export function ExportDialog({
                 </SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs  ">
               Higher quality takes longer to process
             </p>
+          </div>
+
+          {/* Platform + Resize Mode */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="platform">Social Platform</Label>
+              <Select value={selectedPlatform} onValueChange={(value) => setSelectedPlatform(value as 'tiktok' | 'shorts' | 'reels')} disabled={progress.isExporting}>
+                <SelectTrigger
+                  id="platform"
+                  className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 bg-slate-900/60 hover:text-white text-white font-semibold placeholder:text-white"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tiktok">TikTok</SelectItem>
+                  <SelectItem value="shorts">YouTube Shorts</SelectItem>
+                  <SelectItem value="reels">Instagram Reels</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="resizeMode">Resize Mode</Label>
+              <Select value={selectedResizeMode} onValueChange={(value) => setSelectedResizeMode(value as 'blur' | 'crop')} disabled={progress.isExporting}>
+                <SelectTrigger
+                  id="resizeMode"
+                  className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 bg-slate-900/60 hover:text-white text-white font-semibold placeholder:text-white"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="blur">Blur background</SelectItem>
+                  <SelectItem value="crop">Center crop</SelectItem>
+                </SelectContent>
+              </Select>
+              {/* <p className="text-xs  ">
+                Blur keeps original video intact with smart vertical background; crop fills frame.
+              </p> */}
+            </div>
           </div>
 
           {/* Progress */}
@@ -176,7 +217,7 @@ export function ExportDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={progress.isExporting}
-              className="flex-1"
+              className="flex-1 border-slate-600 hover:bg-slate-800/60 bg-slate-800/60 text-white hover:text-white"
             >
               Cancel
             </Button>
