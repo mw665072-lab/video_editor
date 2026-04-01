@@ -5,7 +5,7 @@ import { EditorState, VideoClip } from '@/lib/types'
 import { generateClipId, validateClip, sortClipsByOrder } from '@/lib/videoUtils'
 
 type Action =
-  | { type: 'SET_VIDEO'; payload: { source: Blob | string; sourceType?: 'file' | 'direct' | 'youtube' | 'facebook' | 'unknown'; duration: number; fileName?: string } }
+  | { type: 'SET_VIDEO'; payload: { source: Blob | string; sourceType?: 'file' | 'direct' | 'youtube' | 'facebook' | 'instagram' | 'tiktok' | 'twitter' | 'vimeo' | 'proxy' | 'unknown'; duration: number; fileName?: string } }
   | { type: 'CLEAR_VIDEO' }
   | { type: 'SET_CURRENT_TIME'; payload: number }
   | { type: 'SET_VIDEO_DURATION'; payload: number }
@@ -143,7 +143,7 @@ export function useVideoEditorState() {
       source: Blob | string,
       duration: number,
       fileName?: string,
-      sourceType: 'file' | 'direct' | 'youtube' | 'facebook' | 'unknown' = 'unknown'
+    sourceType: 'file' | 'direct' | 'youtube' | 'facebook' | 'instagram' | 'tiktok' | 'twitter' | 'vimeo' | 'proxy' | 'unknown' = 'unknown'
     ) => {
       dispatch({
         type: 'SET_VIDEO',

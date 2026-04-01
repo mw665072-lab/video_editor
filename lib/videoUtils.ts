@@ -164,15 +164,29 @@ export function revokeBlobUrl(url: string): void {
   }
 }
 
-export function detectVideoPlatform(url: string): 'youtube' | 'facebook' | 'direct' | 'unknown' {
+export function detectVideoPlatform(
+  url: string
+): 'youtube' | 'facebook' | 'instagram' | 'tiktok' | 'twitter' | 'vimeo' | 'direct' | 'unknown' {
   try {
     const lowerUrl = url.toLowerCase()
     if (/youtu(?:\.be|be\.com)/.test(lowerUrl)) return 'youtube'
     if (/facebook\.com|fb\.watch|fbsbx\.com/.test(lowerUrl)) return 'facebook'
+    if (/instagram\.com/.test(lowerUrl)) return 'instagram'
+    if (/tiktok\.com/.test(lowerUrl)) return 'tiktok'
+    if (/(?:twitter|x)\.com/.test(lowerUrl)) return 'twitter'
+    if (/vimeo\.com/.test(lowerUrl)) return 'vimeo'
 
     const directExt = ['.mp4', '.webm', '.mov', '.avi', '.mkv']
     if (directExt.some(ext => lowerUrl.split('?')[0].endsWith(ext))) {
       return 'direct'
+    }
+
+    // Any other https URL - may be supported by yt-dlp on the backend
+    try {
+      const parsed = new URL(url)
+      if (['http:', 'https:'].includes(parsed.protocol)) return 'unknown'
+    } catch {
+      // fall through
     }
 
     return 'unknown'
@@ -182,7 +196,16 @@ export function detectVideoPlatform(url: string): 'youtube' | 'facebook' | 'dire
 }
 
 export function isDirectVideoUrl(url: string): boolean {
-  return detectVideoPlatform(url) === 'direct'
+  try {
+    const parsed = new URL(url)
+    if (!['http:', 'https:'].includes(parsed.protocol)) return false
+  } catch {
+    return false
+  }
+  // Direct extension check
+  const lowerUrl = url.toLowerCase()
+  const directExt = ['.mp4', '.webm', '.mov', '.avi', '.mkv']
+  return directExt.some(ext => lowerUrl.split('?')[0].endsWith(ext))
 }
 
 export function isValidVideoUrl(url: string): boolean {

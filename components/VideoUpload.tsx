@@ -7,12 +7,14 @@ import { validateVideoFile, detectVideoPlatform, isDirectVideoUrl, isValidVideoU
 import { Upload, Link as LinkIcon, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
+const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/+$/, '')
+
 interface VideoUploadProps {
   onVideoLoaded: (
     source: Blob | string,
     duration: number,
     fileName?: string,
-    sourceType?: 'file' | 'direct' | 'youtube' | 'facebook' | 'unknown'
+    sourceType?: 'file' | 'direct' | 'youtube' | 'facebook' | 'instagram' | 'tiktok' | 'twitter' | 'vimeo' | 'proxy' | 'unknown'
   ) => void
   isLoading?: boolean
 }
@@ -84,77 +86,134 @@ export function VideoUpload({ onVideoLoaded, isLoading = false }: VideoUploadPro
   }
 
   const handleLoadFromURL = async () => {
-    if (!urlInput.trim()) {
+    const trimmedUrl = urlInput.trim()
+    if (!trimmedUrl) {
       toast.error('Please enter a valid URL')
       return
     }
 
-    const platform = detectVideoPlatform(urlInput)
-    console.log('handleLoadFromURL', { urlInput, platform })
-
-    if (platform === 'youtube' || platform === 'facebook') {
-      if (platform === 'youtube') {
-        const youTubeId = getYouTubeVideoId(urlInput)
-        console.log('YouTube detected, id', youTubeId)
-        if (!youTubeId) {
-          toast.error('Invalid YouTube URL')
-          return
-        }
-      }
-
-      onVideoLoaded(urlInput, 0, undefined, platform)
-      setUrlInput('')
-      setUrlLoading(false)
-      toast.success('External URL loaded. Clip preview enabled; export requires direct source.')
-      return
-    }
-
-    if (!isDirectVideoUrl(urlInput)) {
-      toast.error('URL is not a supported direct video source. Use MP4/WebM/etc URL or a YouTube/Facebook link.')
-      return
-    }
-
-    if (!isValidVideoUrl(urlInput)) {
+    if (!isValidVideoUrl(trimmedUrl)) {
       toast.error('Please enter a valid URL with http:// or https://')
       return
     }
 
+    const platform = detectVideoPlatform(trimmedUrl)
+    console.log('handleLoadFromURL', { trimmedUrl, platform })
+
+    // ── YouTube ──────────────────────────────────────────────────
+    if (platform === 'youtube') {
+      const youTubeId = getYouTubeVideoId(trimmedUrl)
+      if (!youTubeId) {
+        toast.error('Invalid YouTube URL')
+        return
+      }
+      onVideoLoaded(trimmedUrl, 0, undefined, 'youtube')
+      setUrlInput('')
+      toast.success('YouTube video loaded — clip preview enabled.')
+      return
+    }
+
+    // ── Facebook ─────────────────────────────────────────────────
+    if (platform === 'facebook') {
+      setUrlLoading(true)
+      try {
+        const proxyUrl = `${BACKEND_URL}/api/yt-clip?url=${encodeURIComponent(trimmedUrl)}`
+        const video = document.createElement('video')
+        video.crossOrigin = 'anonymous'
+
+        const loadPromise = new Promise<void>((resolve, reject) => {
+          video.onloadedmetadata = () => resolve()
+          video.onerror = () => reject(new Error('Failed to load Facebook video metadata via proxy'))
+          video.src = proxyUrl
+        })
+
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Facebook video loading timeout')), 20000)
+        })
+
+        await Promise.race([loadPromise, timeoutPromise])
+        onVideoLoaded(proxyUrl, video.duration, undefined, 'proxy')
+        setUrlInput('')
+        toast.success('Facebook video loaded successfully via proxy')
+        return
+      } catch (error) {
+        console.error('Facebook proxy load error:', error)
+        toast.error('Failed to load Facebook video. Video may be private or deleted.')
+        return
+      } finally {
+        setUrlLoading(false)
+      }
+    }
+
+    // ── Direct video file (.mp4 / .webm / etc.) ──────────────────
+    if (platform === 'direct') {
+      setUrlLoading(true)
+      try {
+        const video = document.createElement('video')
+        video.crossOrigin = 'anonymous'
+        let loadTimeout: NodeJS.Timeout | null = null
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          loadTimeout = setTimeout(() => reject(new Error('Video loading timeout')), 15000)
+        })
+        const loadPromise = new Promise<void>((resolve, reject) => {
+          video.onloadedmetadata = () => { if (loadTimeout) clearTimeout(loadTimeout); resolve() }
+          video.onerror = () => { if (loadTimeout) clearTimeout(loadTimeout); reject(new Error('Failed to load video metadata')) }
+          video.src = trimmedUrl
+        })
+        await Promise.race([loadPromise, timeoutPromise])
+        onVideoLoaded(trimmedUrl, video.duration, undefined, 'direct')
+        setUrlInput('')
+        toast.success('Direct video URL loaded successfully')
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Failed to load video from URL')
+      } finally {
+        setUrlLoading(false)
+      }
+      return
+    }
+
+    // ── All other URLs (Instagram, TikTok, Twitter/X, Vimeo, etc.) ─
+    // Route through the backend yt-dlp proxy so we can play & clip them.
+    const BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/+$/, '')
+    const proxyUrl = `${BASE_URL}/api/yt-clip?url=${encodeURIComponent(trimmedUrl)}`
+
     setUrlLoading(true)
     try {
-      // Already validated URL format
+      // Probe the proxy endpoint with a HEAD request to catch errors early.
+      const probe = await fetch(proxyUrl, { method: 'HEAD' }).catch(() => null)
+      if (probe && !probe.ok) {
+        throw new Error(`Could not load video (status ${probe.status}). The URL may not be supported.`)
+      }
 
+      // Load metadata via a hidden video element pointing at the proxy stream.
       const video = document.createElement('video')
       video.crossOrigin = 'anonymous'
-
       let loadTimeout: NodeJS.Timeout | null = null
-      const timeoutPromise = new Promise((_, reject) => {
-        loadTimeout = setTimeout(
-          () => reject(new Error('Video loading timeout')),
-          15000
-        )
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        loadTimeout = setTimeout(() => reject(new Error('Video loading timeout — the platform may not be supported')), 20000)
       })
-
       const loadPromise = new Promise<void>((resolve, reject) => {
-        video.onloadedmetadata = () => {
-          if (loadTimeout) clearTimeout(loadTimeout)
-          resolve()
-        }
+        video.onloadedmetadata = () => { if (loadTimeout) clearTimeout(loadTimeout); resolve() }
         video.onerror = () => {
           if (loadTimeout) clearTimeout(loadTimeout)
-          reject(new Error('Failed to load video metadata'))
+          reject(new Error('Browser could not play the video stream from this URL'))
         }
-        video.src = urlInput
+        video.src = proxyUrl
       })
 
       await Promise.race([loadPromise, timeoutPromise])
 
-      onVideoLoaded(urlInput, video.duration, undefined, 'direct')
+      const sourceType = (['instagram', 'tiktok', 'twitter', 'vimeo'] as const).includes(platform as any)
+        ? (platform as 'instagram' | 'tiktok' | 'twitter' | 'vimeo')
+        : 'proxy'
+
+      onVideoLoaded(proxyUrl, video.duration || 0, undefined, sourceType)
       setUrlInput('')
-      toast.success('Direct video URL loaded successfully')
+      toast.success(`${platform === 'unknown' ? 'Video' : platform.charAt(0).toUpperCase() + platform.slice(1)} loaded via stream proxy.`)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to load video from URL'
       toast.error(message)
-      console.error('URL video loading error:', error)
+      console.error('URL proxy loading error:', error)
     } finally {
       setUrlLoading(false)
     }

@@ -35,20 +35,34 @@ export function VideoEditor() {
     clearClips,
   } = useVideoEditorState()
 
-  const isFacebookPlatform = state.videoSourceType === 'facebook'
+  // Only use the YouTube embed when the sourceType is explicitly 'youtube'
+  // and we haven't already fallen back to the proxy.
+  const isProxyPlatform = (
+    state.videoSourceType === 'instagram' ||
+    state.videoSourceType === 'tiktok' ||
+    state.videoSourceType === 'twitter' ||
+    state.videoSourceType === 'vimeo' ||
+    state.videoSourceType === 'proxy'
+  )
   const isYouTubePlatform =
-    state.videoSourceType === 'youtube' ||
-    (typeof state.videoSource === 'string' && getYouTubeVideoId(state.videoSource) !== null)
-  const isExternalPlatform = isFacebookPlatform || isYouTubePlatform
+    !isProxyPlatform &&
+    state.videoSourceType === 'youtube' &&
+    typeof state.videoSource === 'string' &&
+    getYouTubeVideoId(state.videoSource) !== null
+  
   const youtubeVideoId =
     isYouTubePlatform && typeof state.videoSource === 'string'
       ? getYouTubeVideoId(state.videoSource)
       : null
 
+  // File, direct, and proxy-streamed sources are all exportable
   const isClipExportableSource =
     !!state.videoSource &&
-    state.videoSourceType !== 'file' &&
-    state.videoSourceType !== 'unknown'
+    state.videoSourceType !== 'unknown' &&
+    state.videoSourceType !== undefined
+
+  // Backend proxy base URL — used to fall back when YouTube embedding fails
+  const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/+$/, '')
 
   const selectedClip = state.selectedClipId
     ? sortedClips.find(c => c.id === state.selectedClipId)
@@ -374,10 +388,10 @@ export function VideoEditor() {
 
 
   useEffect(() => {
-    if (!selectedClip || !state.videoSource || isYouTubePlatform || isFacebookPlatform) return
+    if (!selectedClip || !state.videoSource || isYouTubePlatform) return
 
     safeSeek(selectedClip.startTime)
-  }, [selectedClip?.id, selectedClip?.startTime, state.videoSource, isYouTubePlatform, isFacebookPlatform, safeSeek])
+  }, [selectedClip?.id, selectedClip?.startTime, state.videoSource, isYouTubePlatform, safeSeek])
 
   useEffect(() => {
     if (!isYouTubePlatform) {
@@ -607,7 +621,7 @@ export function VideoEditor() {
                   <Button
                     size="sm"
                     onClick={handlePlaySequence}
-                    disabled={!sortedClips.length || isSequencePlaying || isFacebookPlatform}
+                    disabled={!sortedClips.length || isSequencePlaying || isYouTubePlatform}
                     className="rounded-lg bg-gradient-to-r from-slate-800 to-blue-800 text-white shadow-md hover:from-cyan-400 hover:to-blue-400"
                   >
                     Play Sequence
@@ -652,7 +666,15 @@ export function VideoEditor() {
                           onStateChange={handleYouTubeStateChange}
                           onError={() => {
                             setIsYouTubeReady(false)
-                            toast.error('YouTube player error: unable to load video')
+                            const originalUrl = typeof state.videoSource === 'string' ? state.videoSource : ''
+                            if (originalUrl) {
+                              toast.loading('YouTube player restricted — switching to stream proxy…', { id: 'yt-fallback' })
+                              const proxyUrl = `${BACKEND_URL}/api/yt-clip?url=${encodeURIComponent(originalUrl)}`
+                              setVideo(proxyUrl, state.videoDuration || 0, state.videoFileName, 'proxy')
+                              toast.success('Loaded via stream proxy', { id: 'yt-fallback' })
+                            } else {
+                              toast.error('YouTube player error — try a different video or URL')
+                            }
                           }}
                           className="absolute inset-0 h-full w-full"
                         />
@@ -694,25 +716,6 @@ export function VideoEditor() {
                       )}
                     </>
                   )}
-                </div>
-              ) : isFacebookPlatform ? (
-                <div className="rounded-xl border border-slate-700 bg-slate-950/70 overflow-hidden shadow-inner">
-                  <iframe
-                    title="External video preview"
-                    src={getEmbedUrl()}
-                    width="100%"
-                    height="400"
-                    frameBorder="0"
-                    allow="autoplay; encrypted-media"
-                    allowFullScreen
-                    className="w-full"
-                  />
-                  <div className="p-3 rounded-lg border border-cyan-500/40 bg-cyan-500/10">
-                    <p className="text-sm font-medium text-cyan-100">Facebook link detected</p>
-                    <p className="text-xs text-cyan-100/90">
-                      Clip selection preview is available, but export is disabled until you provide a direct video source.
-                    </p>
-                  </div>
                 </div>
               ) : (
                 <VideoPlayer
