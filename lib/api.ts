@@ -139,7 +139,7 @@ export async function recordDownload(): Promise<void> {
 }
 
 export async function health(): Promise<{ status: string }> {
-  const response = await fetch(`${BASE_URL}/api/health`)
+  const response = await requestWithAuth('/api/health', { method: 'GET' })
   if (!response.ok) {
     throw new Error('Health check failed')
   }
@@ -192,7 +192,7 @@ const ensureAuthResponse = (response: Response): Response => {
   return response
 }
 
-async function requestWithAuth(input: RequestInfo, init: RequestInit = {}) {
+export async function requestWithAuth(input: RequestInfo, init: RequestInit = {}) {
   const token = getAccessToken()
   const headers = new Headers(init.headers instanceof Headers ? init.headers : init.headers || {})
 
@@ -360,5 +360,62 @@ export async function getAIProviders(): Promise<{ providers: AIProvider[]; defau
     throw new Error(`Failed to get AI providers: ${response.status} ${response.statusText} ${text}`)
   }
   
+  return response.json()
+}
+
+/**
+ * DELETE /api/hls-clean
+ * Triggers backend to remove any stale HLS jobs for the current user.
+ */
+export async function hlsCleanup(): Promise<{ success: boolean; cleanedCount: number }> {
+  try {
+    const response = await requestWithAuth('/api/hls-clean', { method: 'DELETE' })
+    if (!response.ok) return { success: false, cleanedCount: 0 }
+    return response.json()
+  } catch (err) {
+    console.error('[api] hls-clean failed:', err)
+    return { success: false, cleanedCount: 0 }
+  }
+}
+
+export async function hlsPrepare(url: string, platform: string): Promise<{
+  jobId: string
+  hlsUrl: string
+  duration: number
+  title: string
+}> {
+  const response = await requestWithAuth(
+    `/api/hls-prepare?url=${encodeURIComponent(url)}&platform=${encodeURIComponent(platform)}`,
+    { method: 'GET' }
+  )
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}))
+    throw new Error((err as any).error || `Failed to prepare HLS stream (${response.status})`)
+  }
+  return response.json()
+}
+
+export async function hlsStatus(jobId: string): Promise<{
+  status: 'pending' | 'ready' | 'error'
+  playlistReady: boolean
+  errorMessage?: string
+}> {
+  const response = await requestWithAuth(`/api/hls-status/${jobId}`, { method: 'GET' })
+  if (!response.ok) {
+    throw new Error(`Failed to get HLS status (${response.status})`)
+  }
+  return response.json()
+}
+
+export async function ytResolve(url: string): Promise<{
+  streamUrl: string
+  duration: number
+  title: string
+}> {
+  const response = await requestWithAuth(`/api/yt-resolve?url=${encodeURIComponent(url)}`, { method: 'GET' })
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}))
+    throw new Error((err as any).error || `Failed to resolve URL (${response.status})`)
+  }
   return response.json()
 }

@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { validateVideoFile, detectVideoPlatform, isDirectVideoUrl, isValidVideoUrl, getYouTubeVideoId } from '@/lib/videoUtils'
 import { Upload, Link as LinkIcon, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
+import { hlsPrepare, ytResolve } from '@/lib/api'
 
 const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/+$/, '')
 
@@ -172,15 +173,7 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
     toast.loading(`Preparing ${platformLabel} stream…`, { id: toastId })
 
     try {
-      const prepareUrl = `${BACKEND_URL}/api/hls-prepare?url=${encodeURIComponent(originalUrl)}&platform=${encodeURIComponent(sourceType)}`
-      const resp = await fetch(prepareUrl)
-
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}))
-        throw new Error((err as any).error || `Failed to prepare HLS stream (${resp.status})`)
-      }
-
-      const data: { jobId: string; hlsUrl: string; duration: number; title: string } = await resp.json()
+      const data = await hlsPrepare(originalUrl, sourceType)
 
       // hlsUrl is relative (e.g. /api/hls/abc123/index.m3u8), prepend backend base
       const fullHlsUrl = data.hlsUrl.startsWith('http')
@@ -230,15 +223,7 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
     toast.loading(`Resolving ${platformLabel} URL…`, { id: toastId })
 
     try {
-      const resolveUrl = `${BACKEND_URL}/api/yt-resolve?url=${encodeURIComponent(originalUrl)}`
-      const resp = await fetch(resolveUrl)
-
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}))
-        throw new Error((err as any).error || `Failed to resolve URL (${resp.status})`)
-      }
-
-      const data: { streamUrl: string; duration: number; title: string } = await resp.json()
+      const data = await ytResolve(originalUrl)
 
       // Use the streamUrl (proxy with token) — avoids CORS and streams fast
       // The streamUrl is relative, so prepend the backend URL

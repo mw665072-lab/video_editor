@@ -16,6 +16,7 @@
 import { useEffect, useRef, useCallback, useState, type RefObject } from 'react'
 import Hls, { Events, ErrorData, HlsConfig, ErrorTypes } from 'hls.js'
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react'
+import { hlsStatus } from '@/lib/api'
 
 const POLL_INTERVAL_MS = 2000
 const POLL_TIMEOUT_MS = 90000 // 90 seconds timeout
@@ -102,11 +103,7 @@ export function SocialVideoPlayer({
 
     while (Date.now() < deadline) {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/hls-status/${jobId}`)
-        if (!res.ok) throw new Error('Status check failed')
-
-
-        const data = await res.json()
+        const data = await hlsStatus(jobId)
         if (data.status === 'error') {
           setErrorMessage(data.errorMessage || 'Transcode failed')
           setPollStatus('error')
@@ -147,14 +144,10 @@ export function SocialVideoPlayer({
     let isMounted = true
     const checkAndPoll = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/hls-status/${jobId}`)
-        if (res.ok) {
-
-          const data = await res.json()
-          if (data.playlistReady) {
-            if (isMounted) setIsPollReady(true)
-            return
-          }
+        const data = await hlsStatus(jobId)
+        if (data.playlistReady) {
+          if (isMounted) setIsPollReady(true)
+          return
         }
         // Not ready or fetch failed, start polling
         if (isMounted) await waitUntilReady(jobId)

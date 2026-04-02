@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useVideoEditorState } from '@/hooks/useVideoEditorState'
 import { ExportProgress, VideoClip } from '@/lib/types'
-import { exportVideo, getExportStatus, downloadExportedVideo, recordDownload } from '@/lib/api'
+import { exportVideo, getExportStatus, downloadExportedVideo, recordDownload, hlsCleanup } from '@/lib/api'
 import { generateClipThumbnail, createThumbnailFromClip } from '@/lib/thumbnailUtils'
 import { formatTime, getClipIndexAtTime, getYouTubeVideoId } from '@/lib/videoUtils'
 import { toast } from 'sonner'
@@ -427,6 +427,16 @@ export function VideoEditor() {
       clearSyncInterval()
     }
   }, [state.videoSource, getLivePlayerTime, syncUIFromPlayerTime, isSequencePlaying, sortedClips, safeSeek, state.videoSourceType, handleStopSequence])
+
+  // ── HLS Cleanup on Mount ──────────────────────────────────────────────────
+  // Clears any stale transcoding jobs for THIS USER when they enter the editor
+  useEffect(() => {
+    hlsCleanup().then((res) => {
+      if (res.success && res.cleanedCount > 0) {
+        console.log(`[hls] Cleanup complete: removed ${res.cleanedCount} stale jobs.`)
+      }
+    }).catch(err => console.error('[hls] Initial cleanup failed:', err))
+  }, [])
 
   const handleAddClip = useCallback(() => {
     if (state.videoDuration === 0) {
