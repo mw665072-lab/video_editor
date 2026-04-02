@@ -117,7 +117,7 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
 
     // ── Facebook ─────────────────────────────────────────────────
     if (platform === 'facebook') {
-      await resolveAndLoad(trimmedUrl, 'proxy')
+      await hlsPrepareAndLoad(trimmedUrl, 'facebook')
       return
     }
 
@@ -152,13 +152,72 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
     const sourceType = (['instagram', 'tiktok', 'twitter', 'vimeo'] as const).includes(platform as any)
       ? (platform as 'instagram' | 'tiktok' | 'twitter' | 'vimeo')
       : 'proxy'
-    await resolveAndLoad(trimmedUrl, sourceType)
+    await hlsPrepareAndLoad(trimmedUrl, sourceType)
   }
 
   /**
-   * Resolve a social platform URL to its direct CDN URL via /api/yt-resolve,
-   * then load it as the video source. The browser streams directly from the CDN
-   * at full speed — no proxy bottleneck.
+   * Prepare HLS stream via /api/hls-prepare for social platform URLs.
+   * Returns a tokenised m3u8 URL the frontend plays with hls.js — identical
+   * to how react-youtube delivers YouTube content: small segments, smart buffering.
+   * No full video download. No buffering every second on long videos.
+   */
+  const hlsPrepareAndLoad = async (
+    originalUrl: string,
+    sourceType: 'facebook' | 'instagram' | 'tiktok' | 'twitter' | 'vimeo' | 'proxy'
+  ) => {
+    setUrlLoading(true)
+    const platformLabel = sourceType === 'proxy' ? 'Video' : sourceType.charAt(0).toUpperCase() + sourceType.slice(1)
+    const toastId = `hls-${Date.now()}`
+
+    toast.loading(`Preparing ${platformLabel} stream…`, { id: toastId })
+
+    try {
+      const prepareUrl = `${BACKEND_URL}/api/hls-prepare?url=${encodeURIComponent(originalUrl)}&platform=${encodeURIComponent(sourceType)}`
+      const resp = await fetch(prepareUrl)
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}))
+        throw new Error((err as any).error || `Failed to prepare HLS stream (${resp.status})`)
+      }
+
+      const data: { jobId: string; hlsUrl: string; duration: number; title: string } = await resp.json()
+
+      // hlsUrl is relative (e.g. /api/hls/abc123/index.m3u8), prepend backend base
+      const fullHlsUrl = data.hlsUrl.startsWith('http')
+        ? data.hlsUrl
+        : `${BACKEND_URL}${data.hlsUrl}`
+
+      // Pass the HLS URL as the video source — VideoEditor will render SocialVideoPlayer
+      onVideoLoaded(fullHlsUrl, data.duration || 0, data.title || undefined, sourceType)
+      if (data.duration > 0) {
+        onDurationResolved?.(data.duration, data.title)
+      }
+      setUrlInput('')
+      toast.success(
+        `${platformLabel} prepared${data.title && data.title !== 'Untitled' ? ` — ${data.title}` : ''} (Starting HLS stream)`,
+        { id: toastId }
+      )
+    } catch (error) {
+      // Fallback to legacy proxy on HLS failure
+      console.warn(`[VideoUpload] HLS prepare failed, falling back to proxy:`, error)
+      toast.loading(`HLS failed, trying proxy fallback…`, { id: toastId })
+      try {
+        await resolveAndLoad(originalUrl, sourceType === 'facebook' ? 'proxy' : sourceType)
+        toast.success('Loaded via proxy fallback', { id: toastId })
+      } catch (fallbackError) {
+        toast.error(
+          fallbackError instanceof Error ? fallbackError.message : `Failed to load ${platformLabel} video`,
+          { id: toastId }
+        )
+      }
+    } finally {
+      setUrlLoading(false)
+    }
+  }
+
+  /**
+   * Legacy: resolve a social platform URL via /api/yt-resolve for proxy streaming.
+   * Still used as a fallback if HLS preparation fails.
    */
   const resolveAndLoad = async (
     originalUrl: string,

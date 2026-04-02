@@ -9,6 +9,7 @@ interface VideoPlayerProps {
   onPlay?: () => void
   onPause?: () => void
   onBuffering?: (isBuffering: boolean) => void
+  onError?: (error: Error) => void
   currentTime?: number
   muted?: boolean
   controls?: boolean
@@ -24,6 +25,7 @@ export function VideoPlayer({
   onPlay,
   onPause,
   onBuffering,
+  onError,
   currentTime = 0,
   muted = false,
   controls = true,
@@ -40,6 +42,7 @@ export function VideoPlayer({
   const onPlayRef = useRef(onPlay)
   const onPauseRef = useRef(onPause)
   const onBufferingRef = useRef(onBuffering)
+  const onErrorRef = useRef(onError)
 
   // Keep refs updated
   useEffect(() => {
@@ -48,6 +51,7 @@ export function VideoPlayer({
     onPlayRef.current = onPlay
     onPauseRef.current = onPause
     onBufferingRef.current = onBuffering
+    onErrorRef.current = onError
   })
 
   // Handle source changes
@@ -113,12 +117,37 @@ export function VideoPlayer({
       onBufferingRef.current?.(true)
     }
 
+    const handleError = () => {
+      console.error('Video error:', video.error)
+      let errorMessage = 'Video playback error'
+      
+      if (video.error) {
+        switch (video.error.code) {
+          case MediaError.MEDIA_ERR_ABORTED:
+            errorMessage = 'Video loading aborted'
+            break
+          case MediaError.MEDIA_ERR_NETWORK:
+            errorMessage = 'Network error occurred while loading video'
+            break
+          case MediaError.MEDIA_ERR_DECODE:
+            errorMessage = 'Video decoding error'
+            break
+          case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            errorMessage = 'Video source not supported or expired'
+            break
+        }
+      }
+      
+      onErrorRef.current?.(new Error(errorMessage))
+    }
+
     video.addEventListener('timeupdate', handleTimeUpdate)
     video.addEventListener('waiting', handleWaiting)
     video.addEventListener('durationchange', handleDurationChange)
     video.addEventListener('loadedmetadata', handleLoadedMetadata)
     video.addEventListener('play', handlePlay)
     video.addEventListener('pause', handlePause)
+    video.addEventListener('error', handleError)
 
     return () => {
       video.removeEventListener('timeupdate', handleTimeUpdate)
@@ -127,6 +156,7 @@ export function VideoPlayer({
       video.removeEventListener('play', handlePlay)
       video.removeEventListener('pause', handlePause)
       video.removeEventListener('waiting', handleWaiting)
+      video.removeEventListener('error', handleError)
     }
   }, [clipStart, clipEnd]) // Only re-subscribe if clip bounds change
 

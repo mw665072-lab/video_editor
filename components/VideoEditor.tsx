@@ -13,11 +13,14 @@ import YouTube, { YouTubePlayer } from 'react-youtube'
 
 import { VideoUpload } from './VideoUpload'
 import { VideoPlayer } from './VideoPlayer'
+import { SocialVideoPlayer } from './SocialVideoPlayer'
 import { Timeline } from './Timeline'
 import { ClipList } from './ClipList'
 import { ExportDialog } from './ExportDialog'
 import { ClipSuggestionPanel } from './ClipSuggestionPanel'
 import { Trash2, FileDown, Wand2 } from 'lucide-react'
+
+
 
 export function VideoEditor() {
   const {
@@ -36,21 +39,38 @@ export function VideoEditor() {
     clearClips,
   } = useVideoEditorState()
 
-  // Only use the YouTube embed when the sourceType is explicitly 'youtube'
-  // and we haven't already fallen back to the proxy.
-  const isProxyPlatform = (
+  // ── Platform detection ────────────────────────────────────────────────────
+
+  // Social platforms that now use HLS streaming via SocialVideoPlayer + hls.js
+  const isHlsPlatform = (
+    state.videoSourceType === 'facebook' ||
     state.videoSourceType === 'instagram' ||
     state.videoSourceType === 'tiktok' ||
     state.videoSourceType === 'twitter' ||
-    state.videoSourceType === 'vimeo' ||
+    state.videoSourceType === 'vimeo'
+  )
+
+  // A source URL ending in .m3u8 is always an HLS stream (even if platform is 'proxy')
+  const isHlsUrl =
+    typeof state.videoSource === 'string' &&
+    (state.videoSource.includes('/api/hls/') || state.videoSource.endsWith('.m3u8'))
+
+  // Use SocialVideoPlayer when platform is a social site OR when src is already an m3u8
+  const useSocialPlayer = isHlsPlatform || isHlsUrl
+
+  // Legacy proxy path: old /api/yt-clip?token=... streams — kept for backward compat
+  const isProxyPlatform = !useSocialPlayer && (
     state.videoSourceType === 'proxy'
   )
+
+  // YouTube: use react-youtube iframe embed (same as before)
   const isYouTubePlatform =
+    !useSocialPlayer &&
     !isProxyPlatform &&
     state.videoSourceType === 'youtube' &&
     typeof state.videoSource === 'string' &&
     getYouTubeVideoId(state.videoSource) !== null
-  
+
   const youtubeVideoId =
     isYouTubePlatform && typeof state.videoSource === 'string'
       ? getYouTubeVideoId(state.videoSource)
@@ -284,6 +304,42 @@ export function VideoEditor() {
     },
     [syncUIFromPlayerTime]
   )
+
+  const handleVideoError = useCallback(async (error: Error) => {
+    console.error('Video playback error:', error)
+    
+    // Check if this is a token expiration error (410 Gone)
+    if (error.message.includes('expired') || error.message.includes('not supported')) {
+      const currentUrl = state.videoSource as string
+      
+      // Only try to refresh if we have a valid URL
+      if (currentUrl && typeof currentUrl === 'string' && currentUrl.includes('/api/yt-clip')) {
+        console.log('Token may have expired, attempting to refresh...')
+        
+        try {
+          // Extract original URL from token-based URL or use existing source
+          // For now, just show user-friendly message
+          toast.error('Video session expired. Please reload the video URL.', {
+            description: 'Long videos require refreshing the stream URL every few hours.',
+            action: {
+              label: 'Reload Video',
+              onClick: () => {
+                // User will need to re-paste the URL or refresh page
+                window.location.reload()
+              }
+            }
+          })
+        } catch (refreshError) {
+          console.error('Failed to refresh video URL:', refreshError)
+          toast.error('Failed to refresh video. Please reload the page.')
+        }
+      } else {
+        toast.error(error.message)
+      }
+    } else {
+      toast.error(error.message)
+    }
+  }, [state.videoSource])
 
   const handlePlaySequence = useCallback(() => {
     if (!sortedClips.length || !state.videoSource) {
@@ -727,6 +783,43 @@ export function VideoEditor() {
                 </div>
               ) : (
                 <>
+                  {/* ── HLS / Social platform player (Facebook, TikTok, Instagram, etc.) ── */}
+                  {useSocialPlayer && typeof state.videoSource === 'string' ? (
+                    <>
+
+                      <SocialVideoPlayer
+                        hlsUrl={state.videoSource}
+                        currentTime={state.currentTime}
+                        onTimeUpdate={handlePlayerTimeUpdate}
+                        onDurationUpdate={(d) => { if (d && d > 0) setVideoDuration(d) }}
+                        onPlay={() => {
+                          setPlaying(true)
+                          setBufferingState(false)
+                          setProxyVideoReady(true)
+                        }}
+                        onPause={() => {
+                          setPlaying(false)
+                          setIsSequencePlaying(false)
+                          setBufferingState(false)
+                        }}
+                        onBuffering={setBufferingState}
+                        onError={handleVideoError}
+                        clipStart={selectedClip?.startTime}
+                        clipEnd={selectedClip?.endTime}
+                        videoRef={htmlVideoRef}
+                      />
+                      {proxyVideoReady && (
+                        <div className="mt-2 flex items-center gap-2 px-1">
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/20 border border-purple-500/40 px-2.5 py-0.5 text-xs font-medium text-purple-300">
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+                            HLS Stream — smooth playback, no full download
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                  <>
+                  {/* ── Legacy proxy player (old /api/yt-clip?token= streams) ── */}
                   {isProxyPlatform && !proxyVideoReady && (
                     <div className="flex items-center gap-3 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-4 py-3 mb-2">
                       <div className="w-4 h-4 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin shrink-0" />
@@ -752,11 +845,14 @@ export function VideoEditor() {
                       setBufferingState(false)
                     }}
                     onBuffering={setBufferingState}
+                    onError={handleVideoError}
                     clipStart={selectedClip?.startTime}
                     clipEnd={selectedClip?.endTime}
                     videoRef={htmlVideoRef}
                   />
-                  {state.videoDuration <= 0 && isProxyPlatform && (
+                  </>
+                  )}
+                  {state.videoDuration <= 0 && (isProxyPlatform || useSocialPlayer) && (
                     <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 px-1">
                       <label className="text-sm text-slate-300">Set video duration (seconds)</label>
                       <div className="flex gap-2">
