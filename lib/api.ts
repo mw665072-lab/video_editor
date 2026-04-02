@@ -6,6 +6,32 @@ export interface ClipPayload {
   endTime: number
 }
 
+export interface SuggestedClip {
+  startTime: number
+  endTime: number
+  duration: number
+  confidence: number
+  reason: string
+  transcriptSegment?: string
+}
+
+export interface ClipSuggestionResponse {
+  success: boolean
+  data: {
+    url: string
+    videoDuration: number
+    platform: string
+    suggestions: SuggestedClip[]
+    processingTimeMs: number
+  }
+}
+
+export interface AIProvider {
+  id: 'openai' | 'gemini'
+  name: string
+  available: boolean
+}
+
 export async function clipVideo(payload: ClipPayload): Promise<Blob> {
   const response = await requestWithAuth('/api/clip-video', {
     method: 'POST',
@@ -294,5 +320,45 @@ export async function createSubscriptionCheckout(priceId: string) {
     const text = await response.text().catch(() => '')
     throw new Error(`Checkout session failed: ${response.status} ${response.statusText} ${text}`)
   }
+  return response.json()
+}
+
+export async function suggestClips(
+  url: string,
+  aiProvider: 'openai' | 'gemini' | 'auto' = 'auto'
+): Promise<ClipSuggestionResponse> {
+  const response = await requestWithAuth('/api/suggest-clips', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url, aiProvider }),
+  })
+  
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    let errorMessage = `Clip suggestion failed: ${response.status} ${response.statusText}`
+    
+    try {
+      const errorData = JSON.parse(text)
+      if (errorData.message) {
+        errorMessage = errorData.message
+      }
+    } catch {
+      // Use default error message
+    }
+    
+    throw new Error(errorMessage)
+  }
+  
+  return response.json()
+}
+
+export async function getAIProviders(): Promise<{ providers: AIProvider[]; default: string }> {
+  const response = await requestWithAuth('/api/ai-providers', { method: 'GET' })
+  
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`Failed to get AI providers: ${response.status} ${response.statusText} ${text}`)
+  }
+  
   return response.json()
 }

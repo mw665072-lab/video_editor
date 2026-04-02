@@ -16,10 +16,12 @@ interface VideoUploadProps {
     fileName?: string,
     sourceType?: 'file' | 'direct' | 'youtube' | 'facebook' | 'instagram' | 'tiktok' | 'twitter' | 'vimeo' | 'proxy' | 'unknown'
   ) => void
+  /** Called when background yt-info resolves with accurate duration */
+  onDurationResolved?: (duration: number, title?: string) => void
   isLoading?: boolean
 }
 
-export function VideoUpload({ onVideoLoaded, isLoading = false }: VideoUploadProps) {
+export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = false }: VideoUploadProps) {
   const [uploadMethod, setUploadMethod] = useState<'file' | 'url'>('file')
   const [urlInput, setUrlInput] = useState('')
   const [urlLoading, setUrlLoading] = useState(false)
@@ -115,34 +117,8 @@ export function VideoUpload({ onVideoLoaded, isLoading = false }: VideoUploadPro
 
     // ── Facebook ─────────────────────────────────────────────────
     if (platform === 'facebook') {
-      setUrlLoading(true)
-      try {
-        const proxyUrl = `${BACKEND_URL}/api/yt-clip?url=${encodeURIComponent(trimmedUrl)}`
-        const video = document.createElement('video')
-        video.crossOrigin = 'anonymous'
-
-        const loadPromise = new Promise<void>((resolve, reject) => {
-          video.onloadedmetadata = () => resolve()
-          video.onerror = () => reject(new Error('Failed to load Facebook video metadata via proxy'))
-          video.src = proxyUrl
-        })
-
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Facebook video loading timeout')), 20000)
-        })
-
-        await Promise.race([loadPromise, timeoutPromise])
-        onVideoLoaded(proxyUrl, video.duration, undefined, 'proxy')
-        setUrlInput('')
-        toast.success('Facebook video loaded successfully via proxy')
-        return
-      } catch (error) {
-        console.error('Facebook proxy load error:', error)
-        toast.error('Failed to load Facebook video. Video may be private or deleted.')
-        return
-      } finally {
-        setUrlLoading(false)
-      }
+      await resolveAndLoad(trimmedUrl, 'proxy')
+      return
     }
 
     // ── Direct video file (.mp4 / .webm / etc.) ──────────────────
@@ -173,47 +149,55 @@ export function VideoUpload({ onVideoLoaded, isLoading = false }: VideoUploadPro
     }
 
     // ── All other URLs (Instagram, TikTok, Twitter/X, Vimeo, etc.) ─
-    // Route through the backend yt-dlp proxy so we can play & clip them.
-    const BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/+$/, '')
-    const proxyUrl = `${BASE_URL}/api/yt-clip?url=${encodeURIComponent(trimmedUrl)}`
+    const sourceType = (['instagram', 'tiktok', 'twitter', 'vimeo'] as const).includes(platform as any)
+      ? (platform as 'instagram' | 'tiktok' | 'twitter' | 'vimeo')
+      : 'proxy'
+    await resolveAndLoad(trimmedUrl, sourceType)
+  }
 
+  /**
+   * Resolve a social platform URL to its direct CDN URL via /api/yt-resolve,
+   * then load it as the video source. The browser streams directly from the CDN
+   * at full speed — no proxy bottleneck.
+   */
+  const resolveAndLoad = async (
+    originalUrl: string,
+    sourceType: 'proxy' | 'instagram' | 'tiktok' | 'twitter' | 'vimeo' | 'facebook'
+  ) => {
     setUrlLoading(true)
+    const platformLabel = sourceType === 'proxy' ? 'Video' : sourceType.charAt(0).toUpperCase() + sourceType.slice(1)
+    const toastId = `resolve-${Date.now()}`
+
+    toast.loading(`Resolving ${platformLabel} URL…`, { id: toastId })
+
     try {
-      // Probe the proxy endpoint with a HEAD request to catch errors early.
-      const probe = await fetch(proxyUrl, { method: 'HEAD' }).catch(() => null)
-      if (probe && !probe.ok) {
-        throw new Error(`Could not load video (status ${probe.status}). The URL may not be supported.`)
+      const resolveUrl = `${BACKEND_URL}/api/yt-resolve?url=${encodeURIComponent(originalUrl)}`
+      const resp = await fetch(resolveUrl)
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}))
+        throw new Error((err as any).error || `Failed to resolve URL (${resp.status})`)
       }
 
-      // Load metadata via a hidden video element pointing at the proxy stream.
-      const video = document.createElement('video')
-      video.crossOrigin = 'anonymous'
-      let loadTimeout: NodeJS.Timeout | null = null
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        loadTimeout = setTimeout(() => reject(new Error('Video loading timeout — the platform may not be supported')), 20000)
-      })
-      const loadPromise = new Promise<void>((resolve, reject) => {
-        video.onloadedmetadata = () => { if (loadTimeout) clearTimeout(loadTimeout); resolve() }
-        video.onerror = () => {
-          if (loadTimeout) clearTimeout(loadTimeout)
-          reject(new Error('Browser could not play the video stream from this URL'))
-        }
-        video.src = proxyUrl
-      })
+      const data: { streamUrl: string; duration: number; title: string } = await resp.json()
 
-      await Promise.race([loadPromise, timeoutPromise])
+      // Use the streamUrl (proxy with token) — avoids CORS and streams fast
+      // The streamUrl is relative, so prepend the backend URL
+      const fullStreamUrl = data.streamUrl.startsWith('http')
+        ? data.streamUrl
+        : `${BACKEND_URL}${data.streamUrl}`
 
-      const sourceType = (['instagram', 'tiktok', 'twitter', 'vimeo'] as const).includes(platform as any)
-        ? (platform as 'instagram' | 'tiktok' | 'twitter' | 'vimeo')
-        : 'proxy'
-
-      onVideoLoaded(proxyUrl, video.duration || 0, undefined, sourceType)
+      onVideoLoaded(fullStreamUrl, data.duration || 0, data.title || undefined, sourceType)
+      if (data.duration > 0) {
+        onDurationResolved?.(data.duration, data.title)
+      }
       setUrlInput('')
-      toast.success(`${platform === 'unknown' ? 'Video' : platform.charAt(0).toUpperCase() + platform.slice(1)} loaded via stream proxy.`)
+      toast.success(
+        `${platformLabel} loaded${data.title && data.title !== 'Untitled' ? ` — ${data.title}` : ''}`,
+        { id: toastId }
+      )
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to load video from URL'
-      toast.error(message)
-      console.error('URL proxy loading error:', error)
+      toast.error(error instanceof Error ? error.message : `Failed to load ${platformLabel} video`, { id: toastId })
     } finally {
       setUrlLoading(false)
     }

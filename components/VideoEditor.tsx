@@ -16,7 +16,8 @@ import { VideoPlayer } from './VideoPlayer'
 import { Timeline } from './Timeline'
 import { ClipList } from './ClipList'
 import { ExportDialog } from './ExportDialog'
-import { Trash2, FileDown } from 'lucide-react'
+import { ClipSuggestionPanel } from './ClipSuggestionPanel'
+import { Trash2, FileDown, Wand2 } from 'lucide-react'
 
 export function VideoEditor() {
   const {
@@ -222,6 +223,8 @@ export function VideoEditor() {
   const [exportResizeMode, setExportResizeMode] = useState<'blur' | 'crop'>('blur')
   const [activeClipIndex, setActiveClipIndex] = useState<number>(0)
   const [clipDurationSeconds, setClipDurationSeconds] = useState(10)
+  const [showAISuggestions, setShowAISuggestions] = useState(false)
+  const [proxyVideoReady, setProxyVideoReady] = useState(false)
 
   const handleYouTubeStateChange = useCallback(
     (event: { data: number; target: YouTubePlayer }) => {
@@ -600,7 +603,12 @@ export function VideoEditor() {
           <VideoUpload
             onVideoLoaded={(source, duration, fileName, sourceType) => {
               setVideo(source, duration, fileName, sourceType)
+              setProxyVideoReady(false)
               toast.success('Video loaded successfully')
+            }}
+            onDurationResolved={(duration, title) => {
+              setVideoDuration(duration)
+              if (title) toast.success(`Duration set: ${Math.floor(duration / 60)}m ${Math.floor(duration % 60)}s${title !== 'Untitled' ? ` — ${title}` : ''}`)
             }}
           />
         </div>
@@ -718,24 +726,56 @@ export function VideoEditor() {
                   )}
                 </div>
               ) : (
-                <VideoPlayer
-                  src={state.videoSource}
-                  currentTime={state.currentTime}
-                  onTimeUpdate={handlePlayerTimeUpdate}
-                  onPlay={() => {
-                    setPlaying(true)
-                    setBufferingState(false)
-                  }}
-                  onPause={() => {
-                    setPlaying(false)
-                    setIsSequencePlaying(false)
-                    setBufferingState(false)
-                  }}
-                  onBuffering={setBufferingState}
-                  clipStart={selectedClip?.startTime}
-                  clipEnd={selectedClip?.endTime}
-                  videoRef={htmlVideoRef}
-                />
+                <>
+                  {isProxyPlatform && !proxyVideoReady && (
+                    <div className="flex items-center gap-3 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-4 py-3 mb-2">
+                      <div className="w-4 h-4 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-cyan-100">Loading video via proxy…</p>
+                        <p className="text-xs text-cyan-200/70">yt-dlp is extracting the stream URL. This takes ~5–10s then plays instantly.</p>
+                      </div>
+                    </div>
+                  )}
+                  <VideoPlayer
+                    src={state.videoSource}
+                    currentTime={state.currentTime}
+                    onTimeUpdate={handlePlayerTimeUpdate}
+                    onDurationUpdate={(d) => { if (d && d > 0) setVideoDuration(d) }}
+                    onPlay={() => {
+                      setPlaying(true)
+                      setBufferingState(false)
+                      setProxyVideoReady(true)
+                    }}
+                    onPause={() => {
+                      setPlaying(false)
+                      setIsSequencePlaying(false)
+                      setBufferingState(false)
+                    }}
+                    onBuffering={setBufferingState}
+                    clipStart={selectedClip?.startTime}
+                    clipEnd={selectedClip?.endTime}
+                    videoRef={htmlVideoRef}
+                  />
+                  {state.videoDuration <= 0 && isProxyPlatform && (
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 px-1">
+                      <label className="text-sm text-slate-300">Set video duration (seconds)</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          min={1}
+                          className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-sm text-white outline-none flex-1"
+                          value={state.videoDuration || ''}
+                          onChange={(e) => {
+                            const value = Number(e.target.value)
+                            if (!Number.isNaN(value) && value > 0) setVideoDuration(value)
+                          }}
+                          placeholder="e.g., 120"
+                        />
+                        <span className="text-xs text-slate-400 self-center">Needed for timeline</span>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -820,6 +860,34 @@ export function VideoEditor() {
 
           {/* Sidebar */}
           <div className="lg:col-span-4 xl:col-span-4 space-y-4">
+            {/* AI Suggestions Toggle */}
+            {state.videoSource && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAISuggestions(!showAISuggestions)}
+                className="w-full border-purple-500/50 text-purple-300 hover:bg-purple-500/10 hover:text-purple-200"
+              >
+                <Wand2 className="w-4 h-4 mr-2" />
+                {showAISuggestions ? 'Hide AI Suggestions' : 'AI Clip Suggestions'}
+              </Button>
+            )}
+
+            {/* AI Suggestions Panel */}
+            {showAISuggestions && state.videoSource && (
+              <div className="bg-slate-900/70 rounded-lg border border-purple-500/30 p-4">
+                <ClipSuggestionPanel
+                  videoUrl={typeof state.videoSource === 'string' ? state.videoSource : ''}
+                  onClipAdd={(startTime, endTime) => {
+                    addClip(startTime, endTime)
+                  }}
+                  onClipPreview={(startTime) => {
+                    safeSeek(startTime)
+                  }}
+                />
+              </div>
+            )}
+
             {/* Clips Panel */}
             <div className="bg-slate-900/70 rounded-lg border border-slate-700 p-4 min-h-[340px]">
               <h2 className="text-lg font-semibold mb-4 text-slate-100">Clips</h2>
@@ -857,7 +925,7 @@ export function VideoEditor() {
                   {previewUrl && (
                     <div className="rounded-lg border border-slate-700 bg-slate-800/60 p-3">
                       <p className="text-sm text-slate-200 mb-2">Clipped preview</p>
-                      <video src={previewUrl} controls className="w-full rounded-md" />
+                      <video src={previewUrl} controls className="w-full max-h-[40vh] object-contain rounded-md" />
                       <a
                         href={previewUrl}
                         download="clip-export.mp4"

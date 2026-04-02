@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, type RefObject } from 'react'
+import { useEffect, useRef, useCallback, type RefObject } from 'react'
 
 interface VideoPlayerProps {
   src: Blob | string | null
@@ -34,6 +34,22 @@ export function VideoPlayer({
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const videoRef = externalVideoRef ?? localVideoRef
 
+  // Use refs for callbacks to avoid re-subscribing on every render
+  const onTimeUpdateRef = useRef(onTimeUpdate)
+  const onDurationUpdateRef = useRef(onDurationUpdate)
+  const onPlayRef = useRef(onPlay)
+  const onPauseRef = useRef(onPause)
+  const onBufferingRef = useRef(onBuffering)
+
+  // Keep refs updated
+  useEffect(() => {
+    onTimeUpdateRef.current = onTimeUpdate
+    onDurationUpdateRef.current = onDurationUpdate
+    onPlayRef.current = onPlay
+    onPauseRef.current = onPause
+    onBufferingRef.current = onBuffering
+  })
+
   // Handle source changes
   useEffect(() => {
     const video = videoRef.current
@@ -51,7 +67,7 @@ export function VideoPlayer({
     }
   }, [src])
 
-  // Setup event listeners
+  // Setup event listeners - only once, callbacks are accessed via refs
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
@@ -60,8 +76,8 @@ export function VideoPlayer({
       if (clipEnd !== undefined && video.currentTime >= clipEnd) {
         video.pause()
         video.currentTime = clipEnd
-        onPause?.()
-        onTimeUpdate?.(clipEnd)
+        onPauseRef.current?.()
+        onTimeUpdateRef.current?.(clipEnd)
         return
       }
 
@@ -70,11 +86,11 @@ export function VideoPlayer({
         return
       }
 
-      onTimeUpdate?.(video.currentTime)
+      onTimeUpdateRef.current?.(video.currentTime)
     }
 
     const handleDurationChange = () => {
-      onDurationUpdate?.(video.duration)
+      onDurationUpdateRef.current?.(video.duration)
     }
 
     const handleLoadedMetadata = () => {
@@ -85,16 +101,16 @@ export function VideoPlayer({
     }
 
     const handlePlay = () => {
-      onPlay?.()
-      onBuffering?.(false)
+      onPlayRef.current?.()
+      onBufferingRef.current?.(false)
     }
 
     const handlePause = () => {
-      onPause?.()
+      onPauseRef.current?.()
     }
 
     const handleWaiting = () => {
-      onBuffering?.(true)
+      onBufferingRef.current?.(true)
     }
 
     video.addEventListener('timeupdate', handleTimeUpdate)
@@ -112,7 +128,7 @@ export function VideoPlayer({
       video.removeEventListener('pause', handlePause)
       video.removeEventListener('waiting', handleWaiting)
     }
-  }, [onTimeUpdate, onDurationUpdate, onPlay, onPause, clipStart, clipEnd])
+  }, [clipStart, clipEnd]) // Only re-subscribe if clip bounds change
 
   // Handle currentTime updates
   useEffect(() => {
@@ -131,10 +147,10 @@ export function VideoPlayer({
 
   return (
     <div className="w-full rounded-2xl border border-slate-800 bg-slate-900 overflow-hidden shadow-lg">
-      <div className="w-full min-h-[220px] sm:min-h-[300px] md:min-h-[360px] bg-black flex items-center justify-center">
+      <div className="w-full min-h-[180px] max-h-[56vh] bg-black flex items-center justify-center">
         <video
           ref={videoRef}
-          className="w-full h-full rounded-lg"
+          className="w-full max-h-[56vh] object-contain rounded-lg"
           controls={controls}
           crossOrigin="anonymous"
         />
