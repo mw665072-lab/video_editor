@@ -1,14 +1,14 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { Toaster } from 'sonner'
 import { Spinner } from '@/components/ui/spinner'
 import { ClipVideoForm } from '@/components/ClipVideoForm'
 import { PageShell } from '@/components/PageShell'
-import { getProfile } from '@/lib/api'
+import { getProfile, hlsCleanup, hlsHeartbeat } from '@/lib/api'
 
 const VideoEditor = dynamic(() => import('@/components/VideoEditor').then(mod => ({ default: mod.VideoEditor })), {
   loading: () => (
@@ -24,12 +24,47 @@ export default function EditorPage() {
   const [isAuthorized, setIsAuthorized] = useState(false)
   const [loading, setLoading] = useState(true)
 
+  // Cleanup HLS temp storage on unmount / page leave
+  const cleanup = useCallback(() => {
+    hlsCleanup().catch(() => {})
+  }, [])
+
   useEffect(() => {
     getProfile()
       .then(() => setIsAuthorized(true))
       .catch(() => router.replace('/auth/login'))
       .finally(() => setLoading(false))
   }, [router])
+
+  // Heartbeat to keep user's HLS session alive + cleanup on leave
+  useEffect(() => {
+    if (!isAuthorized) return
+
+    // Send heartbeat every 2 minutes
+    const heartbeatInterval = setInterval(() => {
+      hlsHeartbeat()
+    }, 2 * 60 * 1000)
+
+    // Cleanup only on actual page unload (tab close, navigation away)
+    // Do NOT clean on visibilitychange — switching tabs or opening DevTools
+    // would kill active HLS jobs the player is still using.
+    const handleBeforeUnload = () => {
+      // Use sendBeacon for fire-and-forget reliability during unload
+      const token = typeof window !== 'undefined' ? window.localStorage.getItem('clipai_access_token') : null
+      if (token) {
+        const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/hls-clean`
+        navigator.sendBeacon(url) // best-effort; server TTL handles the rest
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
+    return () => {
+      clearInterval(heartbeatInterval)
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      cleanup()
+    }
+  }, [isAuthorized, cleanup])
 
   if (loading) {
     return (

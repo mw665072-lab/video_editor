@@ -36,7 +36,7 @@ export function ClipSuggestionPanel({
   const [isLoading, setIsLoading] = useState(false)
   const [suggestions, setSuggestions] = useState<SuggestedClip[]>([])
   const [aiProviders, setAiProviders] = useState<AIProvider[]>([])
-  const [selectedProvider, setSelectedProvider] = useState<'openai' | 'gemini' | 'auto'>('auto')
+  const [selectedProvider, setSelectedProvider] = useState<'openai' | 'gemini' | 'anthropic' | 'auto'>('auto')
   const [error, setError] = useState<string | null>(null)
   const [hasAnalyzed, setHasAnalyzed] = useState(false)
   const [processingTime, setProcessingTime] = useState<number>(0)
@@ -107,7 +107,7 @@ export function ClipSuggestionPanel({
             <div>
               <p className="text-sm font-medium text-amber-200">AI Service Not Configured</p>
               <p className="text-xs text-amber-200/70 mt-1">
-                Clip suggestions require OpenAI or Gemini API key to be configured on the backend.
+                Clip suggestions require OpenAI, Anthropic, or Gemini API key to be configured on the backend.
               </p>
             </div>
           </div>

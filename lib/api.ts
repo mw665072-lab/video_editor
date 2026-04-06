@@ -27,7 +27,7 @@ export interface ClipSuggestionResponse {
 }
 
 export interface AIProvider {
-  id: 'openai' | 'gemini'
+  id: 'openai' | 'gemini' | 'anthropic'
   name: string
   available: boolean
 }
@@ -325,7 +325,7 @@ export async function createSubscriptionCheckout(priceId: string) {
 
 export async function suggestClips(
   url: string,
-  aiProvider: 'openai' | 'gemini' | 'auto' = 'auto'
+  aiProvider: 'openai' | 'gemini' | 'anthropic' | 'auto' = 'auto'
 ): Promise<ClipSuggestionResponse> {
   const response = await requestWithAuth('/api/suggest-clips', {
     method: 'POST',
@@ -375,6 +375,21 @@ export async function hlsCleanup(): Promise<{ success: boolean; cleanedCount: nu
   } catch (err) {
     console.error('[api] hls-clean failed:', err)
     return { success: false, cleanedCount: 0 }
+  }
+}
+
+/**
+ * POST /api/hls-heartbeat
+ * Keeps the user's HLS session alive while the editor is open.
+ * Call periodically (e.g. every 2 minutes) to prevent inactivity cleanup.
+ */
+export async function hlsHeartbeat(): Promise<{ success: boolean }> {
+  try {
+    const response = await requestWithAuth('/api/hls-heartbeat', { method: 'POST' })
+    if (!response.ok) return { success: false }
+    return response.json()
+  } catch {
+    return { success: false }
   }
 }
 
