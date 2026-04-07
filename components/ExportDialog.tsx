@@ -132,7 +132,7 @@ export function ExportDialog({
           </div>
 
           {/* Platform + Resize Mode */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {/* <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="platform">Social Platform</Label>
               <Select value={selectedPlatform} onValueChange={(value) => setSelectedPlatform(value as 'tiktok' | 'shorts' | 'reels')} disabled={progress.isExporting}>
@@ -164,11 +164,9 @@ export function ExportDialog({
                   <SelectItem value="crop">Center crop</SelectItem>
                 </SelectContent>
               </Select>
-              {/* <p className="text-xs  ">
-                Blur keeps original video intact with smart vertical background; crop fills frame.
-              </p> */}
+              
             </div>
-          </div>
+          </div> */}
 
           {/* Progress */}
           {progress.isExporting && (

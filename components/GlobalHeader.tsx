@@ -10,7 +10,7 @@ interface GlobalHeaderProps {
 
 export function GlobalHeader({ title, subtitle, actions }: GlobalHeaderProps) {
   return (
-    <header className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl">
+    <header className="rounded-2xl border border-slate-800  p-5 shadow-xl">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">{title}</h1>

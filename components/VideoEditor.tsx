@@ -642,18 +642,21 @@ export function VideoEditor() {
   )
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-4 sm:p-6 lg:p-8 overflow-x-hidden">
-      <div className="mx-auto max-w-[1340px] space-y-5">
+    <div className="  text-white overflow-x-hidden">
+      <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 lg:py-3">
         {/* Header */}
-        <div className="rounded-2xl mb-4 border border-slate-800/70 bg-slate-900/70 p-4 backdrop-blur shadow-xl backdrop-saturate-150">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">Video Editor</h1>
+        <div className="rounded-2xl mb-6 sm:mb-8 border border-slate-800/70 bg-gradient-to-br from-slate-900/80 to-slate-950/60 p-4 sm:p-5 md:p-6 backdrop-blur shadow-xl backdrop-saturate-150">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tighter bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Video Editor</h1>
+              <p className="text-xs sm:text-sm text-slate-400 mt-1">Create short clips from your videos</p>
+            </div>
             {state.videoSource && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={clearVideo}
-                className="rounded-lg border-slate-600 bg-slate-800/60 text-slate-100 hover:border-slate-400 hover:bg-slate-700"
+                className="rounded-lg border-slate-600 bg-slate-800/60 text-slate-100 hover:border-slate-400 hover:bg-slate-700 whitespace-nowrap"
               >
                 Clear Video
               </Button>
@@ -665,56 +668,58 @@ export function VideoEditor() {
 
       {!state.videoSource ? (
         // Upload Step
-        <div className="flex-1 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-700 bg-slate-900/70 p-8">
-          <VideoUpload
-            onVideoLoaded={(source, duration, fileName, sourceType) => {
-              setVideo(source, duration, fileName, sourceType)
-              setProxyVideoReady(false)
-              toast.success('Video loaded successfully')
-            }}
-            onDurationResolved={(duration, title) => {
-              setVideoDuration(duration)
-              if (title) toast.success(`Duration set: ${Math.floor(duration / 60)}m ${Math.floor(duration % 60)}s${title !== 'Untitled' ? ` — ${title}` : ''}`)
-            }}
-          />
+        <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className="flex-1 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-700/70 bg-gradient-to-br from-slate-900/50 to-slate-950/60 p-3 sm:p-4 md:p-6 lg:p-8 backdrop-blur">
+            <VideoUpload
+              onVideoLoaded={(source, duration, fileName, sourceType) => {
+                setVideo(source, duration, fileName, sourceType)
+                setProxyVideoReady(false)
+                toast.success('Video loaded successfully')
+              }}
+              onDurationResolved={(duration, title) => {
+                setVideoDuration(duration)
+                if (title) toast.success(`Duration set: ${Math.floor(duration / 60)}m ${Math.floor(duration % 60)}s${title !== 'Untitled' ? ` — ${title}` : ''}`)
+              }}
+            />
+          </div>
         </div>
       ) : (
         // Editor Layout
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Main Editor Area */}
-          <div className="lg:col-span-8 xl:col-span-8 space-y-4">
+        <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 md:gap-6 lg:gap-7">
+            {/* Main Editor Area */}
+            <div className="lg:col-span-8 space-y-4 sm:space-y-5 md:space-y-6">
             {/* Video Player */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 shadow-lg">
-              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-700">
-                <h2 className="text-lg font-semibold tracking-wide">Preview</h2>
-                <div className="flex items-center gap-2">
+            <div className="rounded-2xl border border-slate-800/50 bg-gradient-to-br from-slate-900/60 to-slate-950/40 p-4 sm:p-5 shadow-lg backdrop-blur-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 pb-3 sm:pb-4 border-b border-slate-700/50">
+                <h2 className="text-lg sm:text-xl font-semibold tracking-wide">Preview</h2>
+                <div className="flex items-center gap-2 flex-wrap">
                   {isBuffering && (
-                    <span className="text-xs text-warning">Buffering...</span>
+                    <span className="text-xs text-yellow-400 animate-pulse">Buffering...</span>
                   )}
-                  <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={handlePlaySequence}
-                    disabled={!sortedClips.length || isSequencePlaying || isYouTubePlatform}
-                    className="rounded-lg bg-gradient-to-r from-slate-800 to-blue-800 text-white shadow-md hover:from-cyan-400 hover:to-blue-400"
-                  >
-                    Play Sequence
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleStopSequence}
-                    // disabled={!isSequencePlaying}
-                    className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 hover:text-white bg-slate-900/60 font-semibold"
-                  >
-                    Stop
-                  </Button>
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <Button
+                      size="sm"
+                      onClick={handlePlaySequence}
+                      disabled={!sortedClips.length || isSequencePlaying || isYouTubePlatform}
+                      className="flex-1 sm:flex-none rounded-lg bg-gradient-to-r from-slate-800 to-blue-800 text-white shadow-md hover:from-cyan-400 hover:to-blue-400 font-semibold text-sm"
+                    >
+                      Play
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleStopSequence}
+                      className="flex-1 sm:flex-none rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 hover:text-white bg-slate-900/60 font-semibold"
+                    >
+                      Stop
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
 
               {isYouTubePlatform && youtubeVideoId ? (
-                <div className="rounded-xl border border-slate-700 bg-slate-900/80 overflow-hidden shadow-inner">
+                <div className="rounded-2xl border border-slate-700/50 bg-slate-900/50 overflow-hidden shadow-inner">
                   {!showExternalPreview ? (
                     <div className="p-4 bg-slate-900 rounded-lg border border-slate-700">
                       <p className="mb-2 text-sm font-semibold text-slate-100">YouTube link detected</p>
@@ -732,7 +737,7 @@ export function VideoEditor() {
                     </div>
                   ) : (
                     <>
-                      <div className="relative w-full min-h-[220px] sm:min-h-[280px] md:min-h-[340px] max-h-[66vh] overflow-hidden rounded-lg bg-black">
+                      <div className="relative w-full aspect-video sm:min-h-[300px] md:min-h-[380px] max-h-[70vh] overflow-hidden rounded-lg bg-black">
                         <YouTube
                           videoId={youtubeVideoId}
                           opts={youTubeOptions}
@@ -886,13 +891,13 @@ export function VideoEditor() {
             </div>
 
             {/* Timeline */}
-            <div className="space-y-2 rounded-2xl border border-slate-700 bg-slate-900/70 p-4 shadow-lg">
-              <div className="flex justify-between items-center pb-2">
-                <p className="text-xs text-slate-400">Timeline is scrollable and draggable. Click to jump.</p>
-                <p className="text-xs text-slate-400">Zoom with ctrl + mouse wheel</p>
+            <div className="space-y-3 rounded-2xl border border-slate-700/50 bg-gradient-to-br from-slate-900/60 to-slate-950/40 p-4 sm:p-5 shadow-lg backdrop-blur-sm">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 pb-2 text-slate-400">
+                <p className="text-xs hidden sm:block">Scrollable & draggable • Click to jump • Ctrl+wheel to zoom</p>
+                <p className="text-xs sm:hidden">Scroll • Drag • Click to jump</p>
               </div>
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-lg font-semibold tracking-wide">Timeline</h2>
+              <div className="flex flex-col xs:flex-row xs:flex-wrap items-stretch xs:items-center justify-between gap-2 xs:gap-3">
+                <h2 className="text-lg sm:text-xl font-semibold tracking-wide">Timeline</h2>
                 {sortedClips.length === 0 && (
                   <Button size="sm" onClick={handleAddClip} className="bg-gradient-to-r from-primary to-cyan-500 text-white">
                     Add Clip
@@ -922,28 +927,28 @@ export function VideoEditor() {
             </div>
 
             {/* Clip duration selector + actions */}
-            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-700 bg-slate-900/70 p-3">
-              <label className="text-sm font-medium tracking-wide">Clip length</label>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:flex-wrap gap-3 rounded-xl border border-slate-700/50 bg-gradient-to-br from-slate-900/60 to-slate-950/40 p-4 sm:p-4">
+              <label className="text-sm font-semibold tracking-wide whitespace-nowrap">Clip length:</label>
               <select
                 value={clipDurationSeconds}
                 onChange={(e) => setClipDurationSeconds(Number(e.target.value))}
-                className="rounded-lg border border-slate-500 bg-slate-800 px-3 py-2 text-sm font-medium text-white outline-none transition hover:border-cyan-300"
+                className="rounded-lg border border-slate-500 bg-slate-800 px-3 py-2 text-sm font-medium text-white outline-none transition hover:border-cyan-300 focus:border-cyan-400"
               >
                 {[5, 10, 15, 20].map((sec) => (
-                  <option key={sec} value={sec}>{sec} seconds</option>
+                  <option key={sec} value={sec}>{sec}s</option>
                 ))}
               </select>
-              <p className="text-xs text-slate-400">Choose default duration for new clips</p>
+              <p className="text-xs text-slate-400 sm:ml-auto">Default for new clips</p>
             </div>
 
             {/* Quick Actions */}
             {sortedClips.length > 0 && (
-              <div className="flex gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Button
                   variant="default"
                   size="sm"
                   onClick={() => handleAddClip()}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-400 hover:to-blue-400"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-400 hover:to-blue-400 font-semibold w-full"
                 >
                   Add Clip at Current Time
                 </Button>
@@ -955,7 +960,7 @@ export function VideoEditor() {
                     selectClip(null)
                     toast.success('All clips cleared')
                   }}
-                  className="text-destructive hover:text-destructive"
+                  className="text-destructive hover:text-destructive w-full"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   Clear All
@@ -964,39 +969,39 @@ export function VideoEditor() {
             )}
           </div>
 
-          {/* Sidebar */}
-          <div className="lg:col-span-4 xl:col-span-4 space-y-4">
-            {/* AI Suggestions Toggle */}
-            {state.videoSource && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAISuggestions(!showAISuggestions)}
-                className="w-full border-purple-500/50 text-purple-300 hover:bg-purple-500/10 hover:text-purple-200"
-              >
-                <Wand2 className="w-4 h-4 mr-2" />
-                {showAISuggestions ? 'Hide AI Suggestions' : 'AI Clip Suggestions'}
-              </Button>
-            )}
+            {/* Sidebar */}
+            <div className="lg:col-span-4 space-y-4 sm:space-y-5 md:space-y-6">
+              {/* AI Suggestions Toggle */}
+              {state.videoSource && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAISuggestions(!showAISuggestions)}
+                  className="w-full border-purple-500/50 text-purple-300 hover:bg-purple-500/10 hover:text-purple-200 font-semibold"
+                >
+                  <Wand2 className="w-4 h-4 mr-2" />
+                  {showAISuggestions ? 'Hide Suggestions' : 'AI Suggestions'}
+                </Button>
+              )}
 
-            {/* AI Suggestions Panel */}
-            {showAISuggestions && state.videoSource && (
-              <div className="bg-slate-900/70 rounded-lg border border-purple-500/30 p-4">
-                <ClipSuggestionPanel
-                  videoUrl={typeof state.videoSource === 'string' ? state.videoSource : ''}
-                  onClipAdd={(startTime, endTime) => {
-                    addClip(startTime, endTime)
-                  }}
-                  onClipPreview={(startTime) => {
-                    safeSeek(startTime)
-                  }}
-                />
-              </div>
-            )}
+              {/* AI Suggestions Panel */}
+              {showAISuggestions && state.videoSource && (
+                <div className="bg-gradient-to-br from-slate-900/60 to-slate-950/40 rounded-2xl border border-purple-500/30 p-4 sm:p-5 backdrop-blur-sm">
+                  <ClipSuggestionPanel
+                    videoUrl={typeof state.videoSource === 'string' ? state.videoSource : ''}
+                    onClipAdd={(startTime, endTime) => {
+                      addClip(startTime, endTime)
+                    }}
+                    onClipPreview={(startTime) => {
+                      safeSeek(startTime)
+                    }}
+                  />
+                </div>
+              )}
 
-            {/* Clips Panel */}
-            <div className="bg-slate-900/70 rounded-lg border border-slate-700 p-4 min-h-[340px]">
-              <h2 className="text-lg font-semibold mb-4 text-slate-100">Clips</h2>
+              {/* Clips Panel */}
+              <div className="bg-gradient-to-br from-slate-900/60 to-slate-950/40 rounded-2xl border border-slate-700/50 p-4 sm:p-5 min-h-[300px] sm:min-h-[380px] backdrop-blur-sm">
+                <h2 className="text-lg sm:text-xl font-semibold mb-4 text-slate-100">Clips</h2>
               <ClipList
                 clips={sortedClips}
                 selectedClipId={state.selectedClipId}
@@ -1007,47 +1012,47 @@ export function VideoEditor() {
               />
             </div>
 
-            {/* Export Panel */}
-            {sortedClips.length > 0 && (
-              <>
-                <Separator />
-                <div className="space-y-3">
-                  <Button
-                    onClick={() => setExportDialogOpen(true)}
-                    // disabled={exportProgress.isExporting || !isClipExportableSource}
-                    className="w-full whitespace-nowrap bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 shadow-lg"
-                    size="lg"
-                  >
-                    <FileDown className="w-4 h-4 mr-2" />
-                    Export Video
-                  </Button>
+              {/* Export Panel */}
+              {sortedClips.length > 0 && (
+                <>
+                  <Separator className="my-4 sm:my-6" />
+                  <div className="space-y-4 sm:space-y-5">
+                    <Button
+                      onClick={() => setExportDialogOpen(true)}
+                      className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 shadow-lg font-semibold text-base sm:text-lg py-2.5 sm:py-3"
+                      size="lg"
+                    >
+                      <FileDown className="w-4 h-4 mr-2" />
+                      Export Video
+                    </Button>
 
-                  {exportDisabledReason && (
-                    <p className="text-xs text-red-600 dark:text-red-300 text-center">
-                      {exportDisabledReason}
+                    {exportDisabledReason && (
+                      <p className="text-xs text-red-400/80 text-center bg-red-950/20 rounded-lg p-3 border border-red-800/30">
+                        {exportDisabledReason}
+                      </p>
+                    )}
+
+                    {previewUrl && (
+                      <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-4 space-y-3">
+                        <p className="text-sm font-semibold text-slate-200">Preview</p>
+                        <video src={previewUrl} controls className="w-full max-h-[30vh] sm:max-h-[40vh] object-contain rounded-lg" />
+                        <a
+                          href={previewUrl}
+                          download="clip-export.mp4"
+                          className="inline-block text-sm font-medium text-cyan-400 hover:text-cyan-300 transition"
+                        >
+                          ↓ Download Video
+                        </a>
+                      </div>
+                    )}
+
+                    <p className="text-xs text-slate-400 text-center">
+                      Backend processing, streamed to your browser
                     </p>
-                  )}
-
-                  {previewUrl && (
-                    <div className="rounded-lg border border-slate-700 bg-slate-800/60 p-3">
-                      <p className="text-sm text-slate-200 mb-2">Clipped preview</p>
-                      <video src={previewUrl} controls className="w-full max-h-[40vh] object-contain rounded-md" />
-                      <a
-                        href={previewUrl}
-                        download="clip-export.mp4"
-                        className="mt-2 inline-block text-sm text-cyan-300 hover:text-cyan-200"
-                      >
-                        Download clipped video
-                      </a>
-                    </div>
-                  )}
-
-                  <p className="text-xs text-muted-foreground text-center">
-                    All processing happens on the backend server and result is streamed to browser.
-                  </p>
-                </div>
-              </>
-            )}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}

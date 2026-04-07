@@ -45,7 +45,7 @@ export default function VisualEditorPage() {
   return (
     <ErrorBoundary>
       <PageShell title="Visual Video Editor" subtitle="Upload, edit, and enhance your videos with filters, audio controls, and captions">
-        <div className="h-full overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/70 p-4 shadow-[0_20px_45px_rgba(3,17,37,.55)] backdrop-blur-xl">
+        <div className="h-full overflow-hidden rounded-3xl border border-slate-800   shadow-[0_20px_45px_rgba(3,17,37,.55)] backdrop-blur-xl">
           <VisualEditor />
         </div>
         <Toaster position="top-right" />

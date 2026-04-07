@@ -276,7 +276,7 @@ export function VisualEditor() {
   const activeCaption = getActiveCaption()
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-4 sm:p-6 lg:p-8 overflow-x-hidden">
+    <div className="min-h-screen  text-white p-4 sm:p-6 lg:p-8 overflow-x-hidden">
       <div className="mx-auto max-w-[1400px] space-y-6">
         {/* Header */}
         <div className="rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4 backdrop-blur shadow-xl backdrop-saturate-150">

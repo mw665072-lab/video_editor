@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { getProfile, logout } from '@/lib/api'
 import { usePathname } from 'next/navigation'
+import { Menu, X } from 'lucide-react'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -38,16 +39,16 @@ export function Sidebar() {
           <button
             aria-label="Toggle sidebar"
             onClick={() => setMobileOpen((prev) => !prev)}
-            className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1 text-xs text-white"
+            className="rounded-lg border border-slate-700 bg-slate-800 p-2 text-white hover:bg-slate-700 transition-colors"
           >
-            {mobileOpen ? 'Close' : 'Menu'}
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
 
-      <aside className={`${mobileOpen ? 'block' : 'hidden'} md:block rounded-2xl border border-slate-700 bg-slate-950/95 p-5 shadow-xl`}>
+      <aside className={`${mobileOpen ? 'block' : 'hidden'} md:block rounded-2xl border border-slate-700   p-5 shadow-xl`}>
         <div className="mb-8 flex items-center gap-3">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-cyan-600 text-sm font-bold text-white">U</span>
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-full  text-sm font-bold text-white">U</span>
           <div>
             <p className="text-sm font-semibold text-white">Your workspace</p>
             <p className="text-xs text-slate-400">Quick access</p>

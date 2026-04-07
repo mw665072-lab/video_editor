@@ -22,18 +22,28 @@ export function PageShell({ title, subtitle, actions, children }: PageShellProps
           repeating-linear-gradient(90deg, rgba(249,115,22,0.06) 0px, rgba(249,115,22,0.06) 1px, transparent 1px, transparent 48px)`,
         backgroundSize: '100% 100%, 100% 100%, 100% 100%',
         backgroundAttachment: 'fixed',
-        color: '#ffffff',
       }}
     >
-      <div className="mx-auto grid min-h-screen w-full  gap-6 p-4 sm:p-6 md:p-8 lg:grid-cols-[260px_1fr]">
-        <aside className="sticky top-4 self-start h-[calc(100vh-2rem)] overflow-y-auto">
+      {/* Fixed sidebar for desktop */}
+      <aside className="fixed left-0 top-0 z-50 hidden h-screen w-[260px] border-r border-slate-800   lg:block">
+        <div className="h-full overflow-y-auto p-4">
           <Sidebar />
-        </aside>
+        </div>
+      </aside>
 
-        <div className="flex min-h-[calc(100vh-2rem)] flex-col gap-6">
+      {/* Mobile / tablet sidebar */}
+      <div className="lg:hidden bg-[#05070C] border-b border-slate-800">
+        <div className="p-4">
+          <Sidebar />
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="lg:ml-[260px]">
+        <div className="mx-auto w-full max-w-[1600px] p-4 sm:p-6 md:p-8">
           <GlobalHeader title={title} subtitle={subtitle} actions={actions} />
 
-          <section className="flex-1 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl">
+          <section className="mt-6 flex-1 min-h-[calc(100vh-7rem)] overflow-hidden rounded-2xl border border-slate-800 p-5 shadow-xl">
             {children}
           </section>
         </div>

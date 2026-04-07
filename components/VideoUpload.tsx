@@ -272,7 +272,7 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
         <div
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
-          className="border-2 border-dashed border-slate-600 rounded-xl p-10 text-center hover:border-cyan-300 transition-colors duration-200 cursor-pointer bg-slate-900/40"
+          className="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-cyan-300 transition-colors duration-200 cursor-pointer bg-slate-900/40"
           onClick={() => fileInputRef.current?.click()}
         >
           <input
@@ -283,9 +283,9 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
             className="hidden"
             disabled={isLoading || fileLoading}
           />
-          <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+          <Upload className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
           <h3 className="text-lg font-semibold mb-2">Upload a video file</h3>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-sm text-muted-foreground mb-3">
             Drag and drop your video here or click to browse
           </p>
           <p className="text-xs text-muted-foreground">
