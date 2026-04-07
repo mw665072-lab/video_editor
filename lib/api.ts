@@ -138,6 +138,72 @@ export async function recordDownload(): Promise<void> {
   }
 }
 
+// Visual Export API functions
+export interface VisualExportRequest {
+  videoSource: string
+  filters?: {
+    brightness: number
+    contrast: number
+    saturation: number
+  }
+  audio?: {
+    volume: number
+    muted: boolean
+  }
+  captions?: Array<{
+    text: string
+    start: number
+    end: number
+    position: 'top' | 'center' | 'bottom'
+  }>
+}
+
+export async function exportVisualVideo(options: VisualExportRequest): Promise<{ jobId: string }> {
+  const response = await requestWithAuth('/api/visual-export', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(options),
+  })
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`Visual export request failed: ${response.status} ${response.statusText} ${text}`)
+  }
+
+  return response.json()
+}
+
+export async function getVisualExportStatus(jobId: string): Promise<{
+  status: 'pending' | 'running' | 'done' | 'failed'
+  progress: number
+  step?: string
+  error?: string
+  downloadUrl?: string
+}> {
+  const response = await requestWithAuth(`/api/visual-export?jobId=${encodeURIComponent(jobId)}`, {
+    method: 'GET',
+  })
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`Visual export status request failed: ${response.status} ${response.statusText} ${text}`)
+  }
+
+  return response.json()
+}
+
+export async function downloadVisualExportedVideo(downloadUrl: string): Promise<Blob> {
+  const normalizedUrl = downloadUrl.startsWith('/') ? downloadUrl : downloadUrl
+  const response = await requestWithAuth(normalizedUrl, { method: 'GET' })
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`Visual export download failed: ${response.status} ${response.statusText} ${text}`)
+  }
+
+  return response.blob()
+}
+
 export async function health(): Promise<{ status: string }> {
   const response = await requestWithAuth('/api/health', { method: 'GET' })
   if (!response.ok) {

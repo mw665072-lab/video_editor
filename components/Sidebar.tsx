@@ -8,7 +8,8 @@ import { usePathname } from 'next/navigation'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
-  { href: '/editor', label: 'Editor' },
+  { href: '/editor', label: 'Clip Editor' },
+  { href: '/visual-editor', label: 'Visual Editor' },
   { href: '/auth/profile', label: 'Profile' },
   { href: '/billing', label: 'Billing' },
 ]
@@ -72,7 +73,7 @@ export function Sidebar() {
         </nav>
         <div className="mt-8 rounded-xl border border-slate-800 bg-slate-900/50 p-3">
           <p className="text-xs uppercase tracking-wider text-slate-400">Tips</p>
-          <p className="mt-1 text-xs text-slate-300">Use the sidebar to switch between dashboard, editor, and billing pages quickly.</p>
+          <p className="mt-1 text-xs text-slate-300">Use <strong>Clip Editor</strong> for trimming and exporting clips, or <strong>Visual Editor</strong> for filters, audio, and captions.</p>
         </div>
 
         <button
