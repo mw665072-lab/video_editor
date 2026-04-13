@@ -15,7 +15,8 @@ interface VideoUploadProps {
     source: Blob | string,
     duration: number,
     fileName?: string,
-    sourceType?: 'file' | 'direct' | 'youtube' | 'facebook' | 'instagram' | 'tiktok' | 'twitter' | 'vimeo' | 'proxy' | 'unknown'
+    sourceType?: 'file' | 'direct' | 'youtube' | 'facebook' | 'instagram' | 'tiktok' | 'twitter' | 'vimeo' | 'proxy' | 'unknown',
+    originalSource?: string
   ) => void
   /** Called when background yt-info resolves with accurate duration */
   onDurationResolved?: (duration: number, title?: string) => void
@@ -110,7 +111,7 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
         toast.error('Invalid YouTube URL')
         return
       }
-      onVideoLoaded(trimmedUrl, 0, undefined, 'youtube')
+      onVideoLoaded(trimmedUrl, 0, undefined, 'youtube', trimmedUrl)
       setUrlInput('')
       toast.success('YouTube video loaded — clip preview enabled.')
       return
@@ -126,21 +127,10 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
     if (platform === 'direct') {
       setUrlLoading(true)
       try {
-        const video = document.createElement('video')
-        video.crossOrigin = 'anonymous'
-        let loadTimeout: NodeJS.Timeout | null = null
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          loadTimeout = setTimeout(() => reject(new Error('Video loading timeout')), 15000)
-        })
-        const loadPromise = new Promise<void>((resolve, reject) => {
-          video.onloadedmetadata = () => { if (loadTimeout) clearTimeout(loadTimeout); resolve() }
-          video.onerror = () => { if (loadTimeout) clearTimeout(loadTimeout); reject(new Error('Failed to load video metadata')) }
-          video.src = trimmedUrl
-        })
-        await Promise.race([loadPromise, timeoutPromise])
-        onVideoLoaded(trimmedUrl, video.duration, undefined, 'direct')
+        const proxiedUrl = `${BACKEND_URL}/api/stream?url=${encodeURIComponent(trimmedUrl)}`
+        onVideoLoaded(proxiedUrl, 0, undefined, 'direct', trimmedUrl)
         setUrlInput('')
-        toast.success('Direct video URL loaded successfully')
+        toast.success('Direct video URL loaded via backend proxy')
       } catch (error) {
         toast.error(error instanceof Error ? error.message : 'Failed to load video from URL')
       } finally {
@@ -181,7 +171,7 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
         : `${BACKEND_URL}${data.hlsUrl}`
 
       // Pass the HLS URL as the video source — VideoEditor will render SocialVideoPlayer
-      onVideoLoaded(fullHlsUrl, data.duration || 0, data.title || undefined, sourceType)
+      onVideoLoaded(fullHlsUrl, data.duration || 0, data.title || undefined, sourceType, originalUrl)
       if (data.duration > 0) {
         onDurationResolved?.(data.duration, data.title)
       }
@@ -231,7 +221,7 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
         ? data.streamUrl
         : `${BACKEND_URL}${data.streamUrl}`
 
-      onVideoLoaded(fullStreamUrl, data.duration || 0, data.title || undefined, sourceType)
+      onVideoLoaded(fullStreamUrl, data.duration || 0, data.title || undefined, sourceType, originalUrl)
       if (data.duration > 0) {
         onDurationResolved?.(data.duration, data.title)
       }

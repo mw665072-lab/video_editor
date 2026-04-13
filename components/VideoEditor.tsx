@@ -39,46 +39,53 @@ export function VideoEditor() {
     clearClips,
   } = useVideoEditorState()
 
+  const [youtubeFallbackUrl, setYoutubeFallbackUrl] = useState<string | null>(null)
+  const playbackSource = youtubeFallbackUrl ?? state.videoSource
+  const playbackSourceType = youtubeFallbackUrl ? 'proxy' : state.videoSourceType
+  const sourceForProcessing =
+    state.videoOriginalSource ??
+    (typeof state.videoSource === 'string' ? state.videoSource : undefined)
+
   // ── Platform detection ────────────────────────────────────────────────────
 
   // Social platforms that now use HLS streaming via SocialVideoPlayer + hls.js
   const isHlsPlatform = (
-    state.videoSourceType === 'facebook' ||
-    state.videoSourceType === 'instagram' ||
-    state.videoSourceType === 'tiktok' ||
-    state.videoSourceType === 'twitter' ||
-    state.videoSourceType === 'vimeo'
+    playbackSourceType === 'facebook' ||
+    playbackSourceType === 'instagram' ||
+    playbackSourceType === 'tiktok' ||
+    playbackSourceType === 'twitter' ||
+    playbackSourceType === 'vimeo'
   )
 
   // A source URL ending in .m3u8 is always an HLS stream (even if platform is 'proxy')
   const isHlsUrl =
-    typeof state.videoSource === 'string' &&
-    (state.videoSource.includes('/api/hls/') || state.videoSource.endsWith('.m3u8'))
+    typeof playbackSource === 'string' &&
+    (playbackSource.includes('/api/hls/') || playbackSource.endsWith('.m3u8'))
 
   // Use SocialVideoPlayer when platform is a social site OR when src is already an m3u8
   const useSocialPlayer = isHlsPlatform || isHlsUrl
 
   // Legacy proxy path: old /api/yt-clip?token=... streams — kept for backward compat
   const isProxyPlatform = !useSocialPlayer && (
-    state.videoSourceType === 'proxy'
+    playbackSourceType === 'proxy'
   )
 
   // YouTube: use react-youtube iframe embed (same as before)
   const isYouTubePlatform =
     !useSocialPlayer &&
     !isProxyPlatform &&
-    state.videoSourceType === 'youtube' &&
-    typeof state.videoSource === 'string' &&
-    getYouTubeVideoId(state.videoSource) !== null
+    playbackSourceType === 'youtube' &&
+    typeof playbackSource === 'string' &&
+    getYouTubeVideoId(playbackSource) !== null
 
   const youtubeVideoId =
-    isYouTubePlatform && typeof state.videoSource === 'string'
-      ? getYouTubeVideoId(state.videoSource)
+    isYouTubePlatform && typeof playbackSource === 'string'
+      ? getYouTubeVideoId(playbackSource)
       : null
 
-  // File, direct, and proxy-streamed sources are all exportable
+  // Exports and AI processing need a stable backend-readable URL, not a Blob or transient HLS/proxy URL.
   const isClipExportableSource =
-    !!state.videoSource &&
+    !!sourceForProcessing &&
     state.videoSourceType !== 'unknown' &&
     state.videoSourceType !== undefined
 
@@ -90,7 +97,7 @@ export function VideoEditor() {
     : undefined
 
   const exportDisabledReason = !isClipExportableSource
-    ? 'No video source is loaded. Upload or paste a direct or platform URL to export.'
+    ? 'Export needs a URL-based source. Paste a YouTube, Facebook, TikTok, Instagram, Vimeo, Twitter/X, or direct video URL.'
     : undefined
 
   const youtubePlayerRef = useRef<YouTubePlayer | null>(null)
@@ -310,7 +317,7 @@ export function VideoEditor() {
     
     // Check if this is a token expiration error (410 Gone)
     if (error.message.includes('expired') || error.message.includes('not supported')) {
-      const currentUrl = state.videoSource as string
+      const currentUrl = typeof playbackSource === 'string' ? playbackSource : ''
       
       // Only try to refresh if we have a valid URL
       if (currentUrl && typeof currentUrl === 'string' && currentUrl.includes('/api/yt-clip')) {
@@ -339,10 +346,10 @@ export function VideoEditor() {
     } else {
       toast.error(error.message)
     }
-  }, [state.videoSource])
+  }, [playbackSource])
 
   const handlePlaySequence = useCallback(() => {
-    if (!sortedClips.length || !state.videoSource) {
+    if (!sortedClips.length || !playbackSource) {
       toast.error('Add clips to play sequence')
       return
     }
@@ -351,7 +358,7 @@ export function VideoEditor() {
     setActiveClipIndex(0)
     setCurrentTime(firstClip.startTime)
 
-    if (state.videoSourceType === 'youtube' && youtubePlayerRef.current) {
+    if (playbackSourceType === 'youtube' && youtubePlayerRef.current) {
       youtubePlayerRef.current.seekTo(firstClip.startTime, true)
       youtubePlayerRef.current.playVideo()
     } else {
@@ -359,10 +366,10 @@ export function VideoEditor() {
     }
 
     setIsSequencePlaying(true)
-  }, [sortedClips, state.videoSource, state.videoSourceType, setCurrentTime, setPlaying])
+  }, [sortedClips, playbackSource, playbackSourceType, setCurrentTime, setPlaying])
 
   const handleStopSequence = useCallback(() => {
-    if (state.videoSourceType === 'youtube' && youtubePlayerRef.current) {
+    if (playbackSourceType === 'youtube' && youtubePlayerRef.current) {
       youtubePlayerRef.current.pauseVideo()
     }
 
@@ -372,10 +379,10 @@ export function VideoEditor() {
 
     setPlaying(false)
     setIsSequencePlaying(false)
-  }, [setPlaying, state.videoSourceType])
+  }, [setPlaying, playbackSourceType])
 
   useEffect(() => {
-    if (!state.videoSource) {
+    if (!playbackSource) {
       return
     }
 
@@ -412,7 +419,7 @@ export function VideoEditor() {
           setActiveClipIndex(activeIndex + 1)
           safeSeek(next.startTime)
 
-          if (state.videoSourceType === 'youtube' && youtubePlayerRef.current) {
+          if (playbackSourceType === 'youtube' && youtubePlayerRef.current) {
             youtubePlayerRef.current.playVideo()
           } else if (htmlVideoRef.current) {
             htmlVideoRef.current.play()
@@ -426,7 +433,7 @@ export function VideoEditor() {
     return () => {
       clearSyncInterval()
     }
-  }, [state.videoSource, getLivePlayerTime, syncUIFromPlayerTime, isSequencePlaying, sortedClips, safeSeek, state.videoSourceType, handleStopSequence])
+  }, [playbackSource, getLivePlayerTime, syncUIFromPlayerTime, isSequencePlaying, sortedClips, safeSeek, playbackSourceType, handleStopSequence])
 
   // ── HLS Cleanup on Mount ──────────────────────────────────────────────────
   // Clears any stale transcoding jobs for THIS USER when they enter the editor
@@ -457,10 +464,10 @@ export function VideoEditor() {
 
 
   useEffect(() => {
-    if (!selectedClip || !state.videoSource || isYouTubePlatform) return
+    if (!selectedClip || !playbackSource || isYouTubePlatform) return
 
     safeSeek(selectedClip.startTime)
-  }, [selectedClip?.id, selectedClip?.startTime, state.videoSource, isYouTubePlatform, safeSeek])
+  }, [selectedClip?.id, selectedClip?.startTime, playbackSource, isYouTubePlatform, safeSeek])
 
   useEffect(() => {
     if (!isYouTubePlatform) {
@@ -480,7 +487,11 @@ export function VideoEditor() {
       clearTimeout(hintTimer)
       setShowYouTubeLoadingHint(false)
     }
-  }, [isYouTubePlatform, state.videoSource])
+  }, [isYouTubePlatform, playbackSource])
+
+  useEffect(() => {
+    setYoutubeFallbackUrl(null)
+  }, [state.videoOriginalSource, state.videoSource])
 
   useEffect(() => {
     return () => {
@@ -489,7 +500,7 @@ export function VideoEditor() {
   }, [clearSyncInterval])
 
   useEffect(() => {
-    if (!state.videoSource || !sortedClips.length) return
+    if (!playbackSource || !sortedClips.length) return
 
     const clipsNeedingThumbnail = sortedClips.filter(c => !c.thumbnailUrl)
     if (!clipsNeedingThumbnail.length) return
@@ -500,7 +511,7 @@ export function VideoEditor() {
       for (const clip of clipsNeedingThumbnail) {
         if (isCancelled) return
         try {
-          const thumb = await generateClipThumbnail(state.videoSource as Blob | string, clip.startTime + 0.5)
+          const thumb = await generateClipThumbnail(playbackSource as Blob | string, clip.startTime + 0.5)
           if (isCancelled) return
           updateClip({ ...clip, thumbnailUrl: thumb })
         } catch (error) {
@@ -513,7 +524,7 @@ export function VideoEditor() {
     return () => {
       isCancelled = true
     }
-  }, [state.videoSource, sortedClips, updateClip])
+  }, [playbackSource, sortedClips, updateClip])
 
   const handleExport = useCallback(
     async (quality: string, platform: 'tiktok' | 'shorts' | 'reels', resizeMode: 'blur' | 'crop') => {
@@ -522,7 +533,7 @@ export function VideoEditor() {
         return
       }
 
-      if (!state.videoSource) {
+      if (!playbackSource) {
         toast.error('No video loaded')
         return
       }
@@ -547,7 +558,10 @@ export function VideoEditor() {
       })
 
       try {
-        const sourceUrl = String(state.videoSource || '')
+        const sourceUrl = sourceForProcessing
+        if (!sourceUrl) {
+          throw new Error('This source cannot be exported yet because no backend-accessible URL is available.')
+        }
         const clipsPayload = sortedClips.map((clip) => ({
           startTime: clip.startTime,
           endTime: clip.endTime,
@@ -556,6 +570,7 @@ export function VideoEditor() {
 
         const { jobId } = await exportVideo({
           videoSource: sourceUrl,
+          originalSource: sourceUrl,
           clips: clipsPayload,
           platform,
           resizeMode,
@@ -638,7 +653,7 @@ export function VideoEditor() {
         toast.error(errorMessage)
       }
     },
-    [sortedClips, state.videoSource, state.videoFileName, clearVideo]
+    [sortedClips, playbackSource, sourceForProcessing, clearVideo]
   )
 
   return (
@@ -671,8 +686,9 @@ export function VideoEditor() {
         <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4 md:px-6 lg:px-8">
           <div className="flex-1 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-700/70 bg-gradient-to-br from-slate-900/50 to-slate-950/60 p-3 sm:p-4 md:p-6 lg:p-8 backdrop-blur">
             <VideoUpload
-              onVideoLoaded={(source, duration, fileName, sourceType) => {
-                setVideo(source, duration, fileName, sourceType)
+              onVideoLoaded={(source, duration, fileName, sourceType, originalSource) => {
+                setVideo(source, duration, fileName, sourceType, originalSource)
+                setYoutubeFallbackUrl(null)
                 setProxyVideoReady(false)
                 toast.success('Video loaded successfully')
               }}
@@ -745,11 +761,11 @@ export function VideoEditor() {
                           onStateChange={handleYouTubeStateChange}
                           onError={() => {
                             setIsYouTubeReady(false)
-                            const originalUrl = typeof state.videoSource === 'string' ? state.videoSource : ''
+                            const originalUrl = state.videoOriginalSource || (typeof state.videoSource === 'string' ? state.videoSource : '')
                             if (originalUrl) {
                               toast.loading('YouTube player restricted — switching to stream proxy…', { id: 'yt-fallback' })
                               const proxyUrl = `${BACKEND_URL}/api/yt-clip?url=${encodeURIComponent(originalUrl)}`
-                              setVideo(proxyUrl, state.videoDuration || 0, state.videoFileName, 'proxy')
+                              setYoutubeFallbackUrl(proxyUrl)
                               toast.success('Loaded via stream proxy', { id: 'yt-fallback' })
                             } else {
                               toast.error('YouTube player error — try a different video or URL')
@@ -799,11 +815,11 @@ export function VideoEditor() {
               ) : (
                 <>
                   {/* ── HLS / Social platform player (Facebook, TikTok, Instagram, etc.) ── */}
-                  {useSocialPlayer && typeof state.videoSource === 'string' ? (
+                  {useSocialPlayer && typeof playbackSource === 'string' ? (
                     <>
 
                       <SocialVideoPlayer
-                        hlsUrl={state.videoSource}
+                        hlsUrl={playbackSource}
                         currentTime={state.currentTime}
                         onTimeUpdate={handlePlayerTimeUpdate}
                         onDurationUpdate={(d) => { if (d && d > 0) setVideoDuration(d) }}
@@ -845,7 +861,7 @@ export function VideoEditor() {
                     </div>
                   )}
                   <VideoPlayer
-                    src={state.videoSource}
+                    src={playbackSource}
                     currentTime={state.currentTime}
                     onTimeUpdate={handlePlayerTimeUpdate}
                     onDurationUpdate={(d) => { if (d && d > 0) setVideoDuration(d) }}
@@ -988,7 +1004,7 @@ export function VideoEditor() {
               {showAISuggestions && state.videoSource && (
                 <div className="bg-gradient-to-br from-slate-900/60 to-slate-950/40 rounded-2xl border border-purple-500/30 p-4 sm:p-5 backdrop-blur-sm">
                   <ClipSuggestionPanel
-                    videoUrl={typeof state.videoSource === 'string' ? state.videoSource : ''}
+                    videoUrl={sourceForProcessing || ''}
                     onClipAdd={(startTime, endTime) => {
                       addClip(startTime, endTime)
                     }}

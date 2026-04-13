@@ -57,6 +57,7 @@ export async function clipVideo(payload: ClipPayload): Promise<Blob> {
 
 export interface ExportVideoRequest {
   videoSource: string
+  originalSource?: string
   clips?: Array<{ startTime: number; endTime: number; order?: number }>
   startTime?: number
   duration?: number
@@ -141,6 +142,7 @@ export async function recordDownload(): Promise<void> {
 // Visual Export API functions
 export interface VisualExportRequest {
   videoSource: string
+  originalSource?: string
   filters?: {
     brightness: number
     contrast: number
@@ -264,7 +266,10 @@ export async function requestWithAuth(input: RequestInfo, init: RequestInit = {}
 
   if (token) headers.set('Authorization', `Bearer ${token}`)
 
-  const url = typeof input === 'string' ? `${BASE_URL}${input}` : ''
+  const url =
+    typeof input === 'string'
+      ? (/^https?:\/\//i.test(input) ? input : `${BASE_URL}${input}`)
+      : input
   const response = await fetch(url, {
     ...init,
     headers,

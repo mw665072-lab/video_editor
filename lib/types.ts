@@ -10,6 +10,7 @@ export interface VideoClip {
 
 export interface EditorState {
   videoSource: Blob | string | null
+  videoOriginalSource?: string
   videoSourceType?: 'file' | 'direct' | 'youtube' | 'facebook' | 'instagram' | 'tiktok' | 'twitter' | 'vimeo' | 'proxy' | 'unknown'
   videoDuration: number
   videoFileName?: string

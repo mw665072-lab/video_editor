@@ -80,12 +80,17 @@ export function getYouTubeVideoId(url: string): string | null {
     const parsed = new URL(normalized)
     const host = parsed.host.toLowerCase()
 
-    if (host.includes('youtu.be')) {
+    if (host === 'youtu.be' || host.endsWith('.youtu.be')) {
       const id = parsed.pathname.slice(1)
       if (/^[\w-]{11}$/.test(id)) return id
     }
 
-    if (host.includes('youtube.com')) {
+    if (
+      host === 'youtube.com' ||
+      host.endsWith('.youtube.com') ||
+      host === 'youtube-nocookie.com' ||
+      host.endsWith('.youtube-nocookie.com')
+    ) {
       const searchParams = parsed.searchParams
       const fromParam = searchParams.get('v')
       if (fromParam && /^[\w-]{11}$/.test(fromParam)) return fromParam
@@ -95,6 +100,12 @@ export function getYouTubeVideoId(url: string): string | null {
 
       const shortMatch = parsed.pathname.match(/\/v\/([\w-]{11})/)
       if (shortMatch?.[1]) return shortMatch[1]
+
+      const shortsMatch = parsed.pathname.match(/\/shorts\/([\w-]{11})/)
+      if (shortsMatch?.[1]) return shortsMatch[1]
+
+      const liveMatch = parsed.pathname.match(/\/live\/([\w-]{11})/)
+      if (liveMatch?.[1]) return liveMatch[1]
     }
   } catch {
     // Fallback to regex for non-standard cases or invalid URL parsing
@@ -168,26 +179,30 @@ export function detectVideoPlatform(
   url: string
 ): 'youtube' | 'facebook' | 'instagram' | 'tiktok' | 'twitter' | 'vimeo' | 'direct' | 'unknown' {
   try {
-    const lowerUrl = url.toLowerCase()
-    if (/youtu(?:\.be|be\.com)/.test(lowerUrl)) return 'youtube'
-    if (/facebook\.com|fb\.watch|fbsbx\.com/.test(lowerUrl)) return 'facebook'
-    if (/instagram\.com/.test(lowerUrl)) return 'instagram'
-    if (/tiktok\.com/.test(lowerUrl)) return 'tiktok'
-    if (/(?:twitter|x)\.com/.test(lowerUrl)) return 'twitter'
-    if (/vimeo\.com/.test(lowerUrl)) return 'vimeo'
+    const parsed = new URL(url)
+    const host = parsed.hostname.toLowerCase()
+    const pathname = parsed.pathname.toLowerCase()
 
-    const directExt = ['.mp4', '.webm', '.mov', '.avi', '.mkv']
-    if (directExt.some(ext => lowerUrl.split('?')[0].endsWith(ext))) {
+    if (
+      host === 'youtu.be' ||
+      host.endsWith('.youtu.be') ||
+      host === 'youtube.com' ||
+      host.endsWith('.youtube.com') ||
+      host === 'youtube-nocookie.com' ||
+      host.endsWith('.youtube-nocookie.com')
+    ) return 'youtube'
+    if (host === 'facebook.com' || host.endsWith('.facebook.com') || host === 'fb.watch' || host.endsWith('.fbsbx.com')) return 'facebook'
+    if (host === 'instagram.com' || host.endsWith('.instagram.com')) return 'instagram'
+    if (host === 'tiktok.com' || host.endsWith('.tiktok.com')) return 'tiktok'
+    if (host === 'twitter.com' || host.endsWith('.twitter.com') || host === 'x.com' || host.endsWith('.x.com')) return 'twitter'
+    if (host === 'vimeo.com' || host.endsWith('.vimeo.com')) return 'vimeo'
+
+    const directExt = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m3u8']
+    if (directExt.some(ext => pathname.endsWith(ext))) {
       return 'direct'
     }
 
-    // Any other https URL - may be supported by yt-dlp on the backend
-    try {
-      const parsed = new URL(url)
-      if (['http:', 'https:'].includes(parsed.protocol)) return 'unknown'
-    } catch {
-      // fall through
-    }
+    if (['http:', 'https:'].includes(parsed.protocol)) return 'unknown'
 
     return 'unknown'
   } catch {
@@ -199,13 +214,12 @@ export function isDirectVideoUrl(url: string): boolean {
   try {
     const parsed = new URL(url)
     if (!['http:', 'https:'].includes(parsed.protocol)) return false
+    const pathname = parsed.pathname.toLowerCase()
+    const directExt = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m3u8']
+    return directExt.some(ext => pathname.endsWith(ext))
   } catch {
     return false
   }
-  // Direct extension check
-  const lowerUrl = url.toLowerCase()
-  const directExt = ['.mp4', '.webm', '.mov', '.avi', '.mkv']
-  return directExt.some(ext => lowerUrl.split('?')[0].endsWith(ext))
 }
 
 export function isValidVideoUrl(url: string): boolean {

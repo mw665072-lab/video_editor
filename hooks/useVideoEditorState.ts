@@ -5,7 +5,7 @@ import { EditorState, VideoClip } from '@/lib/types'
 import { generateClipId, validateClip, sortClipsByOrder } from '@/lib/videoUtils'
 
 type Action =
-  | { type: 'SET_VIDEO'; payload: { source: Blob | string; sourceType?: 'file' | 'direct' | 'youtube' | 'facebook' | 'instagram' | 'tiktok' | 'twitter' | 'vimeo' | 'proxy' | 'unknown'; duration: number; fileName?: string } }
+  | { type: 'SET_VIDEO'; payload: { source: Blob | string; originalSource?: string; sourceType?: 'file' | 'direct' | 'youtube' | 'facebook' | 'instagram' | 'tiktok' | 'twitter' | 'vimeo' | 'proxy' | 'unknown'; duration: number; fileName?: string } }
   | { type: 'CLEAR_VIDEO' }
   | { type: 'SET_CURRENT_TIME'; payload: number }
   | { type: 'SET_VIDEO_DURATION'; payload: number }
@@ -32,6 +32,7 @@ function editorReducer(state: EditorState, action: Action): EditorState {
       return {
         ...state,
         videoSource: action.payload.source,
+        videoOriginalSource: action.payload.originalSource,
         videoSourceType: action.payload.sourceType,
         videoDuration: action.payload.duration,
         videoFileName: action.payload.fileName,
@@ -143,11 +144,12 @@ export function useVideoEditorState() {
       source: Blob | string,
       duration: number,
       fileName?: string,
-    sourceType: 'file' | 'direct' | 'youtube' | 'facebook' | 'instagram' | 'tiktok' | 'twitter' | 'vimeo' | 'proxy' | 'unknown' = 'unknown'
+      sourceType: 'file' | 'direct' | 'youtube' | 'facebook' | 'instagram' | 'tiktok' | 'twitter' | 'vimeo' | 'proxy' | 'unknown' = 'unknown',
+      originalSource?: string,
     ) => {
       dispatch({
         type: 'SET_VIDEO',
-        payload: { source, duration, fileName, sourceType },
+        payload: { source, originalSource, duration, fileName, sourceType },
       })
     },
     []
