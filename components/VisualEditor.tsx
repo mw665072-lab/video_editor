@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useEditorStore, Caption, EditorFilters } from '@/store/editorStore'
 import { VideoUpload } from '@/components/VideoUpload'
 import { exportVisualVideo, getVisualExportStatus, downloadVisualExportedVideo } from '@/lib/api'
+import { processLocalVideo } from '@/lib/ffmpeg'
 import { toast } from 'sonner'
 import {
   Play,
@@ -87,21 +88,21 @@ interface ExportFormat {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const EXPORT_FORMATS: ExportFormat[] = [
-  { id: 'mp4',       label: 'MP4 / H.264',     description: 'Universal — works everywhere',   badge: 'Most Compatible', badgeColor: '#6c63ff' },
-  { id: 'tiktok',    label: 'TikTok / Reels',   description: '9:16 · 1080×1920 vertical',     badge: 'TikTok',          badgeColor: '#ff0050' },
-  { id: 'youtube',   label: 'YouTube',           description: '16:9 · 1920×1080 landscape',    badge: 'YouTube',         badgeColor: '#ff0000' },
-  { id: 'instagram', label: 'Instagram',         description: 'Square 1:1 · 1080×1080',        badge: 'Instagram',       badgeColor: '#e1306c' },
-  { id: 'twitter',   label: 'Twitter / X',       description: '16:9 · up to 1920×1200',        badge: 'Twitter',         badgeColor: '#1da1f2' },
-  { id: 'webm',      label: 'WebM / VP9',        description: 'Web-optimised, smaller size',   badge: 'WebM',            badgeColor: '#4a90d9' },
+  { id: 'mp4', label: 'MP4 / H.264', description: 'Universal — works everywhere', badge: 'Most Compatible', badgeColor: '#6c63ff' },
+  { id: 'tiktok', label: 'TikTok / Reels', description: '9:16 · 1080×1920 vertical', badge: 'TikTok', badgeColor: '#ff0050' },
+  { id: 'youtube', label: 'YouTube', description: '16:9 · 1920×1080 landscape', badge: 'YouTube', badgeColor: '#ff0000' },
+  { id: 'instagram', label: 'Instagram', description: 'Square 1:1 · 1080×1080', badge: 'Instagram', badgeColor: '#e1306c' },
+  { id: 'twitter', label: 'Twitter / X', description: '16:9 · up to 1920×1200', badge: 'Twitter', badgeColor: '#1da1f2' },
+  { id: 'webm', label: 'WebM / VP9', description: 'Web-optimised, smaller size', badge: 'WebM', badgeColor: '#4a90d9' },
 ]
 
 const LUT_PRESETS = [
-  { id: 'cinematic', label: '🎬 Cinematic', filters: { brightness: 0.9,  contrast: 1.1,  saturation: 0.8,  hue: 0,   sepia: 5,  grayscale: 0, invert: 0 } },
-  { id: 'warm',      label: '🌅 Warm',      filters: { brightness: 1.05, contrast: 1.05, saturation: 1.2,  hue: 15,  sepia: 10, grayscale: 0, invert: 0 } },
-  { id: 'cool',      label: '❄️ Cool',      filters: { brightness: 1.0,  contrast: 1.05, saturation: 0.9,  hue: 200, sepia: 0,  grayscale: 0, invert: 0 } },
-  { id: 'vintage',   label: '📷 Vintage',   filters: { brightness: 0.9,  contrast: 0.95, saturation: 0.7,  hue: 10,  sepia: 40, grayscale: 0, invert: 0 } },
-  { id: 'vivid',     label: '🌈 Vivid',     filters: { brightness: 1.1,  contrast: 1.2,  saturation: 1.5,  hue: 0,   sepia: 0,  grayscale: 0, invert: 0 } },
-  { id: 'bw',        label: '⬛ B&W',       filters: { brightness: 1.0,  contrast: 1.1,  saturation: 0,    hue: 0,   sepia: 0,  grayscale: 1, invert: 0 } },
+  { id: 'cinematic', label: '🎬 Cinematic', filters: { brightness: 0.9, contrast: 1.1, saturation: 0.8, hue: 0, sepia: 5, grayscale: 0, invert: 0 } },
+  { id: 'warm', label: '🌅 Warm', filters: { brightness: 1.05, contrast: 1.05, saturation: 1.2, hue: 15, sepia: 10, grayscale: 0, invert: 0 } },
+  { id: 'cool', label: '❄️ Cool', filters: { brightness: 1.0, contrast: 1.05, saturation: 0.9, hue: 200, sepia: 0, grayscale: 0, invert: 0 } },
+  { id: 'vintage', label: '📷 Vintage', filters: { brightness: 0.9, contrast: 0.95, saturation: 0.7, hue: 10, sepia: 40, grayscale: 0, invert: 0 } },
+  { id: 'vivid', label: '🌈 Vivid', filters: { brightness: 1.1, contrast: 1.2, saturation: 1.5, hue: 0, sepia: 0, grayscale: 0, invert: 0 } },
+  { id: 'bw', label: '⬛ B&W', filters: { brightness: 1.0, contrast: 1.1, saturation: 0, hue: 0, sepia: 0, grayscale: 1, invert: 0 } },
 ]
 
 const CAPTION_COLORS = ['#ffffff', '#ffd93d', '#4ecdc4', '#ff6b6b', '#6c63ff', '#2ed573', '#000000']
@@ -154,8 +155,8 @@ function FilterSlider({
   return (
     <div className="space-y-1 mb-3">
       <div className="flex justify-between items-center">
-        <Label className="text-xs text-slate-400">{label}</Label>
-        <span className="text-xs text-slate-500 tabular-nums">{displayValue}</span>
+        <Label className="text-xs text-slate-300">{label}</Label>
+        <span className="text-xs text-slate-400 tabular-nums font-mono">{displayValue}</span>
       </div>
       <Slider value={[value]} min={min} max={max} step={step} onValueChange={onChange} className="h-1" />
     </div>
@@ -183,7 +184,7 @@ function ExportModal({
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="text-lg font-bold">Export Video</h2>
+          <h2 className="text-lg font-bold text-white">Export Video</h2>
           <Button size="icon" variant="ghost" onClick={onClose} className="h-7 w-7 text-slate-400 hover:text-white">
             <X className="w-4 h-4" />
           </Button>
@@ -195,11 +196,10 @@ function ExportModal({
             <button
               key={f.id}
               onClick={() => setSelectedFormat(f.id)}
-              className={`p-3 rounded-xl border text-left transition-all ${
-                selectedFormat === f.id
-                  ? 'border-indigo-500 bg-indigo-500/10'
-                  : 'border-slate-700 bg-slate-800/60 hover:border-slate-600'
-              }`}
+              className={`p-3 rounded-xl border text-left transition-all ${selectedFormat === f.id
+                ? 'border-indigo-500 bg-indigo-500/10'
+                : 'border-slate-700 bg-slate-800/60 hover:border-slate-600'
+                }`}
             >
               {f.badge && (
                 <span
@@ -209,31 +209,31 @@ function ExportModal({
                   {f.badge}
                 </span>
               )}
-              <div className="text-xs font-semibold">{f.label}</div>
+              <div className="text-xs font-semibold text-white">{f.label}</div>
               <div className="text-[10px] text-slate-400 mt-0.5">{f.description}</div>
             </button>
           ))}
         </div>
 
         <div className="mb-4">
-          <Label className="text-xs text-slate-400 mb-1 block">Quality</Label>
+          <Label className="text-xs text-slate-300 mb-1 block">Quality</Label>
           <Select value={quality} onValueChange={setQuality}>
-            <SelectTrigger className="bg-slate-800 border-slate-700">
+            <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-200 w-full">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="high">High (1080p)</SelectItem>
-              <SelectItem value="medium">Medium (720p)</SelectItem>
-              <SelectItem value="low">Low (480p — smaller file)</SelectItem>
+            <SelectContent className="bg-slate-800 border-slate-700">
+              <SelectItem value="high" className="text-slate-200 focus:bg-slate-700 focus:text-white">High (1080p)</SelectItem>
+              <SelectItem value="medium" className="text-slate-200 focus:bg-slate-700 focus:text-white">Medium (720p)</SelectItem>
+              <SelectItem value="low" className="text-slate-200 focus:bg-slate-700 focus:text-white">Low (480p — smaller file)</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         {isExporting && (
           <div className="mb-4">
-            <div className="flex justify-between text-xs text-slate-400 mb-1">
+            <div className="flex justify-between text-xs text-slate-300 mb-1">
               <span>{exportStep}</span>
-              <span>{exportProgress}%</span>
+              <span className="text-indigo-400 font-bold">{exportProgress}%</span>
             </div>
             <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
               <div
@@ -512,20 +512,17 @@ export function VisualEditor() {
       setExportProgress(0)
 
       const steps = [
-        [10,  'Reading video data...'],
-        [25,  'Applying filters...'],
-        [40,  'Processing audio...'],
-        [60,  'Encoding captions...'],
-        [75,  `Encoding to ${format.toUpperCase()}...`],
-        [90,  'Finalising...'],
+        [10, 'Reading video data...'],
+        [25, 'Applying filters...'],
+        [40, 'Processing audio...'],
+        [60, 'Encoding captions...'],
+        [75, `Encoding to ${format.toUpperCase()}...`],
+        [90, 'Finalising...'],
         [100, 'Done!'],
       ] as const
 
       try {
-        const exportData = {
-          videoSource: videoUrl,
-          format,
-          quality,
+        const exportOptions = {
           filters: {
             brightness: filters.brightness,
             contrast: filters.contrast,
@@ -538,46 +535,74 @@ export function VisualEditor() {
           },
           transform,
           audio: { volume, muted: isMuted, fadeIn, fadeOut },
-          captions: captions.map(({ id, ...cap }) => cap),
-        }
-
-        const { jobId } = await exportVisualVideo(exportData)
-
-        // Simulate step progress while polling
-        let stepIdx = 0
-        const stepTimer = setInterval(() => {
-          if (stepIdx < steps.length - 1) {
-            const [pct, label] = steps[stepIdx++]
-            setExportProgress(pct)
-            setExportStep(label)
+          captions: captions.map(({ id, ...cap }) => cap as any),
+          onProgress: (p: number) => {
+            setExportProgress(p)
+            setExportStep(p < 100 ? `Encoding with FFmpeg... ${p}%` : 'Finalising...')
           }
-        }, 500)
-
-        let status = await getVisualExportStatus(jobId)
-        while (status.status === 'pending' || status.status === 'running') {
-          await new Promise(r => setTimeout(r, 2000))
-          status = await getVisualExportStatus(jobId)
         }
 
-        clearInterval(stepTimer)
-        setExportProgress(100)
-        setExportStep('Done!')
+        let resultBlob: Blob
 
-        if (status.status === 'failed') throw new Error(status.error || 'Export failed')
+        if (videoSource instanceof Blob) {
+          // --- Client-Side Export ---
+          setExportStep('Initializing FFmpeg...')
+          setExportProgress(5)
+          resultBlob = await processLocalVideo(videoSource, exportOptions)
+          setExportProgress(100)
+          setExportStep('Done!')
+        } else {
+          // --- Backend-Side Export ---
+          const exportData = {
+            videoSource: videoUrl || '',
+            format,
+            quality,
+            ...exportOptions
+          }
 
-        if (status.status === 'done' && status.downloadUrl) {
-          const blob = await downloadVisualExportedVideo(status.downloadUrl)
-          const url = URL.createObjectURL(blob)
-          const link = document.createElement('a')
-          link.href = url
-          link.download = `cutpro-export-${format}-${Date.now()}.mp4`
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-          URL.revokeObjectURL(url)
-          toast.success('Export downloaded!')
+          const { jobId } = await exportVisualVideo(exportData)
+
+          // Simulate step progress while polling
+          let stepIdx = 0
+          const stepTimer = setInterval(() => {
+            if (stepIdx < steps.length - 1) {
+              const [pct, label] = steps[stepIdx++]
+              setExportProgress(pct)
+              setExportStep(label)
+            }
+          }, 500)
+
+          let status = await getVisualExportStatus(jobId)
+          while (status.status === 'pending' || status.status === 'running') {
+            await new Promise(r => setTimeout(r, 2000))
+            status = await getVisualExportStatus(jobId)
+            if (status.progress) setExportProgress(status.progress)
+          }
+
+          clearInterval(stepTimer)
+
+          if (status.status === 'failed') throw new Error(status.error || 'Export failed')
+
+          if (status.status === 'done' && status.downloadUrl) {
+            resultBlob = await downloadVisualExportedVideo(status.downloadUrl)
+          } else {
+            throw new Error('Export completed but no download URL was provided')
+          }
         }
+
+        // --- Handle Download ---
+        const url = URL.createObjectURL(resultBlob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `cutpro-export-${format}-${Date.now()}.mp4`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+        toast.success('Export downloaded!')
+
       } catch (err) {
+        console.error('[Export Error]', err)
         const msg = err instanceof Error ? err.message : 'Unknown error'
         toast.error(`Export failed: ${msg}`)
       } finally {
@@ -585,7 +610,7 @@ export function VisualEditor() {
         setExportModalOpen(false)
       }
     },
-    [videoUrl, filters, transform, volume, isMuted, fadeIn, fadeOut, captions]
+    [videoSource, videoUrl, filters, transform, volume, isMuted, fadeIn, fadeOut, captions]
   )
 
   // ─── Clear ────────────────────────────────────────────────────────────────────
@@ -613,8 +638,8 @@ export function VisualEditor() {
     activeCaption?.position === 'top'
       ? 'top-4'
       : activeCaption?.position === 'center'
-      ? 'top-1/2 -translate-y-1/2'
-      : 'bottom-4'
+        ? 'top-1/2 -translate-y-1/2'
+        : 'bottom-4'
 
   // ─────────────────────────────────────────────────────────────────────────────
   // RENDER
@@ -628,7 +653,7 @@ export function VisualEditor() {
         <div className="rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4 backdrop-blur shadow-xl">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight italic">
+              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight italic text-white">
                 Cut<span className="text-cyan-400">Pro</span>
               </h1>
               <p className="text-slate-400 text-sm mt-1">
@@ -638,7 +663,7 @@ export function VisualEditor() {
             {videoUrl && (
               <div className="flex gap-2 flex-wrap">
                 {/* Format quick-select */}
-                {(['TikTok','Reels','YouTube','Square'] as const).map(f => (
+                {(['TikTok', 'Reels', 'YouTube', 'Square'] as const).map(f => (
                   <Button
                     key={f}
                     size="sm"
@@ -673,6 +698,7 @@ export function VisualEditor() {
           // ── Upload ──
           <div className="flex-1 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-700 bg-slate-900/70 p-12 min-h-[60vh]">
             <VideoUpload
+              showUrlUpload={false}
               onVideoLoaded={handleVideoLoaded}
               onDurationResolved={(dur, title) => {
                 setDuration(dur)
@@ -690,7 +716,7 @@ export function VisualEditor() {
               {/* LUT Presets */}
               <Card className="border-slate-800 bg-slate-900/70">
                 <CardHeader className="pb-2 pt-3 px-3">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-widest text-slate-400 flex items-center gap-1">
+                  <CardTitle className="text-xs font-semibold uppercase tracking-widest text-slate-300 flex items-center gap-1">
                     <Film className="w-3 h-3" /> Presets
                   </CardTitle>
                 </CardHeader>
@@ -701,7 +727,7 @@ export function VisualEditor() {
                       size="sm"
                       variant="outline"
                       onClick={() => applyPreset(p)}
-                      className="text-[11px] border-slate-700 bg-slate-800/60 hover:border-indigo-500 hover:bg-indigo-500/10 h-7 px-2"
+                      className="text-[11px] border-slate-700 bg-slate-800/60 hover:border-indigo-500 hover:bg-indigo-500/10 h-7 px-2 text-slate-200 hover:text-white"
                     >
                       {p.label}
                     </Button>
@@ -712,7 +738,7 @@ export function VisualEditor() {
               {/* Speed */}
               <Card className="border-slate-800 bg-slate-900/70">
                 <CardHeader className="pb-2 pt-3 px-3">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-widest text-slate-400 flex items-center gap-1">
+                  <CardTitle className="text-xs font-semibold uppercase tracking-widest text-slate-300 flex items-center gap-1">
                     <Gauge className="w-3 h-3" /> Speed
                   </CardTitle>
                 </CardHeader>
@@ -723,7 +749,7 @@ export function VisualEditor() {
                       size="sm"
                       variant={playbackSpeed === s ? 'default' : 'outline'}
                       onClick={() => handleSpeedChange(s)}
-                      className={`text-[11px] h-7 px-2 ${playbackSpeed === s ? 'bg-indigo-600 border-indigo-500 text-white' : 'border-slate-700 bg-slate-800/60'}`}
+                      className={`text-[11px] h-7 px-2 ${playbackSpeed === s ? 'bg-indigo-600 border-indigo-500 text-white' : 'border-slate-700 bg-slate-800/60 text-slate-200'}`}
                     >
                       {s}x
                     </Button>
@@ -734,34 +760,34 @@ export function VisualEditor() {
               {/* Transform */}
               <Card className="border-slate-800 bg-slate-900/70">
                 <CardHeader className="pb-2 pt-3 px-3">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-widest text-slate-400 flex items-center gap-1">
+                  <CardTitle className="text-xs font-semibold uppercase tracking-widest text-slate-300 flex items-center gap-1">
                     <Crop className="w-3 h-3" /> Transform
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-3 pb-3 space-y-2">
                   <div className="grid grid-cols-3 gap-1">
-                    <Button size="sm" variant="outline" onClick={() => rotate(-90)} className="text-[10px] border-slate-700 bg-slate-800/60 h-7 px-1">
+                    <Button size="sm" variant="outline" onClick={() => rotate(-90)} className="text-[10px] border-slate-700 bg-slate-800/60 h-7 px-1 text-slate-200">
                       <RotateCcw className="w-3 h-3" />
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => rotate(90)} className="text-[10px] border-slate-700 bg-slate-800/60 h-7 px-1">
+                    <Button size="sm" variant="outline" onClick={() => rotate(90)} className="text-[10px] border-slate-700 bg-slate-800/60 h-7 px-1 text-slate-200">
                       <RotateCw className="w-3 h-3" />
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => rotate(180)} className="text-[10px] border-slate-700 bg-slate-800/60 h-7 px-1">
+                    <Button size="sm" variant="outline" onClick={() => rotate(180)} className="text-[10px] border-slate-700 bg-slate-800/60 h-7 px-1 text-slate-200">
                       180°
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => flip('h')} className={`text-[10px] border-slate-700 h-7 px-1 ${transform.flipH ? 'bg-indigo-500/20 border-indigo-500' : 'bg-slate-800/60'}`}>
+                    <Button size="sm" variant="outline" onClick={() => flip('h')} className={`text-[10px] border-slate-700 h-7 px-1 text-slate-200 ${transform.flipH ? 'bg-indigo-500/20 border-indigo-500 text-indigo-300' : 'bg-slate-800/60'}`}>
                       <FlipHorizontal className="w-3 h-3" />
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => flip('v')} className={`text-[10px] border-slate-700 h-7 px-1 ${transform.flipV ? 'bg-indigo-500/20 border-indigo-500' : 'bg-slate-800/60'}`}>
+                    <Button size="sm" variant="outline" onClick={() => flip('v')} className={`text-[10px] border-slate-700 h-7 px-1 text-slate-200 ${transform.flipV ? 'bg-indigo-500/20 border-indigo-500 text-indigo-300' : 'bg-slate-800/60'}`}>
                       <FlipVertical className="w-3 h-3" />
                     </Button>
-                    <Button size="sm" variant="outline" onClick={resetTransform} className="text-[10px] border-slate-700 bg-slate-800/60 h-7 px-1">
+                    <Button size="sm" variant="outline" onClick={resetTransform} className="text-[10px] border-slate-700 bg-slate-800/60 h-7 px-1 text-slate-200">
                       Reset
                     </Button>
                   </div>
                   <div>
                     <div className="flex justify-between text-[10px] text-slate-400 mb-1">
-                      <span>Opacity</span><span>{Math.round(transform.opacity * 100)}%</span>
+                      <span>Opacity</span><span className="text-slate-200">{Math.round(transform.opacity * 100)}%</span>
                     </div>
                     <Slider
                       value={[transform.opacity]}
@@ -897,7 +923,7 @@ export function VisualEditor() {
               {/* Timeline */}
               <Card className="border-slate-800 bg-slate-900/70">
                 <CardHeader className="pb-2 pt-3 px-4">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-widest text-slate-400">Timeline</CardTitle>
+                  <CardTitle className="text-xs font-semibold uppercase tracking-widest text-slate-300">Timeline</CardTitle>
                 </CardHeader>
                 <CardContent className="px-4 pb-4 space-y-2">
                   {/* Time labels */}
@@ -961,7 +987,7 @@ export function VisualEditor() {
               <Tabs defaultValue="filters" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 bg-slate-800/60 rounded-xl mb-3">
                   <TabsTrigger value="filters" className="text-xs rounded-lg data-[state=active]:bg-indigo-600 data-[state=active]:text-white">Filters</TabsTrigger>
-                  <TabsTrigger value="audio"   className="text-xs rounded-lg data-[state=active]:bg-indigo-600 data-[state=active]:text-white">Audio</TabsTrigger>
+                  <TabsTrigger value="audio" className="text-xs rounded-lg data-[state=active]:bg-indigo-600 data-[state=active]:text-white">Audio</TabsTrigger>
                   <TabsTrigger value="captions" className="text-xs rounded-lg data-[state=active]:bg-indigo-600 data-[state=active]:text-white">Captions</TabsTrigger>
                 </TabsList>
 
@@ -970,7 +996,7 @@ export function VisualEditor() {
                   <Card className="border-slate-800 bg-slate-900/70">
                     <CardHeader className="pb-2 pt-3 px-4">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-sm flex items-center gap-2">
+                        <CardTitle className="text-sm flex items-center gap-2 text-white">
                           <Sun className="w-4 h-4" /> Filters
                         </CardTitle>
                         <Button size="sm" variant="ghost" onClick={resetFilters} className="text-xs text-slate-400 hover:text-white h-6 px-2">
@@ -980,13 +1006,13 @@ export function VisualEditor() {
                     </CardHeader>
                     <CardContent className="px-4 pb-4">
                       <FilterSlider label="Brightness" value={filters.brightness} min={0} max={2} displayValue={filters.brightness.toFixed(2)} onChange={([v]) => updateFilter('brightness', v)} />
-                      <FilterSlider label="Contrast"   value={filters.contrast}   min={0} max={2} displayValue={filters.contrast.toFixed(2)}   onChange={([v]) => updateFilter('contrast', v)} />
+                      <FilterSlider label="Contrast" value={filters.contrast} min={0} max={2} displayValue={filters.contrast.toFixed(2)} onChange={([v]) => updateFilter('contrast', v)} />
                       <FilterSlider label="Saturation" value={filters.saturation} min={0} max={2} displayValue={filters.saturation.toFixed(2)} onChange={([v]) => updateFilter('saturation', v)} />
-                      <FilterSlider label="Hue Rotate" value={filters.hue}        min={0} max={360} step={1} displayValue={`${filters.hue}°`}  onChange={([v]) => updateFilter('hue', v)} />
-                      <FilterSlider label="Blur"       value={filters.blur}       min={0} max={20} step={0.5} displayValue={`${filters.blur}px`} onChange={([v]) => updateFilter('blur', v)} />
-                      <FilterSlider label="Sepia"      value={filters.sepia}      min={0} max={100} step={1} displayValue={`${filters.sepia}%`} onChange={([v]) => updateFilter('sepia', v)} />
-                      <FilterSlider label="Grayscale"  value={filters.grayscale}  min={0} max={1}   displayValue={`${Math.round(filters.grayscale * 100)}%`} onChange={([v]) => updateFilter('grayscale', v)} />
-                      <FilterSlider label="Invert"     value={filters.invert}     min={0} max={100} step={1} displayValue={`${filters.invert}%`} onChange={([v]) => updateFilter('invert', v)} />
+                      <FilterSlider label="Hue Rotate" value={filters.hue} min={0} max={360} step={1} displayValue={`${filters.hue}°`} onChange={([v]) => updateFilter('hue', v)} />
+                      <FilterSlider label="Blur" value={filters.blur} min={0} max={20} step={0.5} displayValue={`${filters.blur}px`} onChange={([v]) => updateFilter('blur', v)} />
+                      <FilterSlider label="Sepia" value={filters.sepia} min={0} max={100} step={1} displayValue={`${filters.sepia}%`} onChange={([v]) => updateFilter('sepia', v)} />
+                      <FilterSlider label="Grayscale" value={filters.grayscale} min={0} max={1} displayValue={`${Math.round(filters.grayscale * 100)}%`} onChange={([v]) => updateFilter('grayscale', v)} />
+                      <FilterSlider label="Invert" value={filters.invert} min={0} max={100} step={1} displayValue={`${filters.invert}%`} onChange={([v]) => updateFilter('invert', v)} />
                     </CardContent>
                   </Card>
                 </TabsContent>
@@ -995,34 +1021,34 @@ export function VisualEditor() {
                 <TabsContent value="audio">
                   <Card className="border-slate-800 bg-slate-900/70">
                     <CardHeader className="pb-2 pt-3 px-4">
-                      <CardTitle className="text-sm flex items-center gap-2">
+                      <CardTitle className="text-sm flex items-center gap-2 text-white">
                         <Music className="w-4 h-4" /> Audio
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="px-4 pb-4 space-y-4">
                       <div className="flex items-center justify-between">
-                        <Label className="text-xs text-slate-400">Mute All Audio</Label>
+                        <Label className="text-xs text-slate-300">Mute All Audio</Label>
                         <Switch checked={isMuted} onCheckedChange={checked => { setIsMuted(checked); if (videoRef.current) videoRef.current.muted = checked }} />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label className="text-xs text-slate-400">Loop Video</Label>
+                        <Label className="text-xs text-slate-300">Loop Video</Label>
                         <Switch checked={isLooping} onCheckedChange={() => toggleLoop()} />
                       </div>
                       <div>
                         <div className="flex justify-between text-xs text-slate-400 mb-1.5">
-                          <span>Master Volume</span><span>{Math.round(volume * 100)}%</span>
+                          <span>Master Volume</span><span className="text-slate-200">{Math.round(volume * 100)}%</span>
                         </div>
                         <Slider value={[volume]} min={0} max={1} step={0.01} onValueChange={handleVolumeChange} />
                       </div>
                       <div>
                         <div className="flex justify-between text-xs text-slate-400 mb-1.5">
-                          <span>Fade In</span><span>{fadeIn}s</span>
+                          <span>Fade In</span><span className="text-slate-200">{fadeIn}s</span>
                         </div>
                         <Slider value={[fadeIn]} min={0} max={10} step={0.5} onValueChange={([v]) => setFadeIn(v)} />
                       </div>
                       <div>
                         <div className="flex justify-between text-xs text-slate-400 mb-1.5">
-                          <span>Fade Out</span><span>{fadeOut}s</span>
+                          <span>Fade Out</span><span className="text-slate-200">{fadeOut}s</span>
                         </div>
                         <Slider value={[fadeOut]} min={0} max={10} step={0.5} onValueChange={([v]) => setFadeOut(v)} />
                       </div>
@@ -1035,7 +1061,7 @@ export function VisualEditor() {
                 <TabsContent value="captions">
                   <Card className="border-slate-800 bg-slate-900/70">
                     <CardHeader className="pb-2 pt-3 px-4">
-                      <CardTitle className="text-sm flex items-center gap-2">
+                      <CardTitle className="text-sm flex items-center gap-2 text-white">
                         <Type className="w-4 h-4" /> Captions
                       </CardTitle>
                     </CardHeader>
@@ -1043,28 +1069,28 @@ export function VisualEditor() {
 
                       {/* Text */}
                       <div>
-                        <Label className="text-xs text-slate-400 mb-1 block">Caption Text</Label>
+                        <Label className="text-xs text-slate-300 mb-1 block">Caption Text</Label>
                         <Textarea
                           value={newCaptionText}
                           onChange={e => setNewCaptionText(e.target.value)}
                           placeholder="Enter caption..."
-                          className="bg-slate-800/60 border-slate-700 text-sm resize-none min-h-[56px]"
+                          className="bg-slate-800/60 border-slate-700 text-sm resize-none min-h-[56px] text-slate-200"
                         />
                       </div>
 
                       {/* Times */}
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <Label className="text-xs text-slate-400 mb-1 block">Start (s)</Label>
+                          <Label className="text-xs text-slate-300 mb-1 block">Start (s)</Label>
                           <Input type="number" value={newCaptionStart} min={0} max={duration} step={0.1}
                             onChange={e => setNewCaptionStart(parseFloat(e.target.value) || 0)}
-                            className="bg-slate-800/60 border-slate-700 text-xs h-8" />
+                            className="bg-slate-800/60 border-slate-700 text-xs h-8 text-slate-200" />
                         </div>
                         <div>
-                          <Label className="text-xs text-slate-400 mb-1 block">End (s)</Label>
+                          <Label className="text-xs text-slate-300 mb-1 block">End (s)</Label>
                           <Input type="number" value={newCaptionEnd} min={0} max={duration} step={0.1}
                             onChange={e => setNewCaptionEnd(parseFloat(e.target.value) || 0)}
-                            className="bg-slate-800/60 border-slate-700 text-xs h-8" />
+                            className="bg-slate-800/60 border-slate-700 text-xs h-8 text-slate-200" />
                         </div>
                       </div>
 
@@ -1076,15 +1102,15 @@ export function VisualEditor() {
 
                       {/* Position */}
                       <div>
-                        <Label className="text-xs text-slate-400 mb-1.5 block">Position</Label>
+                        <Label className="text-xs text-slate-300 mb-1.5 block">Position</Label>
                         <div className="flex gap-1.5">
-                          {(['top','center','bottom'] as const).map(p => (
+                          {(['top', 'center', 'bottom'] as const).map(p => (
                             <Button
                               key={p}
                               size="sm"
                               variant={newCaptionPosition === p ? 'default' : 'outline'}
                               onClick={() => setNewCaptionPosition(p)}
-                              className={`flex-1 text-xs h-7 ${newCaptionPosition === p ? 'bg-indigo-600 border-indigo-500 text-white' : 'border-slate-700 bg-slate-800/60'}`}
+                              className={`flex-1 text-xs h-7 ${newCaptionPosition === p ? 'bg-indigo-600 border-indigo-500 text-white' : 'border-slate-700 bg-slate-800/60 text-slate-300'}`}
                             >
                               {p.charAt(0).toUpperCase() + p.slice(1)}
                             </Button>
@@ -1094,15 +1120,15 @@ export function VisualEditor() {
 
                       {/* Font style */}
                       <div>
-                        <Label className="text-xs text-slate-400 mb-1.5 block">Style</Label>
+                        <Label className="text-xs text-slate-300 mb-1.5 block">Style</Label>
                         <div className="flex gap-1.5 flex-wrap">
-                          {(['normal','bold','italic','shadow'] as const).map(s => (
+                          {(['normal', 'bold', 'italic', 'shadow'] as const).map(s => (
                             <Button
                               key={s}
                               size="sm"
                               variant={newCaptionFontStyle === s ? 'default' : 'outline'}
                               onClick={() => setNewCaptionFontStyle(s)}
-                              className={`text-xs h-7 px-2 ${newCaptionFontStyle === s ? 'bg-indigo-600 border-indigo-500 text-white' : 'border-slate-700 bg-slate-800/60'}`}
+                              className={`text-xs h-7 px-2 ${newCaptionFontStyle === s ? 'bg-indigo-600 border-indigo-500 text-white' : 'border-slate-700 bg-slate-800/60 text-slate-300'}`}
                             >
                               {s === 'bold' ? <Bold className="w-3 h-3" /> : s === 'italic' ? <Italic className="w-3 h-3" /> : s.charAt(0).toUpperCase() + s.slice(1)}
                             </Button>
@@ -1112,15 +1138,15 @@ export function VisualEditor() {
 
                       {/* Align */}
                       <div>
-                        <Label className="text-xs text-slate-400 mb-1.5 block">Align</Label>
+                        <Label className="text-xs text-slate-300 mb-1.5 block">Align</Label>
                         <div className="flex gap-1.5">
-                          {(['left','center','right'] as const).map(a => (
+                          {(['left', 'center', 'right'] as const).map(a => (
                             <Button
                               key={a}
                               size="sm"
                               variant={newCaptionAlign === a ? 'default' : 'outline'}
                               onClick={() => setNewCaptionAlign(a)}
-                              className={`flex-1 text-xs h-7 ${newCaptionAlign === a ? 'bg-indigo-600 border-indigo-500 text-white' : 'border-slate-700 bg-slate-800/60'}`}
+                              className={`flex-1 text-xs h-7 ${newCaptionAlign === a ? 'bg-indigo-600 border-indigo-500 text-white' : 'border-slate-700 bg-slate-800/60 text-slate-300'}`}
                             >
                               {a === 'left' ? <AlignLeft className="w-3 h-3" /> : a === 'center' ? <AlignCenter className="w-3 h-3" /> : <AlignRight className="w-3 h-3" />}
                             </Button>
@@ -1130,7 +1156,7 @@ export function VisualEditor() {
 
                       {/* Color */}
                       <div>
-                        <Label className="text-xs text-slate-400 mb-1.5 block">Text Color</Label>
+                        <Label className="text-xs text-slate-300 mb-1.5 block">Text Color</Label>
                         <div className="flex gap-2">
                           {CAPTION_COLORS.map(c => (
                             <button
@@ -1146,7 +1172,7 @@ export function VisualEditor() {
                       {/* Font size */}
                       <div>
                         <div className="flex justify-between text-xs text-slate-400 mb-1.5">
-                          <span>Font Size</span><span>{newCaptionFontSize}px</span>
+                          <span>Font Size</span><span className="text-slate-200">{newCaptionFontSize}px</span>
                         </div>
                         <Slider value={[newCaptionFontSize]} min={12} max={56} step={1}
                           onValueChange={([v]) => setNewCaptionFontSize(v)} />
@@ -1154,7 +1180,7 @@ export function VisualEditor() {
 
                       {/* Background toggle */}
                       <div className="flex items-center justify-between">
-                        <Label className="text-xs text-slate-400">Background Box</Label>
+                        <Label className="text-xs text-slate-300">Background Box</Label>
                         <Switch checked={newCaptionBg} onCheckedChange={setNewCaptionBg} />
                       </div>
 
@@ -1166,7 +1192,7 @@ export function VisualEditor() {
                       {captions.length > 0 && (
                         <div className="space-y-2 mt-2">
                           <div className="flex items-center justify-between">
-                            <Label className="text-xs text-slate-400">Captions ({captions.length})</Label>
+                            <Label className="text-xs text-slate-300">Captions ({captions.length})</Label>
                             <Button size="sm" variant="ghost" onClick={clearAllCaptions}
                               className="text-xs text-slate-500 hover:text-red-400 h-6 px-2">
                               <Trash2 className="w-3 h-3 mr-1" /> Clear All
@@ -1176,11 +1202,10 @@ export function VisualEditor() {
                             {(captions as ExtendedCaption[]).map(cap => (
                               <div
                                 key={cap.id}
-                                className={`p-2.5 bg-slate-800/70 rounded-lg border transition-colors ${
-                                  currentTime >= cap.start && currentTime <= cap.end
-                                    ? 'border-indigo-500/60'
-                                    : 'border-slate-700'
-                                }`}
+                                className={`p-2.5 bg-slate-800/70 rounded-lg border transition-colors ${currentTime >= cap.start && currentTime <= cap.end
+                                  ? 'border-indigo-500/60'
+                                  : 'border-slate-700'
+                                  }`}
                               >
                                 <div className="flex justify-between items-start">
                                   <div className="flex-1 min-w-0">
