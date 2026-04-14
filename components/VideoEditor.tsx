@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useVideoEditorState } from '@/hooks/useVideoEditorState'
 import { ExportProgress, VideoClip } from '@/lib/types'
-import { exportVideo, getExportStatus, downloadExportedVideo, recordDownload, hlsCleanup } from '@/lib/api'
-import { generateClipThumbnail, createThumbnailFromClip } from '@/lib/thumbnailUtils'
+import { exportVideo, getExportStatus, downloadExportedVideo, recordDownload, hlsCleanup, ytResolve } from '@/lib/api'
+import { generateClipThumbnail, generateRemoteClipThumbnail, createThumbnailFromClip } from '@/lib/thumbnailUtils'
 import { formatTime, getClipIndexAtTime, getYouTubeVideoId } from '@/lib/videoUtils'
 import { toast } from 'sonner'
 import YouTube, { YouTubePlayer } from 'react-youtube'
@@ -45,25 +45,17 @@ export function VideoEditor() {
   const sourceForProcessing =
     state.videoOriginalSource ??
     (typeof state.videoSource === 'string' ? state.videoSource : undefined)
+  const canUseUrlWorkflow = typeof sourceForProcessing === 'string' && sourceForProcessing.length > 0
 
   // ── Platform detection ────────────────────────────────────────────────────
-
-  // Social platforms that now use HLS streaming via SocialVideoPlayer + hls.js
-  const isHlsPlatform = (
-    playbackSourceType === 'facebook' ||
-    playbackSourceType === 'instagram' ||
-    playbackSourceType === 'tiktok' ||
-    playbackSourceType === 'twitter' ||
-    playbackSourceType === 'vimeo'
-  )
 
   // A source URL ending in .m3u8 is always an HLS stream (even if platform is 'proxy')
   const isHlsUrl =
     typeof playbackSource === 'string' &&
     (playbackSource.includes('/api/hls/') || playbackSource.endsWith('.m3u8'))
 
-  // Use SocialVideoPlayer when platform is a social site OR when src is already an m3u8
-  const useSocialPlayer = isHlsPlatform || isHlsUrl
+  // Only use the HLS player for actual HLS playlists. Tokenized proxy URLs should use VideoPlayer.
+  const useSocialPlayer = isHlsUrl
 
   // Legacy proxy path: old /api/yt-clip?token=... streams — kept for backward compat
   const isProxyPlatform = !useSocialPlayer && (
@@ -314,9 +306,50 @@ export function VideoEditor() {
 
   const handleVideoError = useCallback(async (error: Error) => {
     console.error('Video playback error:', error)
+    const errorMessage = error.message || 'Playback failed'
+    const socialSourceType = state.videoSourceType
+    const originalUrl = state.videoOriginalSource
+    const canFallbackToProxy =
+      typeof originalUrl === 'string' &&
+      originalUrl.length > 0 &&
+      (
+        socialSourceType === 'facebook' ||
+        socialSourceType === 'instagram' ||
+        socialSourceType === 'tiktok' ||
+        socialSourceType === 'twitter' ||
+        socialSourceType === 'vimeo'
+      )
+    const shouldFallbackToProxy =
+      canFallbackToProxy &&
+      !youtubeFallbackUrl &&
+      (
+        errorMessage.includes('Timed out waiting for stream preparation') ||
+        errorMessage.includes('Transcode failed') ||
+        errorMessage.includes('Failed to get HLS status') ||
+        errorMessage.includes('Playback failed')
+      )
+
+    if (shouldFallbackToProxy && originalUrl) {
+      const resolved = await ytResolve(originalUrl)
+      const fallbackUrl = resolved.streamUrl.startsWith('http')
+        ? resolved.streamUrl
+        : `${BACKEND_URL}${resolved.streamUrl}`
+      setVideo(
+        fallbackUrl,
+        resolved.duration || state.videoDuration || 0,
+        resolved.title || state.videoFileName,
+        'proxy',
+        originalUrl
+      )
+      setProxyVideoReady(false)
+      toast.error('Preview preparation took too long. Switched to compatibility mode.', {
+        description: 'The editor is using direct proxy playback for this URL so you can keep working.',
+      })
+      return
+    }
     
     // Check if this is a token expiration error (410 Gone)
-    if (error.message.includes('expired') || error.message.includes('not supported')) {
+    if (errorMessage.includes('expired') || errorMessage.includes('not supported')) {
       const currentUrl = typeof playbackSource === 'string' ? playbackSource : ''
       
       // Only try to refresh if we have a valid URL
@@ -341,12 +374,21 @@ export function VideoEditor() {
           toast.error('Failed to refresh video. Please reload the page.')
         }
       } else {
-        toast.error(error.message)
+        toast.error(errorMessage)
       }
     } else {
-      toast.error(error.message)
+      toast.error(errorMessage)
     }
-  }, [playbackSource])
+  }, [
+    BACKEND_URL,
+    playbackSource,
+    setVideo,
+    state.videoDuration,
+    state.videoFileName,
+    state.videoOriginalSource,
+    state.videoSourceType,
+    youtubeFallbackUrl,
+  ])
 
   const handlePlaySequence = useCallback(() => {
     if (!sortedClips.length || !playbackSource) {
@@ -511,7 +553,10 @@ export function VideoEditor() {
       for (const clip of clipsNeedingThumbnail) {
         if (isCancelled) return
         try {
-          const thumb = await generateClipThumbnail(playbackSource as Blob | string, clip.startTime + 0.5)
+          const thumb =
+            typeof sourceForProcessing === 'string'
+              ? await generateRemoteClipThumbnail(sourceForProcessing, clip.startTime + 0.5)
+              : await generateClipThumbnail(playbackSource as Blob | string, clip.startTime + 0.5)
           if (isCancelled) return
           updateClip({ ...clip, thumbnailUrl: thumb })
         } catch (error) {
@@ -524,7 +569,7 @@ export function VideoEditor() {
     return () => {
       isCancelled = true
     }
-  }, [playbackSource, sortedClips, updateClip])
+  }, [playbackSource, sourceForProcessing, sortedClips, updateClip])
 
   const handleExport = useCallback(
     async (quality: string, platform: 'tiktok' | 'shorts' | 'reels', resizeMode: 'blur' | 'crop') => {
@@ -666,7 +711,7 @@ export function VideoEditor() {
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tighter bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Video Editor</h1>
               <p className="text-xs sm:text-sm text-slate-400 mt-1">Create short clips from your videos</p>
             </div>
-            {state.videoSource && (
+            {canUseUrlWorkflow && (
               <Button
                 variant="outline"
                 size="sm"
@@ -764,9 +809,18 @@ export function VideoEditor() {
                             const originalUrl = state.videoOriginalSource || (typeof state.videoSource === 'string' ? state.videoSource : '')
                             if (originalUrl) {
                               toast.loading('YouTube player restricted — switching to stream proxy…', { id: 'yt-fallback' })
-                              const proxyUrl = `${BACKEND_URL}/api/yt-clip?url=${encodeURIComponent(originalUrl)}`
-                              setYoutubeFallbackUrl(proxyUrl)
-                              toast.success('Loaded via stream proxy', { id: 'yt-fallback' })
+                              ytResolve(originalUrl)
+                                .then((resolved) => {
+                                  const proxyUrl = resolved.streamUrl.startsWith('http')
+                                    ? resolved.streamUrl
+                                    : `${BACKEND_URL}${resolved.streamUrl}`
+                                  setYoutubeFallbackUrl(proxyUrl)
+                                  toast.success('Loaded via stream proxy', { id: 'yt-fallback' })
+                                })
+                                .catch((fallbackError) => {
+                                  console.error('Failed to resolve fallback stream:', fallbackError)
+                                  toast.error('YouTube fallback failed — try a different video or URL', { id: 'yt-fallback' })
+                                })
                             } else {
                               toast.error('YouTube player error — try a different video or URL')
                             }
@@ -988,7 +1042,7 @@ export function VideoEditor() {
             {/* Sidebar */}
             <div className="lg:col-span-4 space-y-4 sm:space-y-5 md:space-y-6">
               {/* AI Suggestions Toggle */}
-              {state.videoSource && (
+              {canUseUrlWorkflow && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -1001,7 +1055,7 @@ export function VideoEditor() {
               )}
 
               {/* AI Suggestions Panel */}
-              {showAISuggestions && state.videoSource && (
+              {showAISuggestions && canUseUrlWorkflow && (
                 <div className="bg-gradient-to-br from-slate-900/60 to-slate-950/40 rounded-2xl border border-purple-500/30 p-4 sm:p-5 backdrop-blur-sm">
                   <ClipSuggestionPanel
                     videoUrl={sourceForProcessing || ''}
@@ -1045,6 +1099,12 @@ export function VideoEditor() {
                     {exportDisabledReason && (
                       <p className="text-xs text-red-400/80 text-center bg-red-950/20 rounded-lg p-3 border border-red-800/30">
                         {exportDisabledReason}
+                      </p>
+                    )}
+
+                    {!canUseUrlWorkflow && (
+                      <p className="text-xs text-amber-300/80 text-center bg-amber-950/20 rounded-lg p-3 border border-amber-800/30">
+                        Local uploads are best for preview and manual clipping. For the most reliable thumbnails, AI suggestions, and export, use a supported video URL.
                       </p>
                     )}
 

@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { validateVideoFile, detectVideoPlatform, isDirectVideoUrl, isValidVideoUrl, getYouTubeVideoId } from '@/lib/videoUtils'
+import { validateVideoFile, detectVideoPlatform, isFacebookShareUrl, isValidVideoUrl, getYouTubeVideoId } from '@/lib/videoUtils'
 import { Upload, Link as LinkIcon, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { hlsPrepare, ytResolve } from '@/lib/api'
@@ -119,7 +119,12 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
 
     // ── Facebook ─────────────────────────────────────────────────
     if (platform === 'facebook') {
-      await hlsPrepareAndLoad(trimmedUrl, 'facebook')
+      const isShareUrl = isFacebookShareUrl(trimmedUrl)
+      if (isShareUrl) {
+        await resolveAndLoad(trimmedUrl, 'Facebook')
+      } else {
+        await hlsPrepareAndLoad(trimmedUrl, 'facebook')
+      }
       return
     }
 
@@ -185,7 +190,10 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
       console.warn(`[VideoUpload] HLS prepare failed, falling back to proxy:`, error)
       toast.loading(`HLS failed, trying proxy fallback…`, { id: toastId })
       try {
-        await resolveAndLoad(originalUrl, sourceType === 'facebook' ? 'proxy' : sourceType)
+        const fallbackLabel = sourceType === 'proxy'
+          ? 'Video'
+          : sourceType.charAt(0).toUpperCase() + sourceType.slice(1)
+        await resolveAndLoad(originalUrl, fallbackLabel)
         toast.success('Loaded via proxy fallback', { id: toastId })
       } catch (fallbackError) {
         toast.error(
@@ -204,10 +212,9 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
    */
   const resolveAndLoad = async (
     originalUrl: string,
-    sourceType: 'proxy' | 'instagram' | 'tiktok' | 'twitter' | 'vimeo' | 'facebook'
+    platformLabel: string
   ) => {
     setUrlLoading(true)
-    const platformLabel = sourceType === 'proxy' ? 'Video' : sourceType.charAt(0).toUpperCase() + sourceType.slice(1)
     const toastId = `resolve-${Date.now()}`
 
     toast.loading(`Resolving ${platformLabel} URL…`, { id: toastId })
@@ -221,7 +228,7 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
         ? data.streamUrl
         : `${BACKEND_URL}${data.streamUrl}`
 
-      onVideoLoaded(fullStreamUrl, data.duration || 0, data.title || undefined, sourceType, originalUrl)
+      onVideoLoaded(fullStreamUrl, data.duration || 0, data.title || undefined, 'proxy', originalUrl)
       if (data.duration > 0) {
         onDurationResolved?.(data.duration, data.title)
       }
@@ -308,6 +315,9 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
             >
               {urlLoading ? 'Loading...' : 'Load'}
             </Button>
+          </div>
+          <div className="rounded-lg border border-cyan-900/50 bg-cyan-950/20 px-3 py-2 text-xs text-cyan-100/80">
+            Supported URL sources for the MVP: YouTube, Facebook, Instagram, TikTok, X/Twitter, Vimeo, and direct MP4/WebM/M3U8 links.
           </div>
           {/* <div className="flex gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-900">
             <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />

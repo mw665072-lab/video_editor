@@ -1,4 +1,5 @@
 import { VideoClip } from './types'
+import { requestWithAuth } from './api'
 
 export async function generateClipThumbnail(source: Blob | string, time: number): Promise<string> {
   return new Promise(async (resolve, reject) => {
@@ -86,6 +87,30 @@ export async function generateClipThumbnail(source: Blob | string, time: number)
     video.addEventListener('error', onError)
 
     video.load()
+  })
+}
+
+export async function generateRemoteClipThumbnail(url: string, time: number): Promise<string> {
+  const response = await requestWithAuth(
+    `/api/thumbnail?url=${encodeURIComponent(url)}&time=${encodeURIComponent(String(Math.max(0, time)))}`,
+    { method: 'GET' },
+  )
+
+  if (!response.ok) {
+    const message = await response.text().catch(() => '')
+    throw new Error(message || `Thumbnail request failed (${response.status})`)
+  }
+
+  const blob = await response.blob()
+
+  return await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === 'string') resolve(reader.result)
+      else reject(new Error('Failed to read thumbnail'))
+    }
+    reader.onerror = () => reject(new Error('Failed to read thumbnail'))
+    reader.readAsDataURL(blob)
   })
 }
 

@@ -49,11 +49,17 @@ export default function EditorPage() {
     // Do NOT clean on visibilitychange — switching tabs or opening DevTools
     // would kill active HLS jobs the player is still using.
     const handleBeforeUnload = () => {
-      // Use sendBeacon for fire-and-forget reliability during unload
       const token = typeof window !== 'undefined' ? window.localStorage.getItem('clipai_access_token') : null
       if (token) {
         const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/hls-clean`
-        navigator.sendBeacon(url) // best-effort; server TTL handles the rest
+        fetch(url, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: 'include',
+          keepalive: true,
+        }).catch(() => {})
       }
     }
 

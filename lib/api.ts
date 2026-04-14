@@ -472,7 +472,14 @@ export async function hlsPrepare(url: string, platform: string): Promise<{
 }> {
   const response = await requestWithAuth(
     `/api/hls-prepare?url=${encodeURIComponent(url)}&platform=${encodeURIComponent(platform)}`,
-    { method: 'GET' }
+    {
+      method: 'GET',
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
+      },
+    }
   )
   if (!response.ok) {
     const err = await response.json().catch(() => ({}))
@@ -486,7 +493,14 @@ export async function hlsStatus(jobId: string): Promise<{
   playlistReady: boolean
   errorMessage?: string
 }> {
-  const response = await requestWithAuth(`/api/hls-status/${jobId}`, { method: 'GET' })
+  const response = await requestWithAuth(`/api/hls-status/${jobId}`, {
+    method: 'GET',
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache',
+      Pragma: 'no-cache',
+    },
+  })
   if (!response.ok) {
     throw new Error(`Failed to get HLS status (${response.status})`)
   }

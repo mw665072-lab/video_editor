@@ -222,6 +222,22 @@ export function isDirectVideoUrl(url: string): boolean {
   }
 }
 
+export function isFacebookShareUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    const host = parsed.hostname.toLowerCase()
+    const pathname = parsed.pathname.toLowerCase()
+
+    if (!(host === 'facebook.com' || host.endsWith('.facebook.com') || host === 'fb.watch')) {
+      return false
+    }
+
+    return pathname.startsWith('/share/') || host === 'fb.watch'
+  } catch {
+    return false
+  }
+}
+
 export function isValidVideoUrl(url: string): boolean {
   try {
     const parsed = new URL(url)

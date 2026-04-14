@@ -35,6 +35,7 @@ export function VideoPlayer({
 }: VideoPlayerProps) {
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const videoRef = externalVideoRef ?? localVideoRef
+  const lastReportedTimeRef = useRef(0)
 
   // Use refs for callbacks to avoid re-subscribing on every render
   const onTimeUpdateRef = useRef(onTimeUpdate)
@@ -91,6 +92,7 @@ export function VideoPlayer({
       }
 
       onTimeUpdateRef.current?.(video.currentTime)
+      lastReportedTimeRef.current = video.currentTime
     }
 
     const handleDurationChange = () => {
@@ -115,6 +117,10 @@ export function VideoPlayer({
 
     const handleWaiting = () => {
       onBufferingRef.current?.(true)
+    }
+
+    const handleCanPlay = () => {
+      onBufferingRef.current?.(false)
     }
 
     const handleError = () => {
@@ -147,6 +153,8 @@ export function VideoPlayer({
     video.addEventListener('loadedmetadata', handleLoadedMetadata)
     video.addEventListener('play', handlePlay)
     video.addEventListener('pause', handlePause)
+    video.addEventListener('canplay', handleCanPlay)
+    video.addEventListener('canplaythrough', handleCanPlay)
     video.addEventListener('error', handleError)
 
     return () => {
@@ -155,6 +163,8 @@ export function VideoPlayer({
       video.removeEventListener('loadedmetadata', handleLoadedMetadata)
       video.removeEventListener('play', handlePlay)
       video.removeEventListener('pause', handlePause)
+      video.removeEventListener('canplay', handleCanPlay)
+      video.removeEventListener('canplaythrough', handleCanPlay)
       video.removeEventListener('waiting', handleWaiting)
       video.removeEventListener('error', handleError)
     }
@@ -163,8 +173,20 @@ export function VideoPlayer({
   // Handle currentTime updates
   useEffect(() => {
     const video = videoRef.current
-    if (video && Math.abs(video.currentTime - currentTime) > 0.1) {
+    if (!video) return
+
+    const driftFromLastReported = Math.abs(lastReportedTimeRef.current - currentTime)
+    const seekThreshold = video.paused ? 0.1 : 2
+
+    // Ignore the player's own time updates while actively playing; only honor
+    // explicit external seeks such as timeline scrubs or clip jumps.
+    if (driftFromLastReported < 0.35) {
+      return
+    }
+
+    if (Math.abs(video.currentTime - currentTime) > seekThreshold) {
       video.currentTime = currentTime
+      lastReportedTimeRef.current = currentTime
     }
   }, [currentTime])
 
@@ -183,6 +205,8 @@ export function VideoPlayer({
           className="w-full max-h-[56vh] object-contain rounded-lg"
           controls={controls}
           crossOrigin="anonymous"
+          preload="auto"
+          playsInline
         />
       </div>
     </div>
