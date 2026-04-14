@@ -75,18 +75,19 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      handleFileSelect(file)
+    const files = e.target.files
+    if (files && files.length > 0) {
+      Array.from(files).forEach(file => handleFileSelect(file))
     }
+    e.target.value = ''
   }
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
     e.stopPropagation()
-    const file = e.dataTransfer.files?.[0]
-    if (file) {
-      handleFileSelect(file)
+    const files = e.dataTransfer.files
+    if (files && files.length > 0) {
+      Array.from(files).forEach(file => handleFileSelect(file))
     }
   }
 
@@ -261,6 +262,7 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
             ref={fileInputRef}
             type="file"
             accept="video/*"
+            multiple
             onChange={handleFileChange}
             className="hidden"
             disabled={isLoading || fileLoading}

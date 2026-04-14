@@ -9,7 +9,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { PageShell } from '@/components/PageShell'
 import { getProfile } from '@/lib/api'
 
-const VisualEditor = dynamic(() => import('@/components/VisualEditor').then(mod => ({ default: mod.VisualEditor })), {
+const VisualEditor = dynamic(() => import('@/components/VisualEditor'), {
   loading: () => (
     <div className="min-h-screen bg-[#020617] p-6 lg:p-8 flex items-center justify-center">
       <Spinner />

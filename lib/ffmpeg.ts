@@ -32,6 +32,10 @@ export interface ExportOptions {
     end: number;
     position: 'top' | 'center' | 'bottom';
   }>;
+  trim?: {
+    start: number;
+    duration: number;
+  };
   onProgress?: (progress: number) => void;
 }
 
@@ -70,13 +74,7 @@ export async function processLocalVideo(file: Blob, options: ExportOptions): Pro
 
   // Hook progress
   ff.on('log', ({ message }) => {
-    // Basic progress estimation from logs
-    const timeMatch = message.match(/time=([0-9:.]+)/);
-    if (timeMatch && options.onProgress) {
-        // FFmpeg logs don't give a simple percentage, but we could estimate if we had the duration
-        // For now, let the UI handle the step-based progress or simulate it
-        console.debug('FFmpeg log:', message);
-    }
+    // Basic progress estimation from logs can be added here if needed
   });
 
   ff.on('progress', ({ progress }) => {
@@ -86,9 +84,6 @@ export async function processLocalVideo(file: Blob, options: ExportOptions): Pro
   // --- Build Filter Strings ---
   const videoFilters: string[] = [];
   
-  // 1. Colour corrections (Brightness, Contrast, Saturation)
-  // FFmpeg eq filter: brightness -1 to 1 (default 0), contrast 0 to 10 (default 1), saturation 0 to 10 (default 1)
-  // Our inputs: brightness 0-2 (def 1), contrast 0-2 (def 1), saturation 0-2 (def 1)
   const b = options.filters.brightness - 1;
   const c = options.filters.contrast;
   const s = options.filters.saturation;
@@ -96,21 +91,17 @@ export async function processLocalVideo(file: Blob, options: ExportOptions): Pro
     videoFilters.push(`eq=brightness=${b}:contrast=${c}:saturation=${s}`);
   }
 
-  // 2. Hue
   if (options.filters.hue !== 0) {
     videoFilters.push(`hue=h=${options.filters.hue}`);
   }
 
-  // 3. Blur
   if (options.filters.blur > 0) {
     videoFilters.push(`boxblur=${Math.min(20, options.filters.blur)}`);
   }
 
-  // 4. Sepia / Grayscale / Invert
   if (options.filters.grayscale > 0) {
     videoFilters.push(`hue=s=0`);
   } else if (options.filters.sepia > 0) {
-    // Simple sepia approximation: grayscale then colorize
     videoFilters.push('colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131:0');
   }
   
@@ -118,7 +109,6 @@ export async function processLocalVideo(file: Blob, options: ExportOptions): Pro
     videoFilters.push('negate');
   }
 
-  // 5. Transform (Rotation & Flips)
   const rot = ((options.transform.rotation % 360) + 360) % 360;
   if (rot === 90) {
     videoFilters.push('transpose=1');
@@ -128,23 +118,18 @@ export async function processLocalVideo(file: Blob, options: ExportOptions): Pro
     videoFilters.push('transpose=2');
   } else if (rot !== 0) {
     const rad = (rot * Math.PI) / 180;
-    // For arbitrary rotation, we need to ensure the frame expands or we'll get cropping
     videoFilters.push(`rotate=${rad}:ow='hypot(iw,ih)':oh='hypot(iw,ih)'`);
   }
 
   if (options.transform.flipH) videoFilters.push('hflip');
   if (options.transform.flipV) videoFilters.push('vflip');
   
-  // 6. Opacity
   if (options.transform.opacity < 1) {
-    // Use format=rgba for standard 8-bit opacity support
     videoFilters.push(`format=rgba,colorchannelmixer=aa=${options.transform.opacity}`);
   }
 
-  // 7. Captions (drawtext)
   options.captions.forEach(cap => {
     const escapedText = cap.text.replace(/'/g, "'\\\\\\''").replace(/:/g, '\\\\\\:');
-    
     let yPos = 'h*0.85';
     if (cap.position === 'top') yPos = 'h*0.1';
     else if (cap.position === 'center') yPos = '(h-text_h)/2';
@@ -153,11 +138,8 @@ export async function processLocalVideo(file: Blob, options: ExportOptions): Pro
     videoFilters.push(drawText);
   });
 
-  // 8. FINAL SAFETY: Ensure even dimensions for H.264 compatibility
-  // This is CRITICAL. Many players fail if width/height are odd.
   videoFilters.push("scale='trunc(iw/2)*2:trunc(ih/2)*2'");
 
-  // --- Audio Filters ---
   const audioFilters: string[] = [];
   if (options.audio.muted) {
     audioFilters.push('volume=0');
@@ -174,7 +156,15 @@ export async function processLocalVideo(file: Blob, options: ExportOptions): Pro
   const audioFilterStr = audioFilters.length > 0 ? audioFilters.join(',') : null;
 
   // --- Run FFmpeg ---
-  const args = ['-i', inputName];
+  const args: string[] = [];
+  
+  // Trim options (Input-side seek for speed)
+  if (options.trim) {
+    args.push('-ss', String(options.trim.start));
+    args.push('-t', String(options.trim.duration));
+  }
+
+  args.push('-i', inputName);
   
   if (filterStr) {
     args.push('-vf', filterStr);
@@ -187,7 +177,7 @@ export async function processLocalVideo(file: Blob, options: ExportOptions): Pro
   args.push(
     '-c:v', 'libx264',
     '-preset', 'ultrafast',
-    '-crf', '26', // Slightly better quality
+    '-crf', '26',
     '-profile:v', 'high',
     '-level:v', '4.1',
     '-pix_fmt', 'yuv420p',
@@ -200,11 +190,9 @@ export async function processLocalVideo(file: Blob, options: ExportOptions): Pro
 
   await ff.exec(args);
 
-  // Read the result
   const data = await ff.readFile(outputName);
   const result = new Blob([data], { type: 'video/mp4' });
 
-  // Cleanup
   await ff.deleteFile(inputName);
   await ff.deleteFile(outputName);
   

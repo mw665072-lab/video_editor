@@ -1,124 +1,119 @@
 'use client'
 
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, useMemo, memo } from 'react'
+import { List } from 'react-window'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useEditorStore, Caption, EditorFilters } from '@/store/editorStore'
+import {
+  useEditorStore,
+  Caption,
+  VideoFilters,
+  VideoTransform,
+  defaultFilters,
+  defaultTransform,
+  Keyframe,
+  Segment,
+} from '@/store/editorStore'
 import { VideoUpload } from '@/components/VideoUpload'
-import { exportVisualVideo, getVisualExportStatus, downloadVisualExportedVideo } from '@/lib/api'
-import { processLocalVideo } from '@/lib/ffmpeg'
 import { toast } from 'sonner'
 import {
   Play,
   Pause,
   Volume2,
   VolumeX,
-  Sun,
-  Contrast,
-  Droplets,
-  Type,
   Download,
-  Upload,
   RotateCcw,
-  Trash2,
   Plus,
-  Save,
   SkipBack,
   SkipForward,
   FlipHorizontal,
   FlipVertical,
   RotateCw,
   Scissors,
-  Gauge,
   Layers,
-  Music,
-  Crop,
   Film,
-  Settings2,
   X,
-  ChevronDown,
+  PlusCircle,
   ChevronUp,
-  Bold,
-  Italic,
-  AlignCenter,
+  ChevronDown,
+  Repeat,
+  Gauge,
+  Undo,
+  Redo,
+  ZoomIn,
+  ZoomOut,
   AlignLeft,
-  AlignRight,
+  Move,
+  Crop,
 } from 'lucide-react'
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
+// ─── Types ───────────────────────────────────────────────────────────────────
 interface ExtendedCaption extends Caption {
-  fontSize: number
-  color: string
-  fontStyle: 'normal' | 'bold' | 'italic' | 'shadow'
-  bgEnabled: boolean
-  align: 'left' | 'center' | 'right'
+  fontSize?: number
+  color?: string
+  fontStyle?: 'normal' | 'bold' | 'italic' | 'shadow'
+  bgEnabled?: boolean
+  align?: 'left' | 'center' | 'right'
 }
 
-interface VideoFilters extends EditorFilters {
-  hue: number
-  blur: number
-  sepia: number
-  grayscale: number
-  invert: number
-}
-
-interface VideoTransform {
-  rotation: number
-  flipH: boolean
-  flipV: boolean
-  opacity: number
-}
-
-interface ExportFormat {
-  id: string
-  label: string
-  description: string
-  badge?: string
-  badgeColor?: string
-}
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const EXPORT_FORMATS: ExportFormat[] = [
-  { id: 'mp4', label: 'MP4 / H.264', description: 'Universal — works everywhere', badge: 'Most Compatible', badgeColor: '#6c63ff' },
-  { id: 'tiktok', label: 'TikTok / Reels', description: '9:16 · 1080×1920 vertical', badge: 'TikTok', badgeColor: '#ff0050' },
-  { id: 'youtube', label: 'YouTube', description: '16:9 · 1920×1080 landscape', badge: 'YouTube', badgeColor: '#ff0000' },
-  { id: 'instagram', label: 'Instagram', description: 'Square 1:1 · 1080×1080', badge: 'Instagram', badgeColor: '#e1306c' },
-  { id: 'twitter', label: 'Twitter / X', description: '16:9 · up to 1920×1200', badge: 'Twitter', badgeColor: '#1da1f2' },
-  { id: 'webm', label: 'WebM / VP9', description: 'Web-optimised, smaller size', badge: 'WebM', badgeColor: '#4a90d9' },
-]
-
+// ─── LUT Presets ──────────────────────────────────────────────────────────────
 const LUT_PRESETS = [
-  { id: 'cinematic', label: '🎬 Cinematic', filters: { brightness: 0.9, contrast: 1.1, saturation: 0.8, hue: 0, sepia: 5, grayscale: 0, invert: 0 } },
-  { id: 'warm', label: '🌅 Warm', filters: { brightness: 1.05, contrast: 1.05, saturation: 1.2, hue: 15, sepia: 10, grayscale: 0, invert: 0 } },
-  { id: 'cool', label: '❄️ Cool', filters: { brightness: 1.0, contrast: 1.05, saturation: 0.9, hue: 200, sepia: 0, grayscale: 0, invert: 0 } },
-  { id: 'vintage', label: '📷 Vintage', filters: { brightness: 0.9, contrast: 0.95, saturation: 0.7, hue: 10, sepia: 40, grayscale: 0, invert: 0 } },
-  { id: 'vivid', label: '🌈 Vivid', filters: { brightness: 1.1, contrast: 1.2, saturation: 1.5, hue: 0, sepia: 0, grayscale: 0, invert: 0 } },
-  { id: 'bw', label: '⬛ B&W', filters: { brightness: 1.0, contrast: 1.1, saturation: 0, hue: 0, sepia: 0, grayscale: 1, invert: 0 } },
+  { id: 'none', label: 'Original', filters: defaultFilters },
+  { id: 'vibrant', label: 'Vibrant', filters: { ...defaultFilters, saturation: 1.4, contrast: 1.1 } },
+  { id: 'noir', label: 'Noir', filters: { ...defaultFilters, grayscale: 1, contrast: 1.3 } },
+  { id: 'warm', label: 'Warm', filters: { ...defaultFilters, sepia: 30, brightness: 1.05 } },
+  { id: 'dramatic', label: 'Dramatic', filters: { ...defaultFilters, contrast: 1.5, brightness: 0.9 } },
+  { id: 'faded', label: 'Faded', filters: { ...defaultFilters, brightness: 1.1, contrast: 0.8, saturation: 0.8 } },
 ]
 
-const CAPTION_COLORS = ['#ffffff', '#ffd93d', '#4ecdc4', '#ff6b6b', '#6c63ff', '#2ed573', '#000000']
+const EXPORT_FORMATS = [
+  { id: 'mp4', label: 'MP4 (H.264)', description: 'Best compatibility', badge: 'HD Pro', badgeColor: '#6366f1' },
+  { id: 'webm', label: 'WebM (VP9)', description: 'Best for Web', badge: 'Ultra', badgeColor: '#06b6d4' },
+]
 
-const PLAYBACK_SPEEDS = [0.25, 0.5, 1, 1.5, 2]
-
-const defaultFilters: VideoFilters = {
-  brightness: 1, contrast: 1, saturation: 1,
-  hue: 0, blur: 0, sepia: 0, grayscale: 0, invert: 0,
-}
-
-const defaultTransform: VideoTransform = {
-  rotation: 0, flipH: false, flipV: false, opacity: 1,
-}
+const SPEED_OPTIONS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2]
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+function uid(): string {
+  return `seg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+}
+
+async function extractThumbnail(objectUrl: string, time: number = 1): Promise<string> {
+  return new Promise<string>((resolve) => {
+    const video = document.createElement('video')
+    video.muted = true
+    video.playsInline = true
+    video.preload = 'metadata'
+    video.onloadedmetadata = () => {
+      video.currentTime = Math.min(time, video.duration)
+    }
+    video.onseeked = () => {
+      try {
+        const canvas = document.createElement('canvas')
+        canvas.width = 192
+        canvas.height = 108
+        const ctx = canvas.getContext('2d')
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, 192, 108)
+          resolve(canvas.toDataURL('image/jpeg', 0.85))
+        } else {
+          resolve('')
+        }
+      } catch {
+        resolve('')
+      }
+    }
+    video.onerror = () => resolve('')
+    video.src = objectUrl
+  })
+}
 
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60)
@@ -139,24 +134,51 @@ function buildFilterString(f: VideoFilters): string {
   ].join(' ')
 }
 
-function buildTransformString(t: VideoTransform): string {
-  return `rotate(${t.rotation}deg) scaleX(${t.flipH ? -1 : 1}) scaleY(${t.flipV ? -1 : 1})`
+function interpolateKeyframes<T extends number>(
+  keyframes: Keyframe<T>[] | undefined,
+  time: number,
+  defaultValue: T
+): T {
+  if (!keyframes || keyframes.length === 0) return defaultValue
+  const sorted = [...keyframes].sort((a, b) => a.time - b.time)
+  if (time <= sorted[0].time) return sorted[0].value
+  if (time >= sorted[sorted.length - 1].time) return sorted[sorted.length - 1].value
+
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const a = sorted[i]
+    const b = sorted[i + 1]
+    if (time >= a.time && time <= b.time) {
+      const t = (time - a.time) / (b.time - a.time)
+      // Linear interpolation (you can extend with easing functions)
+      return (a.value * (1 - t) + b.value * t) as T
+    }
+  }
+  return defaultValue
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
-
 function FilterSlider({
-  label, value, min, max, step = 0.01, displayValue,
+  label,
+  value,
+  min,
+  max,
+  step = 0.01,
+  displayValue,
   onChange,
 }: {
-  label: string; value: number; min: number; max: number; step?: number
-  displayValue: string; onChange: (v: number[]) => void
+  label: string
+  value: number
+  min: number
+  max: number
+  step?: number
+  displayValue: string
+  onChange: (v: number[]) => void
 }) {
   return (
     <div className="space-y-1 mb-3">
       <div className="flex justify-between items-center">
-        <Label className="text-xs text-slate-300">{label}</Label>
-        <span className="text-xs text-slate-400 tabular-nums font-mono">{displayValue}</span>
+        <Label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">{label}</Label>
+        <span className="text-[10px] text-slate-400 tabular-nums font-mono">{displayValue}</span>
       </div>
       <Slider value={[value]} min={min} max={max} step={step} onValueChange={onChange} className="h-1" />
     </div>
@@ -171,90 +193,103 @@ function ExportModal({
   exportProgress,
   exportStep,
 }: {
-  open: boolean; onClose: () => void
+  open: boolean
+  onClose: () => void
   onExport: (format: string, quality: string) => void
-  isExporting: boolean; exportProgress: number; exportStep: string
+  isExporting: boolean
+  exportProgress: number
+  exportStep: string
 }) {
-  const [selectedFormat, setSelectedFormat] = useState('mp4')
+  const [format, setFormat] = useState('mp4')
   const [quality, setQuality] = useState('medium')
 
   if (!open) return null
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="text-lg font-bold text-white">Export Video</h2>
+          <h2 className="text-xl font-bold text-white tracking-tight">Export Composition</h2>
           <Button size="icon" variant="ghost" onClick={onClose} className="h-7 w-7 text-slate-400 hover:text-white">
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </Button>
         </div>
-        <p className="text-slate-400 text-xs mb-5">Choose your format and quality settings</p>
+        <p className="text-slate-400 text-xs mb-6">Process all clips and merge into final masterpiece.</p>
 
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          {EXPORT_FORMATS.map(f => (
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          {EXPORT_FORMATS.map((f) => (
             <button
               key={f.id}
-              onClick={() => setSelectedFormat(f.id)}
-              className={`p-3 rounded-xl border text-left transition-all ${selectedFormat === f.id
-                ? 'border-indigo-500 bg-indigo-500/10'
-                : 'border-slate-700 bg-slate-800/60 hover:border-slate-600'
-                }`}
+              onClick={() => setFormat(f.id)}
+              className={`p-3 rounded-xl border text-left transition-all relative overflow-hidden ${
+                format === f.id
+                  ? 'border-indigo-500 bg-indigo-500/10'
+                  : 'border-slate-800 bg-slate-800/40 hover:border-slate-700'
+              }`}
             >
-              {f.badge && (
-                <span
-                  className="inline-block text-[9px] font-bold px-2 py-0.5 rounded-full text-white mb-1"
-                  style={{ background: f.badgeColor }}
-                >
-                  {f.badge}
-                </span>
-              )}
-              <div className="text-xs font-semibold text-white">{f.label}</div>
-              <div className="text-[10px] text-slate-400 mt-0.5">{f.description}</div>
+              <span
+                className="inline-block text-[8px] font-black px-1.5 py-0.5 rounded-sm text-white mb-2 uppercase tracking-tighter"
+                style={{ background: f.badgeColor }}
+              >
+                {f.badge}
+              </span>
+              <div className="text-xs font-bold text-white">{f.label}</div>
+              <div className="text-[9px] text-slate-500 mt-0.5">{f.description}</div>
             </button>
           ))}
         </div>
 
-        <div className="mb-4">
-          <Label className="text-xs text-slate-300 mb-1 block">Quality</Label>
-          <Select value={quality} onValueChange={setQuality}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-200 w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-slate-700">
-              <SelectItem value="high" className="text-slate-200 focus:bg-slate-700 focus:text-white">High (1080p)</SelectItem>
-              <SelectItem value="medium" className="text-slate-200 focus:bg-slate-700 focus:text-white">Medium (720p)</SelectItem>
-              <SelectItem value="low" className="text-slate-200 focus:bg-slate-700 focus:text-white">Low (480p — smaller file)</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="space-y-4 mb-8">
+          <div className="space-y-1.5">
+            <Label className="text-[10px] uppercase font-bold text-slate-500">Video Quality</Label>
+            <Select value={quality} onValueChange={setQuality}>
+              <SelectTrigger className="bg-slate-800/50 border-slate-700 text-slate-200 h-10 rounded-xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-slate-700">
+                <SelectItem value="high">High (1080p · Optimized)</SelectItem>
+                <SelectItem value="medium">Balanced (720p)</SelectItem>
+                <SelectItem value="low">Fast Draft (480p)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {isExporting && (
-          <div className="mb-4">
-            <div className="flex justify-between text-xs text-slate-300 mb-1">
-              <span>{exportStep}</span>
-              <span className="text-indigo-400 font-bold">{exportProgress}%</span>
+          <div className="mb-6 space-y-2">
+            <div className="flex justify-between text-[11px] font-bold text-indigo-400">
+              <span className="animate-pulse">{exportStep}</span>
+              <span>{exportProgress}%</span>
             </div>
-            <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden shadow-inner">
               <div
-                className="h-full bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-full transition-all duration-300"
+                className="h-full bg-gradient-to-r from-indigo-500 to-cyan-500 transition-all duration-300 shadow-glow"
                 style={{ width: `${exportProgress}%` }}
               />
             </div>
           </div>
         )}
 
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={onClose} className="border-slate-700 text-slate-300 hover:text-white">
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="flex-1 border-slate-700 text-slate-400 hover:text-white rounded-xl h-11"
+          >
             Cancel
           </Button>
           <Button
-            className="flex-1 bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold hover:opacity-90"
-            onClick={() => onExport(selectedFormat, quality)}
+            className="flex-[2] bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold hover:opacity-90 rounded-xl h-11 shadow-lg shadow-indigo-500/20"
+            onClick={() => onExport(format, quality)}
             disabled={isExporting}
           >
-            <Download className="w-4 h-4 mr-2" />
-            {isExporting ? 'Exporting...' : 'Export Now'}
+            {isExporting ? (
+              <div className="flex items-center gap-2">
+                <PlusCircle className="w-4 h-4 animate-spin" /> Processing...
+              </div>
+            ) : (
+              'Start Final Export'
+            )}
           </Button>
         </div>
       </div>
@@ -262,985 +297,1494 @@ function ExportModal({
   )
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// Virtualized clip list row
+const ClipRow = memo(
+  ({
+    index,
+    style,
+    segments,
+    selectedIds,
+    toggleSelect,
+    removeSegment,
+  }: {
+    index: number
+    style: React.CSSProperties
+    segments: Segment[]
+    selectedIds: string[]
+    toggleSelect: (id: string, shiftKey: boolean) => void
+    removeSegment: (id: string) => void
+  }) => {
+    const seg = segments[index]
+    const active = selectedIds.includes(seg.id)
+    return (
+      <div style={style}>
+        <div
+          onClick={(e) => toggleSelect(seg.id, e.shiftKey)}
+          className={`group p-2 mx-1 rounded-xl border-2 transition-all cursor-pointer flex items-center gap-3 ${
+            active ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-800 hover:border-slate-700 bg-slate-900/30'
+          }`}
+        >
+          <div className="relative w-20 h-12 rounded-lg bg-black overflow-hidden shadow-lg flex-shrink-0">
+            {seg.thumbnail ? (
+              <img src={seg.thumbnail} className="w-full h-full object-cover" alt="" />
+            ) : (
+              <Film className="w-4 h-4 m-auto text-slate-800" />
+            )}
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent" />
+            <div className="absolute top-1 left-1 bg-black/60 text-[8px] font-bold px-1 rounded-sm">{index + 1}</div>
+            <div className="absolute bottom-1 right-1 bg-black/60 text-[8px] font-mono text-cyan-400 px-1 rounded-sm">
+              {seg.trimDuration.toFixed(1)}s
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] font-bold truncate">{seg.label}</p>
+            <p className="text-[9px] text-slate-500 mt-0.5 truncate uppercase tracking-tighter">
+              1080p · {seg.trimDuration.toFixed(1)}s
+            </p>
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              removeSegment(seg.id)
+            }}
+            className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg hover:bg-red-500/10 hover:text-red-400 flex items-center justify-center transition-all"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    )
+  }
+)
+ClipRow.displayName = 'ClipRow'
 
-export function VisualEditor() {
+// Timeline clip with trim handles
+function TimelineClip({
+  segment,
+  isSelected,
+  onSelect,
+  onTrimStart,
+  onTrimEnd,
+  zoom,
+  left,
+}: {
+  segment: Segment
+  isSelected: boolean
+  onSelect: () => void
+  onTrimStart: (id: string, e: React.MouseEvent) => void
+  onTrimEnd: (id: string, e: React.MouseEvent) => void
+  zoom: number
+  left: number
+}) {
+  const width = segment.trimDuration * zoom
+  return (
+    <div
+      className="absolute top-0 h-full"
+      style={{ left: `${left}px`, width: `${width}px` }}
+    >
+      <div
+        className={`relative h-full rounded-md overflow-hidden border-2 cursor-pointer ${
+          isSelected ? 'border-indigo-500' : 'border-slate-700 hover:border-slate-500'
+        }`}
+        onClick={onSelect}
+      >
+        <img src={segment.thumbnail} className="w-full h-full object-cover" alt="" />
+        {segment.transition.type !== 'none' && (
+          <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent pointer-events-none" />
+        )}
+        {/* Trim handles */}
+        <div
+          className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize bg-indigo-500/30 hover:bg-indigo-500/60 z-10"
+          onMouseDown={(e) => {
+            e.stopPropagation()
+            onTrimStart(segment.id, e)
+          }}
+        />
+        <div
+          className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize bg-indigo-500/30 hover:bg-indigo-500/60 z-10"
+          onMouseDown={(e) => {
+            e.stopPropagation()
+            onTrimEnd(segment.id, e)
+          }}
+        />
+        <div className="absolute bottom-1 left-1 text-[8px] font-bold bg-black/60 px-1 rounded-sm text-white">
+          {segment.label}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Main Editor Component ──────────────────────────────────────────────────
+export default function VisualEditor() {
   const {
-    videoUrl,
-    currentTime,
-    duration,
-    isPlaying,
+    segments,
+    selectedSegmentIds,
     captions,
-    setVideoUrl,
-    setCurrentTime,
-    setDuration,
-    setIsPlaying,
+    pushHistory,
+    undo,
+    redo,
+    addSegment,
+    removeSegment,
+    updateSegment,
+    updateSelectedSegments,
+    setSelectedSegmentIds,
+    reorderSegments,
     addCaption,
-    updateCaption,
     removeCaption,
     reset,
+    addTransition,
+    addKeyframe,
+    updateKeyframe,
+    removeKeyframe,
+    splitSelectedAtPlayhead,
+    rippleDelete,
   } = useEditorStore()
 
-  const videoRef = useRef<HTMLVideoElement>(null)
-
-  // ── Video source state ──
-  const [videoSource, setVideoSource] = useState<Blob | string | null>(null)
-
-  // ── Filters ──
-  const [filters, setFiltersState] = useState<VideoFilters>(defaultFilters)
-
-  // ── Transform ──
-  const [transform, setTransform] = useState<VideoTransform>(defaultTransform)
-
-  // ── Audio ──
+  // ── Local UI State ──
+  const [activeTab, setActiveTab] = useState('filters')
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
   const [isMuted, setIsMuted] = useState(false)
-  const [volume, setVolume] = useState(1)
+  const [volume, setVolume] = useState(0.8)
   const [isLooping, setIsLooping] = useState(false)
+  const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const [fadeIn, setFadeIn] = useState(0)
   const [fadeOut, setFadeOut] = useState(0)
-  const [playbackSpeed, setPlaybackSpeed] = useState(1)
-
-  // ── Caption form ──
-  const [newCaptionText, setNewCaptionText] = useState('')
-  const [newCaptionStart, setNewCaptionStart] = useState(0)
-  const [newCaptionEnd, setNewCaptionEnd] = useState(5)
-  const [newCaptionPosition, setNewCaptionPosition] = useState<'top' | 'center' | 'bottom'>('bottom')
-  const [newCaptionFontSize, setNewCaptionFontSize] = useState(20)
-  const [newCaptionColor, setNewCaptionColor] = useState('#ffffff')
-  const [newCaptionFontStyle, setNewCaptionFontStyle] = useState<'normal' | 'bold' | 'italic' | 'shadow'>('normal')
-  const [newCaptionBg, setNewCaptionBg] = useState(true)
-  const [newCaptionAlign, setNewCaptionAlign] = useState<'left' | 'center' | 'right'>('center')
-
-  // ── Export ──
+  const [timelineZoom, setTimelineZoom] = useState(100)
+  const [snapEnabled, setSnapEnabled] = useState(true)
   const [isExporting, setIsExporting] = useState(false)
   const [exportProgress, setExportProgress] = useState(0)
   const [exportStep, setExportStep] = useState('')
   const [exportModalOpen, setExportModalOpen] = useState(false)
 
-  // ── UI ──
-  const [activeFormatLabel, setActiveFormatLabel] = useState<string | null>(null)
-  const [isSeeking, setIsSeeking] = useState(false)
+  const [newCaptionText, setNewCaptionText] = useState('')
+  const [newCaptionStart, setNewCaptionStart] = useState(0)
+  const [newCaptionEnd, setNewCaptionEnd] = useState(5)
+  const [newCaptionPosition, setNewCaptionPosition] = useState<'top' | 'center' | 'bottom'>('bottom')
+  const [newCaptionSize, setNewCaptionSize] = useState(24)
+  const [newCaptionColor, setNewCaptionColor] = useState('#ffffff')
+  const [newCaptionStyle, setNewCaptionStyle] = useState<'normal' | 'bold' | 'italic' | 'shadow'>('shadow')
+  const [newCaptionBg, setNewCaptionBg] = useState(true)
+  const [newCaptionAlign, setNewCaptionAlign] = useState<'left' | 'center' | 'right'>('center')
 
-  // ─── Derived: active caption ─────────────────────────────────────────────────
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const timelineRef = useRef<HTMLDivElement>(null)
 
-  const activeCaption = (captions as ExtendedCaption[]).find(
-    c => currentTime >= c.start && currentTime <= c.end
+  // Derived state
+  const currentSegment = useMemo(
+    () => segments.find((s) => selectedSegmentIds.includes(s.id)) || segments[0] || null,
+    [segments, selectedSegmentIds]
+  )
+  const totalDuration = useMemo(() => segments.reduce((sum, s) => sum + s.trimDuration, 0), [segments])
+
+  // Compute transform values with keyframe interpolation
+  const computedTransform = useMemo(() => {
+    if (!currentSegment) return defaultTransform
+    const relTime = currentTime - currentSegment.startTime
+    return {
+      rotation: interpolateKeyframes(currentSegment.keyframes?.rotation, relTime, currentSegment.transform.rotation),
+      opacity: interpolateKeyframes(currentSegment.keyframes?.opacity, relTime, currentSegment.transform.opacity),
+      scale: interpolateKeyframes(currentSegment.keyframes?.scale, relTime, currentSegment.transform.scale ?? 1),
+      x: interpolateKeyframes(currentSegment.keyframes?.x, relTime, currentSegment.transform.x ?? 0),
+      y: interpolateKeyframes(currentSegment.keyframes?.y, relTime, currentSegment.transform.y ?? 0),
+      flipH: currentSegment.transform.flipH,
+      flipV: currentSegment.transform.flipV,
+    }
+  }, [currentSegment, currentTime])
+
+  const progressPct = currentSegment
+    ? Math.max(0, Math.min(100, ((currentTime - currentSegment.startTime) / currentSegment.trimDuration) * 100))
+    : 0
+
+  const activeCaption = (captions as ExtendedCaption[]).find((c) => currentTime >= c.start && currentTime <= c.end)
+  const captionPositionClass =
+    activeCaption?.position === 'top'
+      ? 'top-8'
+      : activeCaption?.position === 'center'
+      ? 'top-1/2 -translate-y-1/2'
+      : 'bottom-8'
+
+  const videoStyle: React.CSSProperties = useMemo(
+    () => ({
+      filter: currentSegment ? buildFilterString(currentSegment.filters) : '',
+      transform: `
+        translate(${computedTransform.x}px, ${computedTransform.y}px)
+        rotate(${computedTransform.rotation}deg)
+        scale(${computedTransform.scale})
+        scaleX(${computedTransform.flipH ? -1 : 1})
+        scaleY(${computedTransform.flipV ? -1 : 1})
+      `,
+      opacity: computedTransform.opacity,
+    }),
+    [currentSegment, computedTransform]
   )
 
-  // ─── Video CSS ────────────────────────────────────────────────────────────────
-
-  const videoStyle: React.CSSProperties = {
-    filter: buildFilterString(filters),
-    transform: buildTransformString(transform),
-    opacity: transform.opacity,
-  }
-
-  // ─── Video load ───────────────────────────────────────────────────────────────
-
-  const handleVideoLoaded = useCallback(
-    (source: Blob | string, dur: number, fileName?: string) => {
-      setVideoSource(source)
-      if (typeof source === 'string') {
-        setVideoUrl(source)
-      } else {
-        setVideoUrl(URL.createObjectURL(source))
+  // ── Effects ──
+  useEffect(() => {
+    if (videoRef.current && currentSegment) {
+      const video = videoRef.current
+      if (video.src !== currentSegment.videoUrl) {
+        video.src = currentSegment.videoUrl
+        video.currentTime = currentSegment.startTime
+        setCurrentTime(currentSegment.startTime)
+        setDuration(currentSegment.trimDuration)
       }
-      setDuration(dur)
-      toast.success(`Video loaded${fileName ? ': ' + fileName : ''}`)
+    }
+  }, [currentSegment])
+
+  useEffect(() => {
+    if (isPlaying && videoRef.current && currentSegment) {
+      if (videoRef.current.currentTime >= currentSegment.startTime + currentSegment.trimDuration) {
+        if (isLooping) videoRef.current.currentTime = currentSegment.startTime
+        else {
+          videoRef.current.pause()
+          setIsPlaying(false)
+        }
+      }
+    }
+  }, [currentTime, isPlaying, currentSegment, isLooping])
+
+  useEffect(() => {
+    if (videoRef.current) videoRef.current.playbackRate = playbackSpeed
+  }, [playbackSpeed])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault()
+        if (e.shiftKey) redo()
+        else undo()
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+        e.preventDefault()
+        redo()
+      }
+      if (e.key === ' ' && document.activeElement?.tagName !== 'INPUT') {
+        e.preventDefault()
+        togglePlay()
+      }
+      if (e.key === 'Delete' && selectedSegmentIds.length > 0) {
+        e.preventDefault()
+        selectedSegmentIds.forEach((id) => rippleDelete(id))
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [undo, redo, selectedSegmentIds, rippleDelete])
+
+  // ── Handlers ──
+  const handleVideoLoaded = useCallback(
+    async (file: Blob | string, dur: number, name?: string) => {
+      const url = typeof file === 'string' ? file : URL.createObjectURL(file)
+      const thumb = await extractThumbnail(url, 2)
+
+      addSegment({
+        id: uid(),
+        videoUrl: url,
+        file: file instanceof File ? file : null,
+        duration: dur,
+        startTime: 0,
+        trimDuration: dur || 10,
+        label: name || 'Untitled Clip',
+        thumbnail: thumb || '',
+        filters: { ...defaultFilters },
+        transform: { ...defaultTransform },
+      } as any)
+      toast.success('Clip added to your composition')
     },
-    [setVideoUrl, setDuration]
+    [addSegment]
   )
 
-  // ─── Playback ─────────────────────────────────────────────────────────────────
+  const toggleSegmentSelection = useCallback(
+    (id: string, multi: boolean) => {
+      if (multi) {
+        setSelectedSegmentIds(
+          selectedSegmentIds.includes(id)
+            ? selectedSegmentIds.filter((sid) => sid !== id)
+            : [...selectedSegmentIds, id]
+        )
+      } else setSelectedSegmentIds([id])
+    },
+    [selectedSegmentIds, setSelectedSegmentIds]
+  )
+
+  const handleClearVideo = useCallback(() => {
+    reset()
+    toast.success('Project cleared')
+  }, [reset])
 
   const togglePlay = useCallback(() => {
     if (!videoRef.current) return
     if (isPlaying) videoRef.current.pause()
     else videoRef.current.play()
     setIsPlaying(!isPlaying)
-  }, [isPlaying, setIsPlaying])
+  }, [isPlaying])
 
   const handleTimeUpdate = useCallback(() => {
-    if (videoRef.current && !isSeeking) setCurrentTime(videoRef.current.currentTime)
-  }, [setCurrentTime, isSeeking])
-
-  const handleLoadedMetadata = useCallback(() => {
-    if (videoRef.current) setDuration(videoRef.current.duration)
-  }, [setDuration])
+    if (videoRef.current) setCurrentTime(videoRef.current.currentTime)
+  }, [])
 
   const handleSeek = useCallback(
     (time: number) => {
-      if (videoRef.current) {
-        videoRef.current.currentTime = time
-        setCurrentTime(time)
+      if (videoRef.current && currentSegment) {
+        const abs = currentSegment.startTime + time
+        videoRef.current.currentTime = abs
+        setCurrentTime(abs)
       }
     },
-    [setCurrentTime]
+    [currentSegment]
   )
 
   const skipBy = useCallback(
-    (seconds: number) => {
-      if (videoRef.current) {
-        const t = Math.max(0, Math.min(duration, videoRef.current.currentTime + seconds))
-        videoRef.current.currentTime = t
-        setCurrentTime(t)
+    (s: number) => {
+      if (videoRef.current && currentSegment) {
+        const rel = videoRef.current.currentTime - currentSegment.startTime
+        handleSeek(Math.max(0, Math.min(currentSegment.trimDuration, rel + s)))
       }
     },
-    [duration, setCurrentTime]
+    [currentSegment, handleSeek]
   )
 
-  const handleSpeedChange = useCallback((speed: number) => {
-    setPlaybackSpeed(speed)
-    if (videoRef.current) videoRef.current.playbackRate = speed
+  const handleVolumeChange = useCallback((v: number[]) => {
+    setVolume(v[0])
+    if (videoRef.current) videoRef.current.volume = v[0]
   }, [])
 
-  // ─── Audio ────────────────────────────────────────────────────────────────────
+  const splitAtPlayhead = useCallback(() => {
+    if (!currentSegment) return
+    splitSelectedAtPlayhead(currentTime)
+    toast.success('Split all selected clips at playhead')
+  }, [currentSegment, currentTime, splitSelectedAtPlayhead])
 
-  const toggleMute = useCallback(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted
-      setIsMuted(!isMuted)
-    }
-  }, [isMuted])
+  const moveSegment = useCallback(
+    (direction: 'up' | 'down') => {
+      if (!currentSegment) return
+      const idx = segments.findIndex((s) => s.id === currentSegment.id)
+      if (direction === 'up' && idx > 0) reorderSegments(idx, idx - 1)
+      if (direction === 'down' && idx < segments.length - 1) reorderSegments(idx, idx + 1)
+    },
+    [currentSegment, segments, reorderSegments]
+  )
 
-  const handleVolumeChange = useCallback((value: number[]) => {
-    const v = value[0]
-    setVolume(v)
-    if (videoRef.current) {
-      videoRef.current.volume = v
-      videoRef.current.muted = v === 0
-      setIsMuted(v === 0)
-    }
-  }, [])
-
-  const toggleLoop = useCallback(() => {
-    const next = !isLooping
-    setIsLooping(next)
-    if (videoRef.current) videoRef.current.loop = next
-  }, [isLooping])
-
-  // ─── Filters ─────────────────────────────────────────────────────────────────
-
-  const updateFilter = useCallback((key: keyof VideoFilters, value: number) => {
-    setFiltersState(prev => ({ ...prev, [key]: value }))
-  }, [])
+  const updateSelectedFilter = useCallback(
+    (key: keyof VideoFilters, value: number) => {
+      updateSelectedSegments({ filters: { ...currentSegment?.filters, [key]: value } } as any)
+    },
+    [updateSelectedSegments, currentSegment]
+  )
 
   const resetFilters = useCallback(() => {
-    setFiltersState(defaultFilters)
-    toast.info('Filters reset')
-  }, [])
+    updateSelectedSegments({ filters: { ...defaultFilters } })
+  }, [updateSelectedSegments])
 
-  const applyPreset = useCallback((preset: typeof LUT_PRESETS[0]) => {
-    setFiltersState(prev => ({ ...prev, ...preset.filters }))
-    toast.success(`Applied ${preset.label} preset`)
-  }, [])
+  const applyPreset = useCallback(
+    (preset: (typeof LUT_PRESETS)[0]) => {
+      updateSelectedSegments({ filters: { ...currentSegment?.filters, ...preset.filters } } as any)
+    },
+    [updateSelectedSegments, currentSegment]
+  )
 
-  // ─── Transform ────────────────────────────────────────────────────────────────
+  const rotate = useCallback(
+    (deg: number) => {
+      if (!currentSegment) return
+      updateSelectedSegments({
+        transform: { ...currentSegment.transform, rotation: (currentSegment.transform.rotation + deg) % 360 },
+      })
+    },
+    [updateSelectedSegments, currentSegment]
+  )
 
-  const rotate = useCallback((deg: number) => {
-    setTransform(prev => ({ ...prev, rotation: (prev.rotation + deg) % 360 }))
-    toast.info(`Rotated ${deg}°`)
-  }, [])
-
-  const flip = useCallback((axis: 'h' | 'v') => {
-    setTransform(prev =>
-      axis === 'h' ? { ...prev, flipH: !prev.flipH } : { ...prev, flipV: !prev.flipV }
-    )
-  }, [])
+  const flip = useCallback(
+    (axis: 'h' | 'v') => {
+      if (!currentSegment) return
+      updateSelectedSegments({
+        transform:
+          axis === 'h'
+            ? { ...currentSegment.transform, flipH: !currentSegment.transform.flipH }
+            : { ...currentSegment.transform, flipV: !currentSegment.transform.flipV },
+      })
+    },
+    [updateSelectedSegments, currentSegment]
+  )
 
   const resetTransform = useCallback(() => {
-    setTransform(defaultTransform)
-    toast.info('Transform reset')
-  }, [])
-
-  // ─── Captions ─────────────────────────────────────────────────────────────────
+    updateSelectedSegments({ transform: { ...defaultTransform } })
+  }, [updateSelectedSegments])
 
   const handleAddCaption = useCallback(() => {
-    if (!newCaptionText.trim()) { toast.error('Enter caption text'); return }
-    if (newCaptionStart >= newCaptionEnd) { toast.error('Start must be before end'); return }
-
+    if (!newCaptionText.trim()) return toast.error('Enter text')
     addCaption({
       text: newCaptionText,
       start: newCaptionStart,
       end: newCaptionEnd,
       position: newCaptionPosition,
-      // extended fields stored via spread — your store should accept extra props
-      // or you can extend the Caption type in editorStore
-      ...(
-        {
-          fontSize: newCaptionFontSize,
-          color: newCaptionColor,
-          fontStyle: newCaptionFontStyle,
-          bgEnabled: newCaptionBg,
-          align: newCaptionAlign,
-        } as any
-      ),
-    })
-
+      color: newCaptionColor,
+      fontSize: newCaptionSize,
+      fontStyle: newCaptionStyle,
+      bgEnabled: newCaptionBg,
+      align: newCaptionAlign,
+    } as any)
     setNewCaptionText('')
-    if (videoRef.current) {
-      setNewCaptionStart(videoRef.current.currentTime)
-      setNewCaptionEnd(Math.min(duration, videoRef.current.currentTime + 5))
-    }
-    toast.success('Caption added')
+    toast.success('Caption added to timeline')
   }, [
-    newCaptionText, newCaptionStart, newCaptionEnd, newCaptionPosition,
-    newCaptionFontSize, newCaptionColor, newCaptionFontStyle, newCaptionBg, newCaptionAlign,
-    duration, addCaption,
+    newCaptionText,
+    newCaptionStart,
+    newCaptionEnd,
+    newCaptionPosition,
+    newCaptionColor,
+    newCaptionSize,
+    newCaptionStyle,
+    newCaptionBg,
+    newCaptionAlign,
+    addCaption,
   ])
 
-  const setTimestampsAtPlayhead = useCallback(() => {
-    if (!videoRef.current) return
-    const t = videoRef.current.currentTime
-    setNewCaptionStart(parseFloat(t.toFixed(1)))
-    setNewCaptionEnd(parseFloat(Math.min(duration, t + 5).toFixed(1)))
-    toast.success('Timestamps set to playhead')
-  }, [duration])
+  const deleteCaption = useCallback(
+    (id: string) => {
+      removeCaption(id)
+    },
+    [removeCaption]
+  )
 
-  const clearAllCaptions = useCallback(() => {
-    captions.forEach(c => removeCaption(c.id))
-    toast.info('All captions cleared')
-  }, [captions, removeCaption])
+  // Trim handlers (simplified - you'd implement full drag logic)
+  const handleTrimStart = useCallback(
+    (id: string, e: React.MouseEvent) => {
+      // Implement trim start drag
+      console.log('Trim start', id)
+    },
+    []
+  )
 
-  // ─── Export ───────────────────────────────────────────────────────────────────
+  const handleTrimEnd = useCallback(
+    (id: string, e: React.MouseEvent) => {
+      // Implement trim end drag
+      console.log('Trim end', id)
+    },
+    []
+  )
 
+  // Export
   const handleExport = useCallback(
     async (format: string, quality: string) => {
-      if (!videoUrl) { toast.error('No video loaded'); return }
-
+      if (segments.length === 0) return
       setIsExporting(true)
       setExportProgress(0)
-
-      const steps = [
-        [10, 'Reading video data...'],
-        [25, 'Applying filters...'],
-        [40, 'Processing audio...'],
-        [60, 'Encoding captions...'],
-        [75, `Encoding to ${format.toUpperCase()}...`],
-        [90, 'Finalising...'],
-        [100, 'Done!'],
-      ] as const
+      setExportStep('Initializing processing core...')
 
       try {
-        const exportOptions = {
-          filters: {
-            brightness: filters.brightness,
-            contrast: filters.contrast,
-            saturation: filters.saturation,
-            hue: filters.hue,
-            blur: filters.blur,
-            sepia: filters.sepia,
-            grayscale: filters.grayscale,
-            invert: filters.invert,
-          },
-          transform,
-          audio: { volume, muted: isMuted, fadeIn, fadeOut },
-          captions: captions.map(({ id, ...cap }) => cap as any),
-          onProgress: (p: number) => {
-            setExportProgress(p)
-            setExportStep(p < 100 ? `Encoding with FFmpeg... ${p}%` : 'Finalising...')
+        const { processLocalVideo } = await import('@/lib/ffmpeg')
+        const { concatSegments } = await import('@/lib/ffmpeg-cut')
+        const processed: Blob[] = []
+
+        for (let i = 0; i < segments.length; i++) {
+          const seg = segments[i]
+          setExportStep(`Rendering Clip ${i + 1}/${segments.length}: ${seg.label}`)
+          setExportProgress(Math.round((i / segments.length) * 85))
+
+          let blob: Blob
+          if (seg.file) blob = seg.file
+          else {
+            const r = await fetch(seg.videoUrl)
+            blob = await r.blob()
           }
+
+          const res = await processLocalVideo(blob, {
+            filters: seg.filters,
+            transform: seg.transform,
+            audio: { volume, muted: isMuted, fadeIn, fadeOut },
+            captions: [],
+            trim: { start: seg.startTime, duration: seg.trimDuration },
+          })
+          processed.push(res)
         }
 
-        let resultBlob: Blob
+        setExportStep('Merging clips into final scene...')
+        setExportProgress(90)
+        const merged = await concatSegments(processed)
 
-        if (videoSource instanceof Blob) {
-          // --- Client-Side Export ---
-          setExportStep('Initializing FFmpeg...')
-          setExportProgress(5)
-          resultBlob = await processLocalVideo(videoSource, exportOptions)
-          setExportProgress(100)
-          setExportStep('Done!')
-        } else {
-          // --- Backend-Side Export ---
-          const exportData = {
-            videoSource: videoUrl || '',
-            format,
-            quality,
-            ...exportOptions
-          }
-
-          const { jobId } = await exportVisualVideo(exportData)
-
-          // Simulate step progress while polling
-          let stepIdx = 0
-          const stepTimer = setInterval(() => {
-            if (stepIdx < steps.length - 1) {
-              const [pct, label] = steps[stepIdx++]
-              setExportProgress(pct)
-              setExportStep(label)
-            }
-          }, 500)
-
-          let status = await getVisualExportStatus(jobId)
-          while (status.status === 'pending' || status.status === 'running') {
-            await new Promise(r => setTimeout(r, 2000))
-            status = await getVisualExportStatus(jobId)
-            if (status.progress) setExportProgress(status.progress)
-          }
-
-          clearInterval(stepTimer)
-
-          if (status.status === 'failed') throw new Error(status.error || 'Export failed')
-
-          if (status.status === 'done' && status.downloadUrl) {
-            resultBlob = await downloadVisualExportedVideo(status.downloadUrl)
-          } else {
-            throw new Error('Export completed but no download URL was provided')
-          }
+        let result = merged
+        if (captions.length > 0) {
+          setExportStep('Burn-in global captions...')
+          setExportProgress(95)
+          result = await processLocalVideo(merged, {
+            filters: defaultFilters,
+            transform: defaultTransform,
+            audio: { volume, muted: isMuted, fadeIn, fadeOut },
+            captions: captions.map(({ id, ...rest }) => rest),
+          } as any)
         }
 
-        // --- Handle Download ---
-        const url = URL.createObjectURL(resultBlob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = `cutpro-export-${format}-${Date.now()}.mp4`
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
+        setExportProgress(100)
+        setExportStep('Done!')
+
+        const url = URL.createObjectURL(result)
+        const dl = document.createElement('a')
+        dl.href = url
+        dl.download = `cutpro-${Date.now()}.${format === 'webm' ? 'webm' : 'mp4'}`
+        dl.click()
         URL.revokeObjectURL(url)
-        toast.success('Export downloaded!')
-
-      } catch (err) {
-        console.error('[Export Error]', err)
-        const msg = err instanceof Error ? err.message : 'Unknown error'
-        toast.error(`Export failed: ${msg}`)
+        toast.success('Production ready video exported!')
+      } catch (e) {
+        toast.error('Export failed')
+        console.error(e)
       } finally {
         setIsExporting(false)
         setExportModalOpen(false)
       }
     },
-    [videoSource, videoUrl, filters, transform, volume, isMuted, fadeIn, fadeOut, captions]
+    [segments, captions, volume, isMuted, fadeIn, fadeOut]
   )
 
-  // ─── Clear ────────────────────────────────────────────────────────────────────
-
-  const handleClearVideo = useCallback(() => {
-    if (videoUrl?.startsWith('blob:')) URL.revokeObjectURL(videoUrl)
-    reset()
-    setVideoSource(null)
-    setFiltersState(defaultFilters)
-    setTransform(defaultTransform)
-    setIsMuted(false)
-    setVolume(1)
-    setIsLooping(false)
-    setActiveFormatLabel(null)
-    toast.success('Editor cleared')
-  }, [videoUrl, reset])
-
-  // ─── Percent progress for timeline ───────────────────────────────────────────
-
-  const progressPct = duration > 0 ? (currentTime / duration) * 100 : 0
-
-  // ─── Caption position CSS ─────────────────────────────────────────────────────
-
-  const captionPositionClass =
-    activeCaption?.position === 'top'
-      ? 'top-4'
-      : activeCaption?.position === 'center'
-        ? 'top-1/2 -translate-y-1/2'
-        : 'bottom-4'
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // RENDER
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  return (
-    <div className="min-h-screen text-white p-4 sm:p-6 lg:p-8 overflow-x-hidden">
-      <div className="mx-auto max-w-[1440px] space-y-4">
-
-        {/* ── Header ── */}
-        <div className="rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4 backdrop-blur shadow-xl">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight italic text-white">
-                Cut<span className="text-cyan-400">Pro</span>
-              </h1>
-              <p className="text-slate-400 text-sm mt-1">
-                Professional video editor — filters, captions, audio, transform & multi-format export
-              </p>
-            </div>
-            {videoUrl && (
-              <div className="flex gap-2 flex-wrap">
-                {/* Format quick-select */}
-                {(['TikTok', 'Reels', 'YouTube', 'Square'] as const).map(f => (
-                  <Button
-                    key={f}
-                    size="sm"
-                    variant="outline"
-                    onClick={() => { setActiveFormatLabel(f); toast.info(`Format: ${f}`) }}
-                    className={`rounded-lg border-slate-700 text-xs ${activeFormatLabel === f ? 'border-indigo-500 bg-indigo-500/20 text-indigo-300' : 'bg-slate-800/60 text-slate-300'}`}
-                  >
-                    {f}
-                  </Button>
-                ))}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleClearVideo}
-                  className="rounded-lg border-slate-600 bg-slate-800/60 text-slate-100 hover:border-red-500 hover:bg-red-500/10 hover:text-red-400"
-                >
-                  <RotateCcw className="w-4 h-4 mr-1" /> Clear
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => setExportModalOpen(true)}
-                  className="rounded-lg bg-gradient-to-r from-indigo-500 to-cyan-500 text-white hover:opacity-90 font-semibold"
-                >
-                  <Download className="w-4 h-4 mr-1" /> Export
-                </Button>
-              </div>
-            )}
+  // ── Render ──
+  if (segments.length === 0) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center p-8">
+        <div className="max-w-xl w-full text-center space-y-10 animate-in fade-in slide-in-from-bottom-5 duration-700">
+          <div className="space-y-4">
+            <h1 className="text-7xl font-black italic tracking-tighter text-white">
+              Cut<span className="text-indigo-500">Pro</span>
+            </h1>
+            <p className="text-slate-400 text-lg font-medium">Professional grade multi-clip video editor.</p>
+          </div>
+          <div className="bg-slate-900/40 border-2 border-dashed border-slate-800 rounded-[2rem] p-12 hover:border-indigo-500/50 transition-all hover:bg-slate-900/60 shadow-2xl">
+            <VideoUpload showUrlUpload={true} onVideoLoaded={handleVideoLoaded} onDurationResolved={() => {}} />
           </div>
         </div>
+      </div>
+    )
+  }
 
-        {!videoUrl ? (
-          // ── Upload ──
-          <div className="flex-1 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-700 bg-slate-900/70 p-12 min-h-[60vh]">
-            <VideoUpload
-              showUrlUpload={false}
-              onVideoLoaded={handleVideoLoaded}
-              onDurationResolved={(dur, title) => {
-                setDuration(dur)
-                if (title) toast.success(`Duration: ${formatTime(dur)}${title !== 'Untitled' ? ` — ${title}` : ''}`)
-              }}
-            />
+  return (
+    <div className="min-h-screen bg-[#020617] text-slate-100 p-4 lg:p-6 overflow-x-hidden">
+      <div className="max-w-[1600px] mx-auto space-y-4">
+        {/* Header */}
+        <header className="flex items-center justify-between px-6 py-4 bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl">
+          <div className="flex items-center gap-6">
+            <h1 className="text-2xl font-black italic tracking-tighter">
+              Cut<span className="text-indigo-400">Pro</span>
+            </h1>
+            <div className="flex gap-2">
+              <Button size="icon" variant="ghost" onClick={undo} className="h-8 w-8" title="Undo (Ctrl+Z)">
+                <Undo className="w-4 h-4" />
+              </Button>
+              <Button size="icon" variant="ghost" onClick={redo} className="h-8 w-8" title="Redo (Ctrl+Y)">
+                <Redo className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="h-6 w-px bg-slate-800 hidden sm:block" />
+            <div className="hidden sm:flex gap-4">
+              <div className="text-[10px] uppercase tracking-widest font-black text-slate-500">
+                Project: <span className="text-slate-200">Session_{Date.now().toString().slice(-4)}</span>
+              </div>
+              <div className="text-[10px] uppercase tracking-widest font-black text-slate-500">
+                Clips: <span className="text-indigo-400">{segments.length}</span>
+              </div>
+            </div>
           </div>
-        ) : (
-          // ── Editor Layout ──
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClearVideo}
+              className="text-slate-400 hover:text-red-400 rounded-xl h-10 px-4 group"
+            >
+              <RotateCcw className="w-4 h-4 mr-2 group-hover:rotate-[-90deg] transition-transform" /> Reset
+            </Button>
+            <Button
+              onClick={() => setExportModalOpen(true)}
+              className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-10 px-6 rounded-xl shadow-lg shadow-indigo-600/20 gap-2"
+            >
+              <Download className="w-4 h-4" /> Export
+            </Button>
+          </div>
+        </header>
 
-            {/* ══ LEFT SIDEBAR — Filters + Transform + Speed ══ */}
-            <div className="lg:col-span-2 space-y-3">
+        <main className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-[calc(100vh-140px)]">
+          {/* Sidebar: Virtualized clip list */}
+          <aside className="lg:col-span-3 flex flex-col gap-4 overflow-hidden">
+            <Card className="bg-black/20 border-slate-800 flex-1 flex flex-col overflow-hidden rounded-2xl">
+              <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
+                  <Layers className="w-3.5 h-3.5 text-indigo-400" /> Elements
+                </h3>
+                <div className="flex items-center gap-1">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="w-7 h-7 hover:bg-white/5 rounded-lg"
+                    onClick={() => moveSegment('up')}
+                    title="Move Up"
+                  >
+                    <ChevronUp className="w-4 h-4 text-slate-400" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="w-7 h-7 hover:bg-white/5 rounded-lg"
+                    onClick={() => moveSegment('down')}
+                    title="Move Down"
+                  >
+                    <ChevronDown className="w-4 h-4 text-slate-400" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="w-7 h-7 hover:bg-white/5 rounded-lg"
+                    onClick={() => {
+                      const i = document.createElement('input')
+                      i.type = 'file'
+                      i.multiple = true
+                      i.accept = 'video/*'
+                      i.onchange = (e: any) =>
+                        e.target.files &&
+                        Array.from(e.target.files).forEach((f: any) => handleVideoLoaded(f, 0, f.name))
+                      i.click()
+                    }}
+                  >
+                    <Plus className="w-4 h-4 text-slate-400" />
+                  </Button>
+                </div>
+              </div>
+              <div className="flex-1">
+                <List
+                  height={400}
+                  rowCount={segments.length}
+                  rowHeight={70}
+                  style={{ width: '100%' }}
+                  rowComponent={ClipRow}
+                  rowProps={{
+                    segments,
+                    selectedIds: selectedSegmentIds,
+                    toggleSelect: toggleSegmentSelection,
+                    removeSegment: (id: string) => {
+                      pushHistory()
+                      removeSegment(id)
+                    },
+                  }}
+                />
+              </div>
+            </Card>
 
-              {/* LUT Presets */}
-              <Card className="border-slate-800 bg-slate-900/70">
-                <CardHeader className="pb-2 pt-3 px-3">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-widest text-slate-300 flex items-center gap-1">
-                    <Film className="w-3 h-3" /> Presets
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-3 pb-3 grid grid-cols-2 gap-1.5">
-                  {LUT_PRESETS.map(p => (
+            {/* Trim & Transition */}
+            {currentSegment && selectedSegmentIds.length === 1 && (
+              <>
+                <Card className="bg-slate-900/40 border-slate-800 p-4 rounded-2xl space-y-4 shadow-xl">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                      <Scissors className="w-3.5 h-3.5 text-cyan-500" /> Trim & Cut
+                    </div>
                     <Button
-                      key={p.id}
                       size="sm"
                       variant="outline"
-                      onClick={() => applyPreset(p)}
-                      className="text-[11px] border-slate-700 bg-slate-800/60 hover:border-indigo-500 hover:bg-indigo-500/10 h-7 px-2 text-slate-200 hover:text-white"
+                      onClick={splitAtPlayhead}
+                      className="h-7 text-[9px] border-slate-700 bg-slate-800/40 hover:border-cyan-500 hover:text-cyan-400 gap-1.5 rounded-lg"
                     >
-                      {p.label}
-                    </Button>
-                  ))}
-                </CardContent>
-              </Card>
-
-              {/* Speed */}
-              <Card className="border-slate-800 bg-slate-900/70">
-                <CardHeader className="pb-2 pt-3 px-3">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-widest text-slate-300 flex items-center gap-1">
-                    <Gauge className="w-3 h-3" /> Speed
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-3 pb-3 flex flex-wrap gap-1.5">
-                  {PLAYBACK_SPEEDS.map(s => (
-                    <Button
-                      key={s}
-                      size="sm"
-                      variant={playbackSpeed === s ? 'default' : 'outline'}
-                      onClick={() => handleSpeedChange(s)}
-                      className={`text-[11px] h-7 px-2 ${playbackSpeed === s ? 'bg-indigo-600 border-indigo-500 text-white' : 'border-slate-700 bg-slate-800/60 text-slate-200'}`}
-                    >
-                      {s}x
-                    </Button>
-                  ))}
-                </CardContent>
-              </Card>
-
-              {/* Transform */}
-              <Card className="border-slate-800 bg-slate-900/70">
-                <CardHeader className="pb-2 pt-3 px-3">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-widest text-slate-300 flex items-center gap-1">
-                    <Crop className="w-3 h-3" /> Transform
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-3 pb-3 space-y-2">
-                  <div className="grid grid-cols-3 gap-1">
-                    <Button size="sm" variant="outline" onClick={() => rotate(-90)} className="text-[10px] border-slate-700 bg-slate-800/60 h-7 px-1 text-slate-200">
-                      <RotateCcw className="w-3 h-3" />
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => rotate(90)} className="text-[10px] border-slate-700 bg-slate-800/60 h-7 px-1 text-slate-200">
-                      <RotateCw className="w-3 h-3" />
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => rotate(180)} className="text-[10px] border-slate-700 bg-slate-800/60 h-7 px-1 text-slate-200">
-                      180°
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => flip('h')} className={`text-[10px] border-slate-700 h-7 px-1 text-slate-200 ${transform.flipH ? 'bg-indigo-500/20 border-indigo-500 text-indigo-300' : 'bg-slate-800/60'}`}>
-                      <FlipHorizontal className="w-3 h-3" />
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => flip('v')} className={`text-[10px] border-slate-700 h-7 px-1 text-slate-200 ${transform.flipV ? 'bg-indigo-500/20 border-indigo-500 text-indigo-300' : 'bg-slate-800/60'}`}>
-                      <FlipVertical className="w-3 h-3" />
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={resetTransform} className="text-[10px] border-slate-700 bg-slate-800/60 h-7 px-1 text-slate-200">
-                      Reset
+                      <Scissors className="w-3 h-3" /> Split
                     </Button>
                   </div>
-                  <div>
-                    <div className="flex justify-between text-[10px] text-slate-400 mb-1">
-                      <span>Opacity</span><span className="text-slate-200">{Math.round(transform.opacity * 100)}%</span>
-                    </div>
-                    <Slider
-                      value={[transform.opacity]}
-                      min={0.1} max={1} step={0.01}
-                      onValueChange={([v]) => setTransform(p => ({ ...p, opacity: v }))}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* ══ CENTER — Preview + Controls + Timeline ══ */}
-            <div className="lg:col-span-7 space-y-3">
-
-              {/* Video Player */}
-              <Card className="border-slate-800 bg-slate-900/70 overflow-hidden">
-                <div className="relative aspect-video bg-black">
-                  <video
-                    ref={videoRef}
-                    src={videoUrl}
-                    onTimeUpdate={handleTimeUpdate}
-                    onLoadedMetadata={handleLoadedMetadata}
-                    onPlay={() => setIsPlaying(true)}
-                    onPause={() => setIsPlaying(false)}
-                    className="w-full h-full object-contain"
-                    style={videoStyle}
-                  />
-
-                  {/* Format badge */}
-                  {activeFormatLabel && (
-                    <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-cyan-400 text-[10px] font-bold px-2 py-1 rounded">
-                      {activeFormatLabel.toUpperCase()}
-                    </div>
-                  )}
-
-                  {/* Caption overlay */}
-                  {activeCaption && (
-                    <div className={`absolute left-0 right-0 flex justify-center px-6 ${captionPositionClass}`}>
-                      <div
-                        className="max-w-[80%] text-center px-4 py-1.5 rounded-lg"
-                        style={{
-                          color: (activeCaption as ExtendedCaption).color ?? '#fff',
-                          fontSize: `${(activeCaption as ExtendedCaption).fontSize ?? 20}px`,
-                          fontWeight: (activeCaption as ExtendedCaption).fontStyle === 'bold' ? 700 : 600,
-                          fontStyle: (activeCaption as ExtendedCaption).fontStyle === 'italic' ? 'italic' : 'normal',
-                          textShadow: (activeCaption as ExtendedCaption).fontStyle === 'shadow'
-                            ? '2px 2px 8px #000, 0 0 20px #000'
-                            : '0 1px 3px rgba(0,0,0,0.8)',
-                          background: (activeCaption as ExtendedCaption).bgEnabled
-                            ? 'rgba(0,0,0,0.72)'
-                            : 'transparent',
-                          textAlign: (activeCaption as ExtendedCaption).align ?? 'center',
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-[10px] font-mono">
+                        <span className="text-slate-500">START</span>
+                        <span className="text-white">{currentSegment.startTime.toFixed(1)}s</span>
+                      </div>
+                      <Slider
+                        value={[currentSegment.startTime]}
+                        min={0}
+                        max={currentSegment.duration - 0.1}
+                        step={0.1}
+                        onValueChange={([v]) => {
+                          const maxT = currentSegment.duration - v
+                          updateSegment(currentSegment.id, {
+                            startTime: v,
+                            trimDuration: Math.min(currentSegment.trimDuration, maxT),
+                          })
+                          if (videoRef.current) videoRef.current.currentTime = v
                         }}
-                      >
-                        {activeCaption.text}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-[10px] font-mono">
+                        <span className="text-slate-500">LENGTH</span>
+                        <span className="text-cyan-400">{currentSegment.trimDuration.toFixed(1)}s</span>
                       </div>
+                      <Slider
+                        value={[currentSegment.trimDuration]}
+                        min={0.1}
+                        max={currentSegment.duration - currentSegment.startTime}
+                        step={0.1}
+                        onValueChange={([v]) => updateSegment(currentSegment.id, { trimDuration: v })}
+                      />
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="bg-slate-900/40 border-slate-800 p-4 rounded-2xl space-y-4">
+                  <Label className="text-[10px] font-black text-slate-500 uppercase">Transition to Next</Label>
+                  <Select
+                    value={currentSegment.transition?.type || 'none'}
+                    onValueChange={(v: any) => {
+                      pushHistory()
+                      addTransition(currentSegment.id, { type: v, duration: 0.5 })
+                    }}
+                  >
+                    <SelectTrigger className="bg-black/20 border-slate-800 h-9 rounded-lg text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-900 border-slate-700">
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="crossfade">Crossfade</SelectItem>
+                      <SelectItem value="fade-black">Fade to Black</SelectItem>
+                      <SelectItem value="slide-left">Slide Left</SelectItem>
+                      <SelectItem value="slide-right">Slide Right</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {currentSegment.transition?.type !== 'none' && (
+                    <div className="space-y-2">
+                      <Label className="text-[8px] text-slate-500 uppercase">Duration</Label>
+                      <Slider
+                        value={[currentSegment.transition.duration]}
+                        min={0.1}
+                        max={2}
+                        step={0.1}
+                        onValueChange={([v]) =>
+                          addTransition(currentSegment.id, { ...currentSegment.transition, duration: v })
+                        }
+                      />
                     </div>
                   )}
+                </Card>
+              </>
+            )}
+          </aside>
 
-                  {/* Playback overlay controls */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                    {/* Seek bar */}
-                    <div className="relative h-1 bg-white/20 rounded-full mb-3 cursor-pointer group"
-                      onMouseDown={e => {
-                        setIsSeeking(true)
-                        const rect = e.currentTarget.getBoundingClientRect()
-                        handleSeek(((e.clientX - rect.left) / rect.width) * duration)
+          {/* Central Stage: Preview + Zoomable Timeline */}
+          <section className="lg:col-span-6 flex flex-col gap-4">
+            <Card className="bg-black/60 border-slate-800 rounded-2xl overflow-hidden flex-1 flex flex-col shadow-2xl relative">
+              <div className="flex-1 relative flex items-center justify-center bg-black/80">
+                <video
+                  ref={videoRef}
+                  onTimeUpdate={handleTimeUpdate}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  className="max-w-full max-h-full object-contain"
+                  style={videoStyle}
+                />
+
+                {activeCaption && (
+                  <div
+                    className={`absolute left-0 right-0 flex pointer-events-none transition-all duration-300 ${captionPositionClass} ${
+                      activeCaption.align === 'left'
+                        ? 'justify-start'
+                        : activeCaption.align === 'right'
+                        ? 'justify-end'
+                        : 'justify-center'
+                    }`}
+                    style={{ padding: '0 2rem' }}
+                  >
+                    <div
+                      className={`max-w-[85%] px-5 py-2 rounded-2xl shadow-2xl ${
+                        activeCaption.bgEnabled !== false
+                          ? 'backdrop-blur-md bg-black/60 border border-white/10'
+                          : ''
+                      }`}
+                      style={{
+                        color: activeCaption.color || '#fff',
+                        fontSize: `${activeCaption.fontSize || 24}px`,
+                        fontWeight: activeCaption.fontStyle === 'bold' ? 700 : 400,
+                        fontStyle: activeCaption.fontStyle === 'italic' ? 'italic' : 'normal',
+                        textShadow: activeCaption.fontStyle === 'shadow' ? '0 2px 10px rgba(0,0,0,0.7)' : 'none',
+                        textAlign: (activeCaption.align || 'center') as any,
                       }}
-                      onMouseMove={e => {
-                        if (!isSeeking) return
-                        const rect = e.currentTarget.getBoundingClientRect()
-                        handleSeek(Math.max(0, Math.min(duration, ((e.clientX - rect.left) / rect.width) * duration)))
-                      }}
-                      onMouseUp={() => setIsSeeking(false)}
-                      onMouseLeave={() => setIsSeeking(false)}
                     >
-                      {/* Caption markers */}
-                      {captions.map(c => (
-                        <div
-                          key={c.id}
-                          className="absolute top-0 bottom-0 bg-purple-500/60 rounded-full pointer-events-none"
-                          style={{
-                            left: `${(c.start / duration) * 100}%`,
-                            width: `${((c.end - c.start) / duration) * 100}%`,
-                          }}
-                        />
-                      ))}
-                      <div
-                        className="h-full bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-full"
-                        style={{ width: `${progressPct}%` }}
-                      />
-                      <div
-                        className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                        style={{ left: `${progressPct}%`, transform: 'translate(-50%, -50%)' }}
-                      />
+                      {activeCaption.text}
                     </div>
+                  </div>
+                )}
+              </div>
 
-                    {/* Controls row */}
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => skipBy(-10)} className="text-white/70 hover:text-white transition-colors">
-                        <SkipBack className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={togglePlay}
-                        className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center hover:bg-indigo-500 transition-colors"
+              {/* Playback Controls Overlay */}
+              <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent pt-12">
+                <div
+                  className="relative h-2 bg-white/10 rounded-full mb-6 group cursor-pointer"
+                  onClick={(e) => {
+                    const r = e.currentTarget.getBoundingClientRect()
+                    handleSeek(((e.clientX - r.left) / r.width) * (currentSegment?.trimDuration || 1))
+                  }}
+                >
+                  <div
+                    className="h-full bg-indigo-500 rounded-full shadow-[0_0_15px_rgba(99,102,241,0.5)]"
+                    style={{ width: `${progressPct}%` }}
+                  />
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-2xl scale-0 group-hover:scale-100 transition-all opacity-0 group-hover:opacity-100"
+                    style={{ left: `${progressPct}%`, transform: 'translate(-50%, -50%)' }}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <button onClick={() => skipBy(-10)} className="text-slate-400 hover:text-white transition-colors">
+                      <SkipBack className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={togglePlay}
+                      className="w-14 h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow-xl shadow-indigo-600/30 transition-all hover:scale-105"
+                    >
+                      {isPlaying ? <Pause className="w-7 h-7" /> : <Play className="w-7 h-7 ml-1" />}
+                    </button>
+                    <button onClick={() => skipBy(10)} className="text-slate-400 hover:text-white transition-colors">
+                      <SkipForward className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => setIsLooping(!isLooping)}
+                      className={`transition-colors ${isLooping ? 'text-indigo-400' : 'text-slate-500 hover:text-white'}`}
+                      title="Loop"
+                    >
+                      <Repeat className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={splitAtPlayhead}
+                      className="text-slate-500 hover:text-cyan-400 transition-colors"
+                      title="Split at Playhead"
+                    >
+                      <Scissors className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col items-center">
+                    <div className="text-xl font-black font-mono tabular-nums leading-none">
+                      {formatTime(currentTime - (currentSegment?.startTime || 0))}
+                    </div>
+                    <div className="text-[9px] font-black text-slate-500 mt-1.5 uppercase tracking-widest">
+                      {formatTime(currentSegment?.trimDuration || 0)} CLIP REMAINING
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-xl backdrop-blur-xl">
+                      <Gauge className="w-4 h-4 text-slate-500" />
+                      <select
+                        value={playbackSpeed}
+                        onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
+                        className="bg-transparent text-[10px] font-bold text-slate-300 outline-none cursor-pointer"
                       >
-                        {isPlaying ? <Pause className="w-4 h-4 text-white" /> : <Play className="w-4 h-4 text-white" />}
+                        {SPEED_OPTIONS.map((sp) => (
+                          <option key={sp} value={sp} className="bg-slate-900">
+                            {sp}x
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-3 bg-black/40 px-4 py-2 rounded-2xl backdrop-blur-xl">
+                      <button onClick={() => setIsMuted(!isMuted)} className="text-slate-400 hover:text-white">
+                        {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                       </button>
-                      <button onClick={() => skipBy(10)} className="text-white/70 hover:text-white transition-colors">
-                        <SkipForward className="w-4 h-4" />
-                      </button>
-                      <span className="text-xs text-white/60 tabular-nums">
-                        {formatTime(currentTime)} / {formatTime(duration)}
-                      </span>
-                      <div className="flex items-center gap-2 ml-auto">
-                        <button onClick={toggleMute} className="text-white/70 hover:text-white transition-colors">
-                          {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                        </button>
-                        <input
-                          type="range" min={0} max={1} step={0.01} value={volume}
-                          onChange={e => handleVolumeChange([parseFloat(e.target.value)])}
-                          className="w-16 accent-indigo-500"
-                        />
-                        <span className="text-xs text-white/50 w-8 text-right tabular-nums">
-                          {Math.round(volume * 100)}%
-                        </span>
-                      </div>
+                      <Slider
+                        className="w-20"
+                        value={[volume]}
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        onValueChange={handleVolumeChange}
+                      />
                     </div>
                   </div>
                 </div>
-              </Card>
+              </div>
+            </Card>
 
-              {/* Timeline */}
-              <Card className="border-slate-800 bg-slate-900/70">
-                <CardHeader className="pb-2 pt-3 px-4">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-widest text-slate-300">Timeline</CardTitle>
-                </CardHeader>
-                <CardContent className="px-4 pb-4 space-y-2">
-                  {/* Time labels */}
-                  <div className="flex justify-between text-[10px] text-slate-500 tabular-nums">
-                    <span>{formatTime(currentTime)}</span>
-                    <span>{formatTime(duration)}</span>
-                  </div>
-
-                  {/* Video track */}
-                  <div className="relative h-5 bg-slate-800 rounded">
-                    <div
-                      className="h-full bg-gradient-to-r from-indigo-500 to-cyan-500 rounded"
-                      style={{ width: `${progressPct}%` }}
-                    />
-                    {/* playhead */}
-                    <div
-                      className="absolute top-0 bottom-0 w-px bg-white"
-                      style={{ left: `${progressPct}%` }}
-                    />
-                    <span className="absolute inset-y-0 left-2 flex items-center text-[9px] text-white/60 font-semibold uppercase tracking-widest pointer-events-none">Video</span>
-                  </div>
-
-                  {/* Audio track */}
-                  <div className="relative h-4 bg-slate-800 rounded">
-                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/60 to-teal-600/60 rounded" />
-                    <div className="absolute inset-0 w-px bg-white" style={{ left: `${progressPct}%` }} />
-                    <span className="absolute inset-y-0 left-2 flex items-center text-[9px] text-white/50 uppercase tracking-widest pointer-events-none">Audio</span>
-                  </div>
-
-                  {/* Captions track */}
-                  <div className="relative h-4 bg-slate-800 rounded overflow-hidden">
-                    <span className="absolute inset-y-0 left-2 flex items-center text-[9px] text-white/50 uppercase tracking-widest z-10 pointer-events-none">Captions</span>
-                    {captions.map(c => (
-                      <div
-                        key={c.id}
-                        title={c.text}
-                        className="absolute top-0 bottom-0 bg-purple-600/50 border-x border-purple-500/70 flex items-center"
-                        style={{
-                          left: `${(c.start / duration) * 100}%`,
-                          width: `${((c.end - c.start) / duration) * 100}%`,
-                        }}
-                      >
-                        <span className="text-[8px] text-purple-200 px-1 truncate">{c.text}</span>
-                      </div>
-                    ))}
-                    <div className="absolute top-0 bottom-0 w-px bg-white" style={{ left: `${progressPct}%` }} />
-                  </div>
-
-                  {/* Seekable scrubber */}
-                  <input
-                    type="range" min={0} max={duration} step={0.05} value={currentTime}
-                    onChange={e => handleSeek(parseFloat(e.target.value))}
-                    className="w-full accent-indigo-500 h-1"
+            {/* Zoomable Timeline */}
+            <div className="h-24 bg-slate-900/60 border border-slate-800 rounded-2xl p-2 flex flex-col">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex gap-1">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6"
+                    onClick={() => setTimelineZoom((z) => Math.max(30, z - 20))}
+                  >
+                    <ZoomOut className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6"
+                    onClick={() => setTimelineZoom((z) => Math.min(300, z + 20))}
+                  >
+                    <ZoomIn className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className={`h-6 w-6 ${snapEnabled ? 'text-indigo-400' : 'text-slate-500'}`}
+                    onClick={() => setSnapEnabled(!snapEnabled)}
+                    title="Toggle Snapping"
+                  >
+                    <AlignLeft className="w-3 h-3" />
+                  </Button>
+                </div>
+                <span className="text-[10px] text-slate-500">Total: {formatTime(totalDuration)}</span>
+              </div>
+              <div ref={timelineRef} className="flex-1 overflow-x-auto overflow-y-hidden scrollbar-thin">
+                <div
+                  className="relative h-full"
+                  style={{ width: `${totalDuration * timelineZoom}px` }}
+                >
+                  {segments.map((seg, idx) => {
+                    const left = segments
+                      .slice(0, idx)
+                      .reduce((sum, s) => sum + s.trimDuration, 0) * timelineZoom
+                    return (
+                      <TimelineClip
+                        key={seg.id}
+                        segment={seg}
+                        isSelected={selectedSegmentIds.includes(seg.id)}
+                        onSelect={() => setSelectedSegmentIds([seg.id])}
+                        onTrimStart={handleTrimStart}
+                        onTrimEnd={handleTrimEnd}
+                        zoom={timelineZoom}
+                        left={left}
+                      />
+                    )
+                  })}
+                  {/* Playhead */}
+                  <div
+                    className="absolute top-0 bottom-0 w-0.5 bg-indigo-500 z-20 pointer-events-none"
+                    style={{ left: `${currentTime * timelineZoom}px` }}
                   />
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
+          </section>
 
-            {/* ══ RIGHT SIDEBAR — Filters + Audio + Captions ══ */}
-            <div className="lg:col-span-3">
-              <Tabs defaultValue="filters" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-slate-800/60 rounded-xl mb-3">
-                  <TabsTrigger value="filters" className="text-xs rounded-lg data-[state=active]:bg-indigo-600 data-[state=active]:text-white">Filters</TabsTrigger>
-                  <TabsTrigger value="audio" className="text-xs rounded-lg data-[state=active]:bg-indigo-600 data-[state=active]:text-white">Audio</TabsTrigger>
-                  <TabsTrigger value="captions" className="text-xs rounded-lg data-[state=active]:bg-indigo-600 data-[state=active]:text-white">Captions</TabsTrigger>
-                </TabsList>
+          {/* Editor Panel: Tabs */}
+          <aside className="lg:col-span-3">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+              <TabsList className="bg-slate-900/60 border border-slate-800 p-1.5 rounded-2xl mb-4 grid grid-cols-5 gap-1">
+                <TabsTrigger value="filters" className="rounded-xl data-[state=active]:bg-indigo-600 text-xs font-bold py-2.5">
+                  Style
+                </TabsTrigger>
+                <TabsTrigger value="format" className="rounded-xl data-[state=active]:bg-indigo-600 text-xs font-bold py-2.5">
+                  Layout
+                </TabsTrigger>
+                <TabsTrigger value="keyframes" className="rounded-xl data-[state=active]:bg-indigo-600 text-xs font-bold py-2.5">
+                  Keyframes
+                </TabsTrigger>
+                <TabsTrigger value="audio" className="rounded-xl data-[state=active]:bg-indigo-600 text-xs font-bold py-2.5">
+                  Audio
+                </TabsTrigger>
+                <TabsTrigger value="captions" className="rounded-xl data-[state=active]:bg-indigo-600 text-xs font-bold py-2.5">
+                  Text
+                </TabsTrigger>
+              </TabsList>
 
-                {/* ── Filters Tab ── */}
-                <TabsContent value="filters">
-                  <Card className="border-slate-800 bg-slate-900/70">
-                    <CardHeader className="pb-2 pt-3 px-4">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-sm flex items-center gap-2 text-white">
-                          <Sun className="w-4 h-4" /> Filters
-                        </CardTitle>
-                        <Button size="sm" variant="ghost" onClick={resetFilters} className="text-xs text-slate-400 hover:text-white h-6 px-2">
-                          <RotateCcw className="w-3 h-3 mr-1" /> Reset
+              <div className="flex-1 overflow-hidden">
+                {/* Style Tab */}
+                <TabsContent value="filters" className="h-full overflow-y-auto pr-1 space-y-4 m-0">
+                  <Card className="bg-slate-900/40 border-slate-800 p-4 rounded-2xl">
+                    <div className="flex justify-between items-center mb-4">
+                      <Label className="text-[10px] font-black text-slate-500 uppercase">Pro LUTs</Label>
+                      <Button variant="ghost" size="sm" onClick={resetFilters} className="text-[10px] h-6 text-slate-400">
+                        Default
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {LUT_PRESETS.map((p) => (
+                        <Button
+                          key={p.id}
+                          size="sm"
+                          variant="outline"
+                          onClick={() => applyPreset(p)}
+                          className="h-8 text-[10px] border-slate-800 bg-slate-900/30 font-bold hover:border-indigo-500"
+                        >
+                          {p.label}
                         </Button>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="px-4 pb-4">
-                      <FilterSlider label="Brightness" value={filters.brightness} min={0} max={2} displayValue={filters.brightness.toFixed(2)} onChange={([v]) => updateFilter('brightness', v)} />
-                      <FilterSlider label="Contrast" value={filters.contrast} min={0} max={2} displayValue={filters.contrast.toFixed(2)} onChange={([v]) => updateFilter('contrast', v)} />
-                      <FilterSlider label="Saturation" value={filters.saturation} min={0} max={2} displayValue={filters.saturation.toFixed(2)} onChange={([v]) => updateFilter('saturation', v)} />
-                      <FilterSlider label="Hue Rotate" value={filters.hue} min={0} max={360} step={1} displayValue={`${filters.hue}°`} onChange={([v]) => updateFilter('hue', v)} />
-                      <FilterSlider label="Blur" value={filters.blur} min={0} max={20} step={0.5} displayValue={`${filters.blur}px`} onChange={([v]) => updateFilter('blur', v)} />
-                      <FilterSlider label="Sepia" value={filters.sepia} min={0} max={100} step={1} displayValue={`${filters.sepia}%`} onChange={([v]) => updateFilter('sepia', v)} />
-                      <FilterSlider label="Grayscale" value={filters.grayscale} min={0} max={1} displayValue={`${Math.round(filters.grayscale * 100)}%`} onChange={([v]) => updateFilter('grayscale', v)} />
-                      <FilterSlider label="Invert" value={filters.invert} min={0} max={100} step={1} displayValue={`${filters.invert}%`} onChange={([v]) => updateFilter('invert', v)} />
-                    </CardContent>
+                      ))}
+                    </div>
+                  </Card>
+                  <Card className="bg-slate-900/40 border-slate-800 p-5 rounded-2xl space-y-2">
+                    {currentSegment && (
+                      <>
+                        <FilterSlider
+                          label="Brightness"
+                          value={currentSegment.filters.brightness}
+                          min={0}
+                          max={2}
+                          displayValue={currentSegment.filters.brightness.toFixed(2)}
+                          onChange={([v]) => updateSelectedFilter('brightness', v)}
+                        />
+                        <FilterSlider
+                          label="Contrast"
+                          value={currentSegment.filters.contrast}
+                          min={0}
+                          max={2}
+                          displayValue={currentSegment.filters.contrast.toFixed(2)}
+                          onChange={([v]) => updateSelectedFilter('contrast', v)}
+                        />
+                        <FilterSlider
+                          label="Saturation"
+                          value={currentSegment.filters.saturation}
+                          min={0}
+                          max={2}
+                          displayValue={currentSegment.filters.saturation.toFixed(2)}
+                          onChange={([v]) => updateSelectedFilter('saturation', v)}
+                        />
+                        <FilterSlider
+                          label="Hue Rotation"
+                          value={currentSegment.filters.hue}
+                          min={0}
+                          max={360}
+                          step={1}
+                          displayValue={`${currentSegment.filters.hue}°`}
+                          onChange={([v]) => updateSelectedFilter('hue', v)}
+                        />
+                        <FilterSlider
+                          label="Gaussian Blur"
+                          value={currentSegment.filters.blur}
+                          min={0}
+                          max={10}
+                          displayValue={`${currentSegment.filters.blur.toFixed(1)}px`}
+                          onChange={([v]) => updateSelectedFilter('blur', v)}
+                        />
+                        <FilterSlider
+                          label="Sepia"
+                          value={currentSegment.filters.sepia}
+                          min={0}
+                          max={100}
+                          step={1}
+                          displayValue={`${Math.round(currentSegment.filters.sepia)}%`}
+                          onChange={([v]) => updateSelectedFilter('sepia', v)}
+                        />
+                        <FilterSlider
+                          label="Grayscale"
+                          value={currentSegment.filters.grayscale}
+                          min={0}
+                          max={1}
+                          displayValue={`${Math.round(currentSegment.filters.grayscale * 100)}%`}
+                          onChange={([v]) => updateSelectedFilter('grayscale', v)}
+                        />
+                        <FilterSlider
+                          label="Invert"
+                          value={currentSegment.filters.invert}
+                          min={0}
+                          max={100}
+                          step={1}
+                          displayValue={`${Math.round(currentSegment.filters.invert)}%`}
+                          onChange={([v]) => updateSelectedFilter('invert', v)}
+                        />
+                      </>
+                    )}
                   </Card>
                 </TabsContent>
 
-                {/* ── Audio Tab ── */}
-                <TabsContent value="audio">
-                  <Card className="border-slate-800 bg-slate-900/70">
-                    <CardHeader className="pb-2 pt-3 px-4">
-                      <CardTitle className="text-sm flex items-center gap-2 text-white">
-                        <Music className="w-4 h-4" /> Audio
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="px-4 pb-4 space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs text-slate-300">Mute All Audio</Label>
-                        <Switch checked={isMuted} onCheckedChange={checked => { setIsMuted(checked); if (videoRef.current) videoRef.current.muted = checked }} />
+                {/* Layout Tab */}
+                <TabsContent value="format" className="h-full overflow-y-auto pr-1 space-y-4 m-0">
+                  <Card className="bg-slate-900/40 border-slate-800 p-5 rounded-2xl space-y-6">
+                    <Label className="text-[10px] font-black text-slate-500 uppercase">Transformation</Label>
+                    {currentSegment && (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-3 gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => rotate(90)}
+                            className="h-11 border-slate-800 bg-slate-800/20 text-xs font-bold gap-1.5"
+                          >
+                            <RotateCw className="w-4 h-4" /> 90°
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => flip('h')}
+                            className={`h-11 border-slate-800 flex flex-col gap-0.5 ${
+                              currentSegment.transform.flipH
+                                ? 'bg-indigo-600 text-white border-indigo-500'
+                                : 'bg-slate-800/20 text-slate-100'
+                            }`}
+                          >
+                            <FlipHorizontal className="w-4 h-4" />
+                            <span className="text-[8px] uppercase">Flip H</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => flip('v')}
+                            className={`h-11 border-slate-800 flex flex-col gap-0.5 ${
+                              currentSegment.transform.flipV
+                                ? 'bg-indigo-600 text-white border-indigo-500'
+                                : 'bg-slate-800/20 text-slate-100'
+                            }`}
+                          >
+                            <FlipVertical className="w-4 h-4" />
+                            <span className="text-[8px] uppercase">Flip V</span>
+                          </Button>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-[10px] font-bold">
+                            <span className="text-slate-500">ROTATION</span>
+                            <span className="text-white">{currentSegment.transform.rotation}°</span>
+                          </div>
+                          <Slider
+                            value={[currentSegment.transform.rotation]}
+                            min={0}
+                            max={359}
+                            step={1}
+                            onValueChange={([v]) =>
+                              updateSelectedSegments({ transform: { ...currentSegment.transform, rotation: v } })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-[10px] font-bold">
+                            <span className="text-slate-500">OPACITY</span>
+                            <span className="text-white">{Math.round(currentSegment.transform.opacity * 100)}%</span>
+                          </div>
+                          <Slider
+                            value={[currentSegment.transform.opacity]}
+                            min={0.1}
+                            max={1}
+                            step={0.01}
+                            onValueChange={([v]) =>
+                              updateSelectedSegments({ transform: { ...currentSegment.transform, opacity: v } })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-[10px] font-bold">
+                            <span className="text-slate-500">SCALE</span>
+                            <span className="text-white">{currentSegment.transform.scale?.toFixed(2) || '1.00'}x</span>
+                          </div>
+                          <Slider
+                            value={[currentSegment.transform.scale || 1]}
+                            min={0.1}
+                            max={3}
+                            step={0.01}
+                            onValueChange={([v]) =>
+                              updateSelectedSegments({ transform: { ...currentSegment.transform, scale: v } })
+                            }
+                          />
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={resetTransform}
+                          className="w-full text-[10px] text-slate-500 hover:text-white uppercase font-black"
+                        >
+                          Reset to Camera Default
+                        </Button>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs text-slate-300">Loop Video</Label>
-                        <Switch checked={isLooping} onCheckedChange={() => toggleLoop()} />
+                    )}
+                  </Card>
+                </TabsContent>
+
+                {/* Keyframes Tab */}
+                <TabsContent value="keyframes" className="h-full overflow-y-auto pr-1 space-y-4 m-0">
+                  {currentSegment ? (
+                    <Card className="bg-slate-900/40 border-slate-800 p-5 rounded-2xl space-y-4">
+                      <Label className="text-[10px] font-black text-slate-500 uppercase">Keyframe Animation</Label>
+                      <div className="text-[11px] text-slate-400 mb-2">
+                        Playhead: {(currentTime - currentSegment.startTime).toFixed(2)}s
                       </div>
-                      <div>
-                        <div className="flex justify-between text-xs text-slate-400 mb-1.5">
-                          <span>Master Volume</span><span className="text-slate-200">{Math.round(volume * 100)}%</span>
+                      {(['opacity', 'scale', 'rotation', 'x', 'y'] as const).map((prop) => {
+                        const keyframes = currentSegment.keyframes?.[prop] || []
+                        return (
+                          <div key={prop} className="border-t border-slate-800 pt-3 first:border-0 first:pt-0">
+                            <div className="flex items-center justify-between mb-2">
+                              <Label className="text-[10px] uppercase font-bold text-slate-400">{prop}</Label>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-6 text-[9px]"
+                                onClick={() => {
+                                  const relTime = currentTime - currentSegment.startTime
+                                  let value: number
+                                  switch (prop) {
+                                    case 'opacity':
+                                      value = computedTransform.opacity
+                                      break
+                                    case 'scale':
+                                      value = computedTransform.scale
+                                      break
+                                    case 'rotation':
+                                      value = computedTransform.rotation
+                                      break
+                                    case 'x':
+                                      value = computedTransform.x
+                                      break
+                                    case 'y':
+                                      value = computedTransform.y
+                                      break
+                                    default:
+                                      value = 0
+                                  }
+                                  addKeyframe(currentSegment.id, prop, {
+                                    time: relTime,
+                                    value,
+                                    easing: 'linear',
+                                  })
+                                }}
+                              >
+                                <Plus className="w-3 h-3 mr-1" /> Add at Playhead
+                              </Button>
+                            </div>
+                            {keyframes.length > 0 ? (
+                              <div className="space-y-1">
+                                {keyframes
+                                  .sort((a, b) => a.time - b.time)
+                                  .map((kf) => (
+                                    <div
+                                      key={kf.id}
+                                      className="flex items-center justify-between bg-slate-800/30 p-1.5 rounded text-[10px]"
+                                    >
+                                      <span>
+                                        {kf.time.toFixed(2)}s: {typeof kf.value === 'number' ? kf.value.toFixed(2) : kf.value}
+                                      </span>
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className="h-5 w-5"
+                                        onClick={() => removeKeyframe(currentSegment.id, prop, kf.id)}
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  ))}
+                              </div>
+                            ) : (
+                              <div className="text-[9px] text-slate-600 italic">No keyframes</div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </Card>
+                  ) : (
+                    <div className="text-center text-slate-500 text-sm p-4">Select a clip to edit keyframes</div>
+                  )}
+                </TabsContent>
+
+                {/* Audio Tab */}
+                <TabsContent value="audio" className="h-full overflow-y-auto pr-1 space-y-4 m-0">
+                  <Card className="bg-slate-900/40 border-slate-800 p-5 rounded-2xl space-y-5">
+                    <Label className="text-[10px] font-black text-slate-500 uppercase">Audio Controls</Label>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-[10px] font-bold">
+                          <span className="text-slate-500">VOLUME</span>
+                          <span className="text-white">{Math.round(volume * 100)}%</span>
                         </div>
                         <Slider value={[volume]} min={0} max={1} step={0.01} onValueChange={handleVolumeChange} />
                       </div>
-                      <div>
-                        <div className="flex justify-between text-xs text-slate-400 mb-1.5">
-                          <span>Fade In</span><span className="text-slate-200">{fadeIn}s</span>
-                        </div>
-                        <Slider value={[fadeIn]} min={0} max={10} step={0.5} onValueChange={([v]) => setFadeIn(v)} />
+                      <div className="flex items-center justify-between">
+                        <Label className="text-[10px] font-bold text-slate-400 uppercase">Mute Audio</Label>
+                        <Switch checked={isMuted} onCheckedChange={setIsMuted} />
                       </div>
-                      <div>
-                        <div className="flex justify-between text-xs text-slate-400 mb-1.5">
-                          <span>Fade Out</span><span className="text-slate-200">{fadeOut}s</span>
+                    </div>
+                  </Card>
+                  <Card className="bg-slate-900/40 border-slate-800 p-5 rounded-2xl space-y-5">
+                    <Label className="text-[10px] font-black text-slate-500 uppercase">Fade Effects</Label>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-[10px] font-bold">
+                          <span className="text-slate-500">FADE IN</span>
+                          <span className="text-indigo-400">{fadeIn.toFixed(1)}s</span>
                         </div>
-                        <Slider value={[fadeOut]} min={0} max={10} step={0.5} onValueChange={([v]) => setFadeOut(v)} />
+                        <Slider value={[fadeIn]} min={0} max={5} step={0.1} onValueChange={([v]) => setFadeIn(v)} />
                       </div>
-                      <p className="text-xs text-slate-500">Audio fade & volume are applied on export.</p>
-                    </CardContent>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-[10px] font-bold">
+                          <span className="text-slate-500">FADE OUT</span>
+                          <span className="text-indigo-400">{fadeOut.toFixed(1)}s</span>
+                        </div>
+                        <Slider value={[fadeOut]} min={0} max={5} step={0.1} onValueChange={([v]) => setFadeOut(v)} />
+                      </div>
+                    </div>
+                  </Card>
+                  <Card className="bg-slate-900/40 border-slate-800 p-5 rounded-2xl space-y-5">
+                    <Label className="text-[10px] font-black text-slate-500 uppercase">Playback</Label>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-[10px] font-bold">
+                          <span className="text-slate-500">SPEED</span>
+                          <span className="text-cyan-400">{playbackSpeed}x</span>
+                        </div>
+                        <div className="grid grid-cols-4 gap-1">
+                          {SPEED_OPTIONS.map((sp) => (
+                            <Button
+                              key={sp}
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setPlaybackSpeed(sp)}
+                              className={`h-8 text-[10px] font-bold rounded-lg ${
+                                playbackSpeed === sp
+                                  ? 'bg-indigo-600 text-white border-indigo-500'
+                                  : 'border-slate-800 bg-slate-900/30'
+                              }`}
+                            >
+                              {sp}x
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-[10px] font-bold text-slate-400 uppercase">Loop Playback</Label>
+                        <Switch checked={isLooping} onCheckedChange={setIsLooping} />
+                      </div>
+                    </div>
                   </Card>
                 </TabsContent>
 
-                {/* ── Captions Tab ── */}
-                <TabsContent value="captions">
-                  <Card className="border-slate-800 bg-slate-900/70">
-                    <CardHeader className="pb-2 pt-3 px-4">
-                      <CardTitle className="text-sm flex items-center gap-2 text-white">
-                        <Type className="w-4 h-4" /> Captions
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="px-4 pb-4 space-y-3">
-
-                      {/* Text */}
-                      <div>
-                        <Label className="text-xs text-slate-300 mb-1 block">Caption Text</Label>
-                        <Textarea
-                          value={newCaptionText}
-                          onChange={e => setNewCaptionText(e.target.value)}
-                          placeholder="Enter caption..."
-                          className="bg-slate-800/60 border-slate-700 text-sm resize-none min-h-[56px] text-slate-200"
+                {/* Captions Tab */}
+                <TabsContent value="captions" className="h-full overflow-y-auto pr-1 space-y-4 m-0">
+                  <Card className="bg-slate-900/40 border-slate-800 p-5 rounded-2xl space-y-4">
+                    <Label className="text-[10px] font-black text-slate-500 uppercase">Producer Captions</Label>
+                    <Textarea
+                      placeholder="Burn-in text here..."
+                      value={newCaptionText}
+                      onChange={(e) => setNewCaptionText(e.target.value)}
+                      className="bg-black/40 border-slate-800 rounded-xl text-sm min-h-[70px]"
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-[8px] text-slate-500 uppercase font-black">START (SEC)</Label>
+                        <Input
+                          type="number"
+                          value={newCaptionStart}
+                          step="0.1"
+                          onChange={(e) => setNewCaptionStart(parseFloat(e.target.value) || 0)}
+                          className="bg-black/20 border-slate-800 h-9 rounded-lg"
                         />
                       </div>
-
-                      {/* Times */}
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <Label className="text-xs text-slate-300 mb-1 block">Start (s)</Label>
-                          <Input type="number" value={newCaptionStart} min={0} max={duration} step={0.1}
-                            onChange={e => setNewCaptionStart(parseFloat(e.target.value) || 0)}
-                            className="bg-slate-800/60 border-slate-700 text-xs h-8 text-slate-200" />
-                        </div>
-                        <div>
-                          <Label className="text-xs text-slate-300 mb-1 block">End (s)</Label>
-                          <Input type="number" value={newCaptionEnd} min={0} max={duration} step={0.1}
-                            onChange={e => setNewCaptionEnd(parseFloat(e.target.value) || 0)}
-                            className="bg-slate-800/60 border-slate-700 text-xs h-8 text-slate-200" />
-                        </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-[8px] text-slate-500 uppercase font-black">END (SEC)</Label>
+                        <Input
+                          type="number"
+                          value={newCaptionEnd}
+                          step="0.1"
+                          onChange={(e) => setNewCaptionEnd(parseFloat(e.target.value) || 0)}
+                          className="bg-black/20 border-slate-800 h-9 rounded-lg"
+                        />
                       </div>
-
-                      <Button size="sm" variant="outline"
-                        onClick={setTimestampsAtPlayhead}
-                        className="w-full border-slate-700 text-xs text-slate-300 hover:text-white h-7">
-                        📍 Use Playhead Time
-                      </Button>
-
-                      {/* Position */}
-                      <div>
-                        <Label className="text-xs text-slate-300 mb-1.5 block">Position</Label>
-                        <div className="flex gap-1.5">
-                          {(['top', 'center', 'bottom'] as const).map(p => (
-                            <Button
-                              key={p}
-                              size="sm"
-                              variant={newCaptionPosition === p ? 'default' : 'outline'}
-                              onClick={() => setNewCaptionPosition(p)}
-                              className={`flex-1 text-xs h-7 ${newCaptionPosition === p ? 'bg-indigo-600 border-indigo-500 text-white' : 'border-slate-700 bg-slate-800/60 text-slate-300'}`}
-                            >
-                              {p.charAt(0).toUpperCase() + p.slice(1)}
-                            </Button>
-                          ))}
-                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-[8px] text-slate-500 uppercase font-black">Position</Label>
+                        <Select value={newCaptionPosition} onValueChange={(v) => setNewCaptionPosition(v as any)}>
+                          <SelectTrigger className="bg-black/20 border-slate-800 h-9 rounded-lg text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-900 border-slate-700">
+                            <SelectItem value="top">Top</SelectItem>
+                            <SelectItem value="center">Center</SelectItem>
+                            <SelectItem value="bottom">Bottom</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-
-                      {/* Font style */}
-                      <div>
-                        <Label className="text-xs text-slate-300 mb-1.5 block">Style</Label>
-                        <div className="flex gap-1.5 flex-wrap">
-                          {(['normal', 'bold', 'italic', 'shadow'] as const).map(s => (
-                            <Button
-                              key={s}
-                              size="sm"
-                              variant={newCaptionFontStyle === s ? 'default' : 'outline'}
-                              onClick={() => setNewCaptionFontStyle(s)}
-                              className={`text-xs h-7 px-2 ${newCaptionFontStyle === s ? 'bg-indigo-600 border-indigo-500 text-white' : 'border-slate-700 bg-slate-800/60 text-slate-300'}`}
-                            >
-                              {s === 'bold' ? <Bold className="w-3 h-3" /> : s === 'italic' ? <Italic className="w-3 h-3" /> : s.charAt(0).toUpperCase() + s.slice(1)}
-                            </Button>
-                          ))}
-                        </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-[8px] text-slate-500 uppercase font-black">Align</Label>
+                        <Select value={newCaptionAlign} onValueChange={(v) => setNewCaptionAlign(v as any)}>
+                          <SelectTrigger className="bg-black/20 border-slate-800 h-9 rounded-lg text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-900 border-slate-700">
+                            <SelectItem value="left">Left</SelectItem>
+                            <SelectItem value="center">Center</SelectItem>
+                            <SelectItem value="right">Right</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-
-                      {/* Align */}
-                      <div>
-                        <Label className="text-xs text-slate-300 mb-1.5 block">Align</Label>
-                        <div className="flex gap-1.5">
-                          {(['left', 'center', 'right'] as const).map(a => (
-                            <Button
-                              key={a}
-                              size="sm"
-                              variant={newCaptionAlign === a ? 'default' : 'outline'}
-                              onClick={() => setNewCaptionAlign(a)}
-                              className={`flex-1 text-xs h-7 ${newCaptionAlign === a ? 'bg-indigo-600 border-indigo-500 text-white' : 'border-slate-700 bg-slate-800/60 text-slate-300'}`}
-                            >
-                              {a === 'left' ? <AlignLeft className="w-3 h-3" /> : a === 'center' ? <AlignCenter className="w-3 h-3" /> : <AlignRight className="w-3 h-3" />}
-                            </Button>
-                          ))}
-                        </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-[8px] text-slate-500 uppercase font-black">Font Size</Label>
+                        <Input
+                          type="number"
+                          value={newCaptionSize}
+                          min={8}
+                          max={72}
+                          onChange={(e) => setNewCaptionSize(parseInt(e.target.value) || 24)}
+                          className="bg-black/20 border-slate-800 h-9 rounded-lg"
+                        />
                       </div>
-
-                      {/* Color */}
-                      <div>
-                        <Label className="text-xs text-slate-300 mb-1.5 block">Text Color</Label>
-                        <div className="flex gap-2">
-                          {CAPTION_COLORS.map(c => (
-                            <button
-                              key={c}
-                              onClick={() => setNewCaptionColor(c)}
-                              className={`w-5 h-5 rounded-full border-2 transition-all ${newCaptionColor === c ? 'border-white scale-110' : 'border-transparent'}`}
-                              style={{ background: c, boxShadow: c === '#000000' ? 'inset 0 0 0 1px #555' : undefined }}
-                            />
-                          ))}
-                        </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-[8px] text-slate-500 uppercase font-black">Color</Label>
+                        <Input
+                          type="color"
+                          value={newCaptionColor}
+                          onChange={(e) => setNewCaptionColor(e.target.value)}
+                          className="bg-black/20 border-slate-800 h-9 rounded-lg p-1 cursor-pointer"
+                        />
                       </div>
-
-                      {/* Font size */}
-                      <div>
-                        <div className="flex justify-between text-xs text-slate-400 mb-1.5">
-                          <span>Font Size</span><span className="text-slate-200">{newCaptionFontSize}px</span>
-                        </div>
-                        <Slider value={[newCaptionFontSize]} min={12} max={56} step={1}
-                          onValueChange={([v]) => setNewCaptionFontSize(v)} />
+                      <div className="space-y-1.5">
+                        <Label className="text-[8px] text-slate-500 uppercase font-black">Style</Label>
+                        <Select value={newCaptionStyle} onValueChange={(v) => setNewCaptionStyle(v as any)}>
+                          <SelectTrigger className="bg-black/20 border-slate-800 h-9 rounded-lg text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-900 border-slate-700">
+                            <SelectItem value="normal">Normal</SelectItem>
+                            <SelectItem value="bold">Bold</SelectItem>
+                            <SelectItem value="italic">Italic</SelectItem>
+                            <SelectItem value="shadow">Shadow</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-
-                      {/* Background toggle */}
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs text-slate-300">Background Box</Label>
-                        <Switch checked={newCaptionBg} onCheckedChange={setNewCaptionBg} />
-                      </div>
-
-                      <Button onClick={handleAddCaption} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold">
-                        <Plus className="w-4 h-4 mr-1" /> Add Caption
-                      </Button>
-
-                      {/* Caption list */}
-                      {captions.length > 0 && (
-                        <div className="space-y-2 mt-2">
-                          <div className="flex items-center justify-between">
-                            <Label className="text-xs text-slate-300">Captions ({captions.length})</Label>
-                            <Button size="sm" variant="ghost" onClick={clearAllCaptions}
-                              className="text-xs text-slate-500 hover:text-red-400 h-6 px-2">
-                              <Trash2 className="w-3 h-3 mr-1" /> Clear All
-                            </Button>
-                          </div>
-                          <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
-                            {(captions as ExtendedCaption[]).map(cap => (
-                              <div
-                                key={cap.id}
-                                className={`p-2.5 bg-slate-800/70 rounded-lg border transition-colors ${currentTime >= cap.start && currentTime <= cap.end
-                                  ? 'border-indigo-500/60'
-                                  : 'border-slate-700'
-                                  }`}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-medium leading-snug truncate" style={{ color: cap.color ?? '#fff' }}>
-                                      {cap.text}
-                                    </p>
-                                    <p className="text-[10px] text-slate-500 mt-0.5">
-                                      {formatTime(cap.start)} → {formatTime(cap.end)} · {cap.position}
-                                    </p>
-                                  </div>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    onClick={() => removeCaption(cap.id)}
-                                    className="w-5 h-5 text-slate-500 hover:text-red-400 flex-shrink-0"
-                                  >
-                                    <X className="w-3 h-3" />
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-[10px] font-bold text-slate-400 uppercase">Background</Label>
+                      <Switch checked={newCaptionBg} onCheckedChange={setNewCaptionBg} />
+                    </div>
+                    <Button
+                      onClick={handleAddCaption}
+                      className="w-full bg-indigo-600 hover:bg-indigo-500 font-bold h-10 rounded-xl"
+                    >
+                      Add to Final Render
+                    </Button>
                   </Card>
+                  {captions.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black text-slate-500 uppercase px-2 mb-2 block">
+                        Overlay Sequence
+                      </Label>
+                      {(captions as ExtendedCaption[]).map((c) => (
+                        <div
+                          key={c.id}
+                          className={`group bg-slate-900/60 border p-3 rounded-xl flex items-center justify-between hover:bg-slate-800/80 transition-all shadow-lg ${
+                            currentTime >= c.start && currentTime <= c.end
+                              ? 'border-indigo-500/60'
+                              : 'border-slate-800'
+                          }`}
+                        >
+                          <div className="min-w-0 flex-1">
+                            <div className="text-[11px] font-bold truncate pr-2" style={{ color: c.color || '#fff' }}>
+                              {c.text}
+                            </div>
+                            <div className="text-[9px] font-black text-indigo-400 mt-1 uppercase tracking-tighter">
+                              {c.start.toFixed(1)}s — {c.end.toFixed(1)}s · {c.position} · {c.fontSize || 24}px
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => deleteCaption(c.id)}
+                            className="w-8 h-8 rounded-lg text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </TabsContent>
-              </Tabs>
-            </div>
-
-          </div>
-        )}
+              </div>
+            </Tabs>
+          </aside>
+        </main>
       </div>
 
-      {/* ── Export Modal ── */}
       <ExportModal
         open={exportModalOpen}
         onClose={() => setExportModalOpen(false)}
