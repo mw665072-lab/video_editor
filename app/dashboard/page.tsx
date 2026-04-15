@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { getProfile, logout } from '@/lib/api'
-import { PageShell } from '@/components/PageShell'
+import { PageShell } from '@/components/layout/PageShell'
 import { User, Mail, Video, Download, Zap, LogOut } from 'lucide-react'
 
 export default function DashboardPage() {

@@ -1,23 +1,5 @@
-import { FFmpeg } from '@ffmpeg/ffmpeg'
-import { toBlobURL, fetchFile } from '@ffmpeg/util'
-
-// ─── Singleton ────────────────────────────────────────────────────────────────
-// Separate instance from the main editor so both can coexist independently.
-let _ff: FFmpeg | null = null
-
-export async function loadFFmpegCut(): Promise<FFmpeg> {
-  if (_ff) return _ff
-
-  _ff = new FFmpeg()
-  const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd'
-
-  await _ff.load({
-    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-  })
-
-  return _ff
-}
+import { fetchFile } from '@ffmpeg/util'
+import { loadFFmpeg } from './ffmpeg'
 
 // ─── trimSegment ─────────────────────────────────────────────────────────────
 
@@ -33,7 +15,7 @@ export async function trimSegment(
   segIdx: number,
   onProgress?: (pct: number) => void,
 ): Promise<Blob> {
-  const ff = await loadFFmpegCut()
+  const ff = await loadFFmpeg()
 
   const ts = Date.now()
   const inputName  = `seg_in_${segIdx}_${ts}.mp4`
@@ -48,10 +30,9 @@ export async function trimSegment(
 
   try {
     await ff.exec([
-      // Input-side seek = fast, accurate enough for most cases
+      '-i', inputName,
       '-ss', String(Math.max(0, startTime)),
-      '-t',  String(Math.max(0.1, trimDuration)),
-      '-i',  inputName,
+      '-t', String(Math.max(0.1, trimDuration)),
 
       // Video: H.264 high profile, yuv420p for widest compat
       '-c:v', 'libx264',

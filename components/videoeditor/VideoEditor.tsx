@@ -11,13 +11,13 @@ import { formatTime, getClipIndexAtTime, getYouTubeVideoId } from '@/lib/videoUt
 import { toast } from 'sonner'
 import YouTube, { YouTubePlayer } from 'react-youtube'
 
-import { VideoUpload } from './VideoUpload'
-import { VideoPlayer } from './VideoPlayer'
-import { SocialVideoPlayer } from './SocialVideoPlayer'
-import { Timeline } from './Timeline'
-import { ClipList } from './ClipList'
-import { ExportDialog } from './ExportDialog'
-import { ClipSuggestionPanel } from './ClipSuggestionPanel'
+import { VideoUpload } from '../upload/VideoUpload'
+import { VideoPlayer } from '../VideoPlayer'
+import { SocialVideoPlayer } from '../SocialVideoPlayer'
+import { Timeline } from '../timeline/Timeline'
+import { ClipList } from '../clips/ClipList'
+import { ExportDialog } from '../dialog/ExportDialog'
+import { ClipSuggestionPanel } from '../clips/ClipSuggestionPanel'
 import { Trash2, FileDown, Wand2 } from 'lucide-react'
 
 

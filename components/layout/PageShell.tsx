@@ -1,8 +1,8 @@
 'use client'
 
 import { ReactNode } from 'react'
-import { GlobalHeader } from '@/components/GlobalHeader'
-import { Sidebar } from '@/components/Sidebar'
+import { Sidebar } from '@/components/layout/Sidebar'
+import { GlobalHeader } from '../global/GlobalHeader'
 
 interface PageShellProps {
   title: string

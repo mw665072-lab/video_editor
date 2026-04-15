@@ -32,6 +32,8 @@ export interface ExportOptions {
     end: number;
     position: 'top' | 'center' | 'bottom';
   }>;
+  format?: 'mp4' | 'webm';
+  quality?: 'low' | 'medium' | 'high';
   trim?: {
     start: number;
     duration: number;
@@ -57,9 +59,10 @@ export async function loadFFmpeg() {
 export async function processLocalVideo(file: Blob, options: ExportOptions): Promise<Blob> {
   const ff = await loadFFmpeg();
   
-  const inputName = 'input.mp4';
-  const outputName = 'output.mp4';
-  const fontName = 'font.ttf';
+  const format = options.format || 'mp4'
+  const outputName = format === 'webm' ? 'output.webm' : 'output.mp4'
+  const inputName = 'input.mp4'
+  const fontName = 'font.ttf'
 
   // Write file to memory
   await ff.writeFile(inputName, await fetchFile(file));
@@ -154,36 +157,57 @@ export async function processLocalVideo(file: Blob, options: ExportOptions): Pro
 
   const filterStr = videoFilters.length > 0 ? videoFilters.join(',') : null;
   const audioFilterStr = audioFilters.length > 0 ? audioFilters.join(',') : null;
+  const quality = options.quality || 'medium'
+  const qualitySettings =
+    quality === 'high'
+      ? { crf: '18', preset: 'medium', bitrate: '3M' }
+      : quality === 'low'
+      ? { crf: '28', preset: 'superfast', bitrate: '1M' }
+      : { crf: '23', preset: 'fast', bitrate: '2M' }
 
   // --- Run FFmpeg ---
   const args: string[] = [];
-  
-  // Trim options (Input-side seek for speed)
+  args.push('-i', inputName);
+
   if (options.trim) {
     args.push('-ss', String(options.trim.start));
     args.push('-t', String(options.trim.duration));
   }
 
-  args.push('-i', inputName);
-  
   if (filterStr) {
     args.push('-vf', filterStr);
   }
-  
+
+  if (format === 'webm') {
+    args.push(
+      '-c:v', 'libvpx-vp9',
+      '-b:v', qualitySettings.bitrate,
+      '-crf', qualitySettings.crf,
+      '-deadline', 'good',
+      '-pix_fmt', 'yuv420p',
+      '-c:a', 'libopus',
+      '-b:a', '128k'
+    )
+  } else {
+    args.push(
+      '-c:v', 'libx264',
+      '-preset', qualitySettings.preset,
+      '-crf', qualitySettings.crf,
+      '-profile:v', 'high',
+      '-level:v', '4.1',
+      '-pix_fmt', 'yuv420p',
+      '-c:a', 'aac',
+      '-b:a', '128k'
+    )
+  }
+
   if (audioFilterStr) {
     args.push('-af', audioFilterStr);
   }
 
   args.push(
-    '-c:v', 'libx264',
-    '-preset', 'ultrafast',
-    '-crf', '26',
-    '-profile:v', 'high',
-    '-level:v', '4.1',
-    '-pix_fmt', 'yuv420p',
-    '-c:a', 'aac',
-    '-b:a', '128k',
     '-movflags', '+faststart',
+    '-avoid_negative_ts', 'make_zero',
     '-y',
     outputName
   );
@@ -191,7 +215,7 @@ export async function processLocalVideo(file: Blob, options: ExportOptions): Pro
   await ff.exec(args);
 
   const data = await ff.readFile(outputName);
-  const result = new Blob([data], { type: 'video/mp4' });
+  const result = new Blob([data], { type: format === 'webm' ? 'video/webm' : 'video/mp4' });
 
   await ff.deleteFile(inputName);
   await ff.deleteFile(outputName);

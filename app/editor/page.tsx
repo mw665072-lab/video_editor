@@ -3,14 +3,13 @@
 import dynamic from 'next/dynamic'
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { ErrorBoundary } from '@/components/error/ErrorBoundary'
 import { Toaster } from 'sonner'
 import { Spinner } from '@/components/ui/spinner'
-import { ClipVideoForm } from '@/components/ClipVideoForm'
-import { PageShell } from '@/components/PageShell'
+import { PageShell } from '@/components/layout/PageShell'
 import { getProfile, hlsCleanup, hlsHeartbeat } from '@/lib/api'
 
-const VideoEditor = dynamic(() => import('@/components/VideoEditor').then(mod => ({ default: mod.VideoEditor })), {
+const VideoEditor = dynamic(() => import('@/components/videoeditor/VideoEditor').then(mod => ({ default: mod.VideoEditor })), {
   loading: () => (
     <div className="min-h-screen bg-[#020617] p-6 lg:p-8 flex items-center justify-center">
       <Spinner />

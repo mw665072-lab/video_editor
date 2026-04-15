@@ -3,10 +3,10 @@
 import dynamic from 'next/dynamic'
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { ErrorBoundary } from '@/components/error/ErrorBoundary'
 import { Toaster } from 'sonner'
 import { Spinner } from '@/components/ui/spinner'
-import { PageShell } from '@/components/PageShell'
+import { PageShell } from '@/components/layout/PageShell'
 import { getProfile } from '@/lib/api'
 
 const VisualEditor = dynamic(() => import('@/components/VisualEditor'), {

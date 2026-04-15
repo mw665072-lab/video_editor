@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { getProfile, createSubscriptionCheckout } from '@/lib/api'
-import { PageShell } from '@/components/PageShell'
+import { PageShell } from '@/components/layout/PageShell'
 
 const plans = [
   { key: 'FREE', label: 'Free', priceLabel: '$0', subLabel: '/ month', features: ['5 clips / month', '5 downloads / month'] },

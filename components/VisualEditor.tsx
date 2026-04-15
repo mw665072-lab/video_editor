@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef, useMemo, memo } from 'react'
-import { List } from 'react-window'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
@@ -21,7 +20,7 @@ import {
   Keyframe,
   Segment,
 } from '@/store/editorStore'
-import { VideoUpload } from '@/components/VideoUpload'
+import { VideoUpload } from '@/components/upload/VideoUpload'
 import { toast } from 'sonner'
 import {
   Play,
@@ -53,86 +52,13 @@ import {
   Move,
   Crop,
 } from 'lucide-react'
+import { TimelineClip } from '@/hooks/use-general'
+import { EXPORT_FORMATS, uid, LUT_PRESETS, SPEED_OPTIONS } from '@/constants/visual'
+import { buildFilterString, extractThumbnail, formatTime } from '@/lib/utils'
+import VisualEditorLoader from './empty/editor'
+import { ExtendedCaption } from '@/types/visualeditor'
+import FilterSlider from './videoeditor/FilterSlider'
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-interface ExtendedCaption extends Caption {
-  fontSize?: number
-  color?: string
-  fontStyle?: 'normal' | 'bold' | 'italic' | 'shadow'
-  bgEnabled?: boolean
-  align?: 'left' | 'center' | 'right'
-}
-
-// ─── LUT Presets ──────────────────────────────────────────────────────────────
-const LUT_PRESETS = [
-  { id: 'none', label: 'Original', filters: defaultFilters },
-  { id: 'vibrant', label: 'Vibrant', filters: { ...defaultFilters, saturation: 1.4, contrast: 1.1 } },
-  { id: 'noir', label: 'Noir', filters: { ...defaultFilters, grayscale: 1, contrast: 1.3 } },
-  { id: 'warm', label: 'Warm', filters: { ...defaultFilters, sepia: 30, brightness: 1.05 } },
-  { id: 'dramatic', label: 'Dramatic', filters: { ...defaultFilters, contrast: 1.5, brightness: 0.9 } },
-  { id: 'faded', label: 'Faded', filters: { ...defaultFilters, brightness: 1.1, contrast: 0.8, saturation: 0.8 } },
-]
-
-const EXPORT_FORMATS = [
-  { id: 'mp4', label: 'MP4 (H.264)', description: 'Best compatibility', badge: 'HD Pro', badgeColor: '#6366f1' },
-  { id: 'webm', label: 'WebM (VP9)', description: 'Best for Web', badge: 'Ultra', badgeColor: '#06b6d4' },
-]
-
-const SPEED_OPTIONS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2]
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-function uid(): string {
-  return `seg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-}
-
-async function extractThumbnail(objectUrl: string, time: number = 1): Promise<string> {
-  return new Promise<string>((resolve) => {
-    const video = document.createElement('video')
-    video.muted = true
-    video.playsInline = true
-    video.preload = 'metadata'
-    video.onloadedmetadata = () => {
-      video.currentTime = Math.min(time, video.duration)
-    }
-    video.onseeked = () => {
-      try {
-        const canvas = document.createElement('canvas')
-        canvas.width = 192
-        canvas.height = 108
-        const ctx = canvas.getContext('2d')
-        if (ctx) {
-          ctx.drawImage(video, 0, 0, 192, 108)
-          resolve(canvas.toDataURL('image/jpeg', 0.85))
-        } else {
-          resolve('')
-        }
-      } catch {
-        resolve('')
-      }
-    }
-    video.onerror = () => resolve('')
-    video.src = objectUrl
-  })
-}
-
-function formatTime(seconds: number) {
-  const m = Math.floor(seconds / 60)
-  const s = Math.floor(seconds % 60)
-  return `${m}:${s.toString().padStart(2, '0')}`
-}
-
-function buildFilterString(f: VideoFilters): string {
-  return [
-    `brightness(${f.brightness})`,
-    `contrast(${f.contrast})`,
-    `saturate(${f.saturation})`,
-    `hue-rotate(${f.hue}deg)`,
-    `blur(${f.blur}px)`,
-    `sepia(${f.sepia / 100})`,
-    `grayscale(${f.grayscale})`,
-    `invert(${f.invert / 100})`,
-  ].join(' ')
-}
 
 function interpolateKeyframes<T extends number>(
   keyframes: Keyframe<T>[] | undefined,
@@ -156,34 +82,7 @@ function interpolateKeyframes<T extends number>(
   return defaultValue
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-function FilterSlider({
-  label,
-  value,
-  min,
-  max,
-  step = 0.01,
-  displayValue,
-  onChange,
-}: {
-  label: string
-  value: number
-  min: number
-  max: number
-  step?: number
-  displayValue: string
-  onChange: (v: number[]) => void
-}) {
-  return (
-    <div className="space-y-1 mb-3">
-      <div className="flex justify-between items-center">
-        <Label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">{label}</Label>
-        <span className="text-[10px] text-slate-400 tabular-nums font-mono">{displayValue}</span>
-      </div>
-      <Slider value={[value]} min={min} max={max} step={step} onValueChange={onChange} className="h-1" />
-    </div>
-  )
-}
+
 
 function ExportModal({
   open,
@@ -221,11 +120,10 @@ function ExportModal({
             <button
               key={f.id}
               onClick={() => setFormat(f.id)}
-              className={`p-3 rounded-xl border text-left transition-all relative overflow-hidden ${
-                format === f.id
-                  ? 'border-indigo-500 bg-indigo-500/10'
-                  : 'border-slate-800 bg-slate-800/40 hover:border-slate-700'
-              }`}
+              className={`p-3 rounded-xl border text-left transition-all relative overflow-hidden ${format === f.id
+                ? 'border-indigo-500 bg-indigo-500/10'
+                : 'border-slate-800 bg-slate-800/40 hover:border-slate-700'
+                }`}
             >
               <span
                 className="inline-block text-[8px] font-black px-1.5 py-0.5 rounded-sm text-white mb-2 uppercase tracking-tighter"
@@ -297,15 +195,22 @@ function ExportModal({
   )
 }
 
-// Virtualized clip list row
-const ClipRow = memo(
-  ({
+type ClipRowExtraProps = {
+  segments: Segment[]
+  selectedIds: string[]
+  toggleSelect: (id: string, shiftKey: boolean) => void
+  removeSegment: (id: string) => void
+}
+
+// Clip list row
+function ClipRow({
     index,
     style,
     segments,
     selectedIds,
     toggleSelect,
     removeSegment,
+    ariaAttributes,
   }: {
     index: number
     style: React.CSSProperties
@@ -313,16 +218,20 @@ const ClipRow = memo(
     selectedIds: string[]
     toggleSelect: (id: string, shiftKey: boolean) => void
     removeSegment: (id: string) => void
-  }) => {
+    ariaAttributes?: {
+      'aria-posinset': number
+      'aria-setsize': number
+      role: 'listitem'
+    }
+  }) {
     const seg = segments[index]
     const active = selectedIds.includes(seg.id)
     return (
-      <div style={style}>
+      <div style={style} {...ariaAttributes}>
         <div
           onClick={(e) => toggleSelect(seg.id, e.shiftKey)}
-          className={`group p-2 mx-1 rounded-xl border-2 transition-all cursor-pointer flex items-center gap-3 ${
-            active ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-800 hover:border-slate-700 bg-slate-900/30'
-          }`}
+          className={`group p-2 mx-1 rounded-xl border-2 transition-all cursor-pointer flex items-center gap-3 ${active ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-800 hover:border-slate-700 bg-slate-900/30'
+            }`}
         >
           <div className="relative w-20 h-12 rounded-lg bg-black overflow-hidden shadow-lg flex-shrink-0">
             {seg.thumbnail ? (
@@ -355,65 +264,8 @@ const ClipRow = memo(
       </div>
     )
   }
-)
-ClipRow.displayName = 'ClipRow'
 
-// Timeline clip with trim handles
-function TimelineClip({
-  segment,
-  isSelected,
-  onSelect,
-  onTrimStart,
-  onTrimEnd,
-  zoom,
-  left,
-}: {
-  segment: Segment
-  isSelected: boolean
-  onSelect: () => void
-  onTrimStart: (id: string, e: React.MouseEvent) => void
-  onTrimEnd: (id: string, e: React.MouseEvent) => void
-  zoom: number
-  left: number
-}) {
-  const width = segment.trimDuration * zoom
-  return (
-    <div
-      className="absolute top-0 h-full"
-      style={{ left: `${left}px`, width: `${width}px` }}
-    >
-      <div
-        className={`relative h-full rounded-md overflow-hidden border-2 cursor-pointer ${
-          isSelected ? 'border-indigo-500' : 'border-slate-700 hover:border-slate-500'
-        }`}
-        onClick={onSelect}
-      >
-        <img src={segment.thumbnail} className="w-full h-full object-cover" alt="" />
-        {segment.transition.type !== 'none' && (
-          <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent pointer-events-none" />
-        )}
-        {/* Trim handles */}
-        <div
-          className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize bg-indigo-500/30 hover:bg-indigo-500/60 z-10"
-          onMouseDown={(e) => {
-            e.stopPropagation()
-            onTrimStart(segment.id, e)
-          }}
-        />
-        <div
-          className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize bg-indigo-500/30 hover:bg-indigo-500/60 z-10"
-          onMouseDown={(e) => {
-            e.stopPropagation()
-            onTrimEnd(segment.id, e)
-          }}
-        />
-        <div className="absolute bottom-1 left-1 text-[8px] font-bold bg-black/60 px-1 rounded-sm text-white">
-          {segment.label}
-        </div>
-      </div>
-    </div>
-  )
-}
+ClipRow.displayName = 'ClipRow'
 
 // ─── Main Editor Component ──────────────────────────────────────────────────
 export default function VisualEditor() {
@@ -458,6 +310,10 @@ export default function VisualEditor() {
   const [exportProgress, setExportProgress] = useState(0)
   const [exportStep, setExportStep] = useState('')
   const [exportModalOpen, setExportModalOpen] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false)
+  const [previewError, setPreviewError] = useState<string | null>(null)
+  const [draggingSegmentId, setDraggingSegmentId] = useState<string | null>(null)
 
   const [newCaptionText, setNewCaptionText] = useState('')
   const [newCaptionStart, setNewCaptionStart] = useState(0)
@@ -503,8 +359,8 @@ export default function VisualEditor() {
     activeCaption?.position === 'top'
       ? 'top-8'
       : activeCaption?.position === 'center'
-      ? 'top-1/2 -translate-y-1/2'
-      : 'bottom-8'
+        ? 'top-1/2 -translate-y-1/2'
+        : 'bottom-8'
 
   const videoStyle: React.CSSProperties = useMemo(
     () => ({
@@ -521,8 +377,39 @@ export default function VisualEditor() {
     [currentSegment, computedTransform]
   )
 
+  const currentSegmentIndex = useMemo(
+    () => segments.findIndex((s) => s.id === currentSegment?.id),
+    [segments, currentSegment]
+  )
+
+  const currentSegmentOffset = useMemo(
+    () =>
+      currentSegmentIndex >= 0
+        ? segments.slice(0, currentSegmentIndex).reduce((sum, s) => sum + s.trimDuration, 0)
+        : 0,
+    [segments, currentSegmentIndex]
+  )
+
+  const previewMode = Boolean(previewUrl)
+  const timelineCurrentTime = previewMode
+    ? currentTime
+    : currentSegment
+    ? currentSegmentOffset + currentTime - currentSegment.startTime
+    : 0
+
+  const currentSegmentRelativeTime = previewMode
+    ? currentTime
+    : currentSegment
+    ? currentTime - currentSegment.startTime
+    : 0
+
+  const visibleProgressPct = previewMode
+    ? Math.max(0, Math.min(100, (timelineCurrentTime / totalDuration) * 100))
+    : progressPct
+
   // ── Effects ──
   useEffect(() => {
+    if (previewUrl) return
     if (videoRef.current && currentSegment) {
       const video = videoRef.current
       if (video.src !== currentSegment.videoUrl) {
@@ -532,7 +419,7 @@ export default function VisualEditor() {
         setDuration(currentSegment.trimDuration)
       }
     }
-  }, [currentSegment])
+  }, [currentSegment, previewUrl])
 
   useEffect(() => {
     if (isPlaying && videoRef.current && currentSegment) {
@@ -547,8 +434,25 @@ export default function VisualEditor() {
   }, [currentTime, isPlaying, currentSegment, isLooping])
 
   useEffect(() => {
-    if (videoRef.current) videoRef.current.playbackRate = playbackSpeed
+    if (videoRef.current) {
+      videoRef.current.playbackRate = playbackSpeed
+    }
   }, [playbackSpeed])
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.volume = volume
+      videoRef.current.muted = isMuted
+    }
+  }, [volume, isMuted])
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl)
+      }
+    }
+  }, [previewUrl])
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -576,6 +480,29 @@ export default function VisualEditor() {
   }, [undo, redo, selectedSegmentIds, rippleDelete])
 
   // ── Handlers ──
+  const getVideoDuration = useCallback(async (file: File): Promise<number> => {
+    return new Promise<number>((resolve, reject) => {
+      const video = document.createElement('video')
+      const url = URL.createObjectURL(file)
+
+      const cleanup = () => {
+        URL.revokeObjectURL(url)
+        video.remove()
+      }
+
+      video.preload = 'metadata'
+      video.onloadedmetadata = () => {
+        cleanup()
+        resolve(video.duration)
+      }
+      video.onerror = () => {
+        cleanup()
+        reject(new Error('Unable to read video duration'))
+      }
+      video.src = url
+    })
+  }, [])
+
   const handleVideoLoaded = useCallback(
     async (file: Blob | string, dur: number, name?: string) => {
       const url = typeof file === 'string' ? file : URL.createObjectURL(file)
@@ -629,29 +556,57 @@ export default function VisualEditor() {
 
   const handleSeek = useCallback(
     (time: number) => {
-      if (videoRef.current && currentSegment) {
+      if (!videoRef.current) return
+      if (previewMode) {
+        const bounded = Math.max(0, Math.min(totalDuration, time))
+        videoRef.current.currentTime = bounded
+        setCurrentTime(bounded)
+        return
+      }
+      if (currentSegment) {
         const abs = currentSegment.startTime + time
         videoRef.current.currentTime = abs
         setCurrentTime(abs)
       }
     },
-    [currentSegment]
+    [currentSegment, previewMode, totalDuration]
   )
 
   const skipBy = useCallback(
     (s: number) => {
-      if (videoRef.current && currentSegment) {
-        const rel = videoRef.current.currentTime - currentSegment.startTime
-        handleSeek(Math.max(0, Math.min(currentSegment.trimDuration, rel + s)))
-      }
+      if (!videoRef.current) return
+      const current = previewMode
+        ? videoRef.current.currentTime
+        : currentSegment
+        ? videoRef.current.currentTime - currentSegment.startTime
+        : 0
+      const limit = previewMode ? totalDuration : currentSegment?.trimDuration || 0
+      handleSeek(Math.max(0, Math.min(limit, current + s)))
     },
-    [currentSegment, handleSeek]
+    [currentSegment, handleSeek, previewMode, totalDuration]
   )
 
   const handleVolumeChange = useCallback((v: number[]) => {
     setVolume(v[0])
     if (videoRef.current) videoRef.current.volume = v[0]
   }, [])
+
+  const handleSegmentDragStart = useCallback((id: string) => {
+    setDraggingSegmentId(id)
+  }, [])
+
+  const handleSegmentDrop = useCallback(
+    (targetId: string) => {
+      if (!draggingSegmentId || draggingSegmentId === targetId) return
+      const fromIndex = segments.findIndex((s) => s.id === draggingSegmentId)
+      const toIndex = segments.findIndex((s) => s.id === targetId)
+      if (fromIndex >= 0 && toIndex >= 0) {
+        reorderSegments(fromIndex, toIndex)
+      }
+      setDraggingSegmentId(null)
+    },
+    [draggingSegmentId, reorderSegments, segments]
+  )
 
   const splitAtPlayhead = useCallback(() => {
     if (!currentSegment) return
@@ -752,19 +707,106 @@ export default function VisualEditor() {
   // Trim handlers (simplified - you'd implement full drag logic)
   const handleTrimStart = useCallback(
     (id: string, e: React.MouseEvent) => {
-      // Implement trim start drag
-      console.log('Trim start', id)
+      if (!videoRef.current || previewMode) return
+      const seg = segments.find((segment) => segment.id === id)
+      if (!seg) return
+      const rel = Math.max(0, Math.min(seg.trimDuration - 0.1, videoRef.current.currentTime - seg.startTime))
+      if (selectedSegmentIds.includes(id)) {
+        updateSegment(id, {
+          startTime: seg.startTime + rel,
+          trimDuration: seg.trimDuration - rel,
+        })
+      } else {
+        setSelectedSegmentIds([id])
+      }
     },
-    []
+    [segments, previewMode, selectedSegmentIds, updateSegment, setSelectedSegmentIds]
   )
 
   const handleTrimEnd = useCallback(
     (id: string, e: React.MouseEvent) => {
-      // Implement trim end drag
-      console.log('Trim end', id)
+      if (!videoRef.current || previewMode) return
+      const seg = segments.find((segment) => segment.id === id)
+      if (!seg) return
+      const rel = Math.max(0.1, Math.min(seg.trimDuration, videoRef.current.currentTime - seg.startTime))
+      if (selectedSegmentIds.includes(id)) {
+        updateSegment(id, { trimDuration: rel })
+      } else {
+        setSelectedSegmentIds([id])
+      }
     },
-    []
+    [segments, previewMode, selectedSegmentIds, updateSegment, setSelectedSegmentIds]
   )
+
+  const handleGeneratePreview = useCallback(async () => {
+    if (segments.length === 0) return
+    setPreviewError(null)
+    setExportProgress(0)
+    setExportStep('Preparing preview render...')
+
+    try {
+      const { processLocalVideo } = await import('@/lib/ffmpeg')
+      const { concatSegments } = await import('@/lib/ffmpeg-cut')
+      const processed: Blob[] = []
+
+      for (let i = 0; i < segments.length; i++) {
+        const seg = segments[i]
+        setExportStep(`Rendering preview clip ${i + 1}/${segments.length}: ${seg.label}`)
+        setExportProgress(Math.round((i / segments.length) * 70))
+
+        let blob: Blob
+        if (seg.file) blob = seg.file
+        else {
+          const response = await fetch(seg.videoUrl)
+          if (!response.ok) throw new Error(`Failed to download clip ${seg.label}`)
+          blob = await response.blob()
+        }
+
+        const res = await processLocalVideo(blob, {
+          filters: seg.filters,
+          transform: seg.transform,
+          audio: { volume, muted: isMuted, fadeIn, fadeOut },
+          captions: [],
+          trim: { start: seg.startTime, duration: seg.trimDuration },
+          format: 'mp4',
+          quality: 'medium',
+        })
+        processed.push(res)
+      }
+
+      setExportStep('Merging preview timeline...')
+      setExportProgress(80)
+      let merged = await concatSegments(processed)
+
+      if (captions.length > 0) {
+        setExportStep('Burning preview captions...')
+        setExportProgress(90)
+        merged = await processLocalVideo(merged, {
+          filters: defaultFilters,
+          transform: defaultTransform,
+          audio: { volume, muted: isMuted, fadeIn, fadeOut },
+          captions: captions.map(({ id, ...rest }) => rest),
+          format: 'mp4',
+          quality: 'medium',
+        } as any)
+      }
+
+      const previewObjectUrl = URL.createObjectURL(merged)
+      setPreviewUrl(previewObjectUrl)
+      setCurrentTime(0)
+      setIsPlaying(false)
+      setExportStep('Preview ready')
+      setExportProgress(100)
+      toast.success('Preview generated. Play the merged timeline above.')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Preview generation failed'
+      setPreviewError(message)
+      setExportStep('Preview failed')
+      setExportProgress(0)
+      toast.error(message)
+      console.error(error)
+    }
+  }, [segments, captions, volume, isMuted, fadeIn, fadeOut])
 
   // Export
   const handleExport = useCallback(
@@ -782,13 +824,14 @@ export default function VisualEditor() {
         for (let i = 0; i < segments.length; i++) {
           const seg = segments[i]
           setExportStep(`Rendering Clip ${i + 1}/${segments.length}: ${seg.label}`)
-          setExportProgress(Math.round((i / segments.length) * 85))
+          setExportProgress(Math.round((i / segments.length) * 75))
 
           let blob: Blob
           if (seg.file) blob = seg.file
           else {
-            const r = await fetch(seg.videoUrl)
-            blob = await r.blob()
+            const response = await fetch(seg.videoUrl)
+            if (!response.ok) throw new Error(`Failed to download clip ${seg.label}`)
+            blob = await response.blob()
           }
 
           const res = await processLocalVideo(blob, {
@@ -797,23 +840,27 @@ export default function VisualEditor() {
             audio: { volume, muted: isMuted, fadeIn, fadeOut },
             captions: [],
             trim: { start: seg.startTime, duration: seg.trimDuration },
+            format: format as 'mp4' | 'webm',
+            quality: quality as 'low' | 'medium' | 'high',
           })
           processed.push(res)
         }
 
         setExportStep('Merging clips into final scene...')
-        setExportProgress(90)
+        setExportProgress(85)
         const merged = await concatSegments(processed)
 
         let result = merged
         if (captions.length > 0) {
           setExportStep('Burn-in global captions...')
-          setExportProgress(95)
+          setExportProgress(92)
           result = await processLocalVideo(merged, {
             filters: defaultFilters,
             transform: defaultTransform,
             audio: { volume, muted: isMuted, fadeIn, fadeOut },
             captions: captions.map(({ id, ...rest }) => rest),
+            format: format as 'mp4' | 'webm',
+            quality: quality as 'low' | 'medium' | 'high',
           } as any)
         }
 
@@ -841,19 +888,7 @@ export default function VisualEditor() {
   // ── Render ──
   if (segments.length === 0) {
     return (
-      <div className="min-h-screen bg-[#020617] flex items-center justify-center p-8">
-        <div className="max-w-xl w-full text-center space-y-10 animate-in fade-in slide-in-from-bottom-5 duration-700">
-          <div className="space-y-4">
-            <h1 className="text-7xl font-black italic tracking-tighter text-white">
-              Cut<span className="text-indigo-500">Pro</span>
-            </h1>
-            <p className="text-slate-400 text-lg font-medium">Professional grade multi-clip video editor.</p>
-          </div>
-          <div className="bg-slate-900/40 border-2 border-dashed border-slate-800 rounded-[2rem] p-12 hover:border-indigo-500/50 transition-all hover:bg-slate-900/60 shadow-2xl">
-            <VideoUpload showUrlUpload={true} onVideoLoaded={handleVideoLoaded} onDurationResolved={() => {}} />
-          </div>
-        </div>
-      </div>
+      <VisualEditorLoader handleVideoLoaded={handleVideoLoaded} />
     )
   }
 
@@ -893,6 +928,39 @@ export default function VisualEditor() {
             >
               <RotateCcw className="w-4 h-4 mr-2 group-hover:rotate-[-90deg] transition-transform" /> Reset
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                if (isGeneratingPreview) return
+                setPreviewError(null)
+                setIsGeneratingPreview(true)
+                try {
+                  await handleGeneratePreview()
+                } finally {
+                  setIsGeneratingPreview(false)
+                }
+              }}
+              className="text-white border-slate-700 hover:border-indigo-500 hover:text-white rounded-xl h-10 px-4"
+              disabled={segments.length === 0 || isGeneratingPreview}
+            >
+              {isGeneratingPreview ? 'Previewing…' : 'Preview Timeline'}
+            </Button>
+            {previewUrl && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setPreviewUrl(null)
+                  setPreviewError(null)
+                  setExportStep('')
+                  setCurrentTime(0)
+                }}
+                className="text-slate-400 hover:text-white rounded-xl h-10 px-4"
+              >
+                Clear Preview
+              </Button>
+            )}
             <Button
               onClick={() => setExportModalOpen(true)}
               className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-10 px-6 rounded-xl shadow-lg shadow-indigo-600/20 gap-2"
@@ -938,9 +1006,18 @@ export default function VisualEditor() {
                       i.type = 'file'
                       i.multiple = true
                       i.accept = 'video/*'
-                      i.onchange = (e: any) =>
-                        e.target.files &&
-                        Array.from(e.target.files).forEach((f: any) => handleVideoLoaded(f, 0, f.name))
+                      i.onchange = async (e: any) => {
+                        if (!e.target.files) return
+                        for (const file of Array.from(e.target.files) as File[]) {
+                          try {
+                            const duration = await getVideoDuration(file)
+                            await handleVideoLoaded(file, duration, file.name)
+                          } catch (error) {
+                            console.error(error)
+                            toast.error('Unable to load selected video')
+                          }
+                        }
+                      }
                       i.click()
                     }}
                   >
@@ -948,23 +1025,21 @@ export default function VisualEditor() {
                   </Button>
                 </div>
               </div>
-              <div className="flex-1">
-                <List
-                  height={400}
-                  rowCount={segments.length}
-                  rowHeight={70}
-                  style={{ width: '100%' }}
-                  rowComponent={ClipRow}
-                  rowProps={{
-                    segments,
-                    selectedIds: selectedSegmentIds,
-                    toggleSelect: toggleSegmentSelection,
-                    removeSegment: (id: string) => {
+              <div className="flex-1 overflow-y-auto" style={{ maxHeight: 400 }}>
+                {segments.map((seg, idx) => (
+                  <ClipRow
+                    key={seg.id}
+                    index={idx}
+                    style={{ width: '100%' }}
+                    segments={segments}
+                    selectedIds={selectedSegmentIds}
+                    toggleSelect={toggleSegmentSelection}
+                    removeSegment={(id: string) => {
                       pushHistory()
                       removeSegment(id)
-                    },
-                  }}
-                />
+                    }}
+                  />
+                ))}
               </div>
             </Card>
 
@@ -1065,32 +1140,43 @@ export default function VisualEditor() {
           <section className="lg:col-span-6 flex flex-col gap-4">
             <Card className="bg-black/60 border-slate-800 rounded-2xl overflow-hidden flex-1 flex flex-col shadow-2xl relative">
               <div className="flex-1 relative flex items-center justify-center bg-black/80">
+                {previewUrl && (
+                  <div className="absolute top-4 left-4 z-10 rounded-full bg-indigo-600/90 px-3 py-1 text-[10px] uppercase tracking-[0.28em] font-black text-slate-100 shadow-lg shadow-indigo-500/20">
+                    Timeline Preview
+                  </div>
+                )}
                 <video
                   ref={videoRef}
+                  src={previewUrl || currentSegment?.videoUrl || undefined}
                   onTimeUpdate={handleTimeUpdate}
                   onPlay={() => setIsPlaying(true)}
                   onPause={() => setIsPlaying(false)}
                   className="max-w-full max-h-full object-contain"
-                  style={videoStyle}
+                  style={previewUrl ? undefined : videoStyle}
+                  controls={false}
                 />
+
+                {previewError && (
+                  <div className="absolute bottom-4 left-4 right-4 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-3 text-[11px] text-rose-100 shadow-lg shadow-rose-500/10">
+                    {previewError}
+                  </div>
+                )}
 
                 {activeCaption && (
                   <div
-                    className={`absolute left-0 right-0 flex pointer-events-none transition-all duration-300 ${captionPositionClass} ${
-                      activeCaption.align === 'left'
-                        ? 'justify-start'
-                        : activeCaption.align === 'right'
+                    className={`absolute left-0 right-0 flex pointer-events-none transition-all duration-300 ${captionPositionClass} ${activeCaption.align === 'left'
+                      ? 'justify-start'
+                      : activeCaption.align === 'right'
                         ? 'justify-end'
                         : 'justify-center'
-                    }`}
+                      }`}
                     style={{ padding: '0 2rem' }}
                   >
                     <div
-                      className={`max-w-[85%] px-5 py-2 rounded-2xl shadow-2xl ${
-                        activeCaption.bgEnabled !== false
-                          ? 'backdrop-blur-md bg-black/60 border border-white/10'
-                          : ''
-                      }`}
+                      className={`max-w-[85%] px-5 py-2 rounded-2xl shadow-2xl ${activeCaption.bgEnabled !== false
+                        ? 'backdrop-blur-md bg-black/60 border border-white/10'
+                        : ''
+                        }`}
                       style={{
                         color: activeCaption.color || '#fff',
                         fontSize: `${activeCaption.fontSize || 24}px`,
@@ -1117,11 +1203,11 @@ export default function VisualEditor() {
                 >
                   <div
                     className="h-full bg-indigo-500 rounded-full shadow-[0_0_15px_rgba(99,102,241,0.5)]"
-                    style={{ width: `${progressPct}%` }}
+                    style={{ width: `${visibleProgressPct}%` }}
                   />
                   <div
                     className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-2xl scale-0 group-hover:scale-100 transition-all opacity-0 group-hover:opacity-100"
-                    style={{ left: `${progressPct}%`, transform: 'translate(-50%, -50%)' }}
+                    style={{ left: `${visibleProgressPct}%`, transform: 'translate(-50%, -50%)' }}
                   />
                 </div>
 
@@ -1157,10 +1243,10 @@ export default function VisualEditor() {
 
                   <div className="flex flex-col items-center">
                     <div className="text-xl font-black font-mono tabular-nums leading-none">
-                      {formatTime(currentTime - (currentSegment?.startTime || 0))}
+                      {formatTime(currentSegmentRelativeTime)}
                     </div>
                     <div className="text-[9px] font-black text-slate-500 mt-1.5 uppercase tracking-widest">
-                      {formatTime(currentSegment?.trimDuration || 0)} CLIP REMAINING
+                      {previewMode ? 'TIMELINE PREVIEW' : `${formatTime(currentSegment?.trimDuration || 0)} CLIP REMAINING`}
                     </div>
                   </div>
 
@@ -1246,6 +1332,8 @@ export default function VisualEditor() {
                         onSelect={() => setSelectedSegmentIds([seg.id])}
                         onTrimStart={handleTrimStart}
                         onTrimEnd={handleTrimEnd}
+                        onDragStart={handleSegmentDragStart}
+                        onDrop={handleSegmentDrop}
                         zoom={timelineZoom}
                         left={left}
                       />
@@ -1254,7 +1342,7 @@ export default function VisualEditor() {
                   {/* Playhead */}
                   <div
                     className="absolute top-0 bottom-0 w-0.5 bg-indigo-500 z-20 pointer-events-none"
-                    style={{ left: `${currentTime * timelineZoom}px` }}
+                    style={{ left: `${timelineCurrentTime * timelineZoom}px` }}
                   />
                 </div>
               </div>
@@ -1400,11 +1488,10 @@ export default function VisualEditor() {
                             variant="outline"
                             size="sm"
                             onClick={() => flip('h')}
-                            className={`h-11 border-slate-800 flex flex-col gap-0.5 ${
-                              currentSegment.transform.flipH
-                                ? 'bg-indigo-600 text-white border-indigo-500'
-                                : 'bg-slate-800/20 text-slate-100'
-                            }`}
+                            className={`h-11 border-slate-800 flex flex-col gap-0.5 ${currentSegment.transform.flipH
+                              ? 'bg-indigo-600 text-white border-indigo-500'
+                              : 'bg-slate-800/20 text-slate-100'
+                              }`}
                           >
                             <FlipHorizontal className="w-4 h-4" />
                             <span className="text-[8px] uppercase">Flip H</span>
@@ -1413,11 +1500,10 @@ export default function VisualEditor() {
                             variant="outline"
                             size="sm"
                             onClick={() => flip('v')}
-                            className={`h-11 border-slate-800 flex flex-col gap-0.5 ${
-                              currentSegment.transform.flipV
-                                ? 'bg-indigo-600 text-white border-indigo-500'
-                                : 'bg-slate-800/20 text-slate-100'
-                            }`}
+                            className={`h-11 border-slate-800 flex flex-col gap-0.5 ${currentSegment.transform.flipV
+                              ? 'bg-indigo-600 text-white border-indigo-500'
+                              : 'bg-slate-800/20 text-slate-100'
+                              }`}
                           >
                             <FlipVertical className="w-4 h-4" />
                             <span className="text-[8px] uppercase">Flip V</span>
@@ -1618,11 +1704,10 @@ export default function VisualEditor() {
                               size="sm"
                               variant="outline"
                               onClick={() => setPlaybackSpeed(sp)}
-                              className={`h-8 text-[10px] font-bold rounded-lg ${
-                                playbackSpeed === sp
-                                  ? 'bg-indigo-600 text-white border-indigo-500'
-                                  : 'border-slate-800 bg-slate-900/30'
-                              }`}
+                              className={`h-8 text-[10px] font-bold rounded-lg ${playbackSpeed === sp
+                                ? 'bg-indigo-600 text-white border-indigo-500'
+                                : 'border-slate-800 bg-slate-900/30'
+                                }`}
                             >
                               {sp}x
                             </Button>
@@ -1752,11 +1837,10 @@ export default function VisualEditor() {
                       {(captions as ExtendedCaption[]).map((c) => (
                         <div
                           key={c.id}
-                          className={`group bg-slate-900/60 border p-3 rounded-xl flex items-center justify-between hover:bg-slate-800/80 transition-all shadow-lg ${
-                            currentTime >= c.start && currentTime <= c.end
-                              ? 'border-indigo-500/60'
-                              : 'border-slate-800'
-                          }`}
+                          className={`group bg-slate-900/60 border p-3 rounded-xl flex items-center justify-between hover:bg-slate-800/80 transition-all shadow-lg ${currentTime >= c.start && currentTime <= c.end
+                            ? 'border-indigo-500/60'
+                            : 'border-slate-800'
+                            }`}
                         >
                           <div className="min-w-0 flex-1">
                             <div className="text-[11px] font-bold truncate pr-2" style={{ color: c.color || '#fff' }}>
