@@ -758,9 +758,7 @@ const MediaBrowser: React.FC = () => {
         };
         // Fallback: if image hasn't loaded yet, still proceed
         setTimeout(() => {
-          if (!e.dataTransfer._dragImageSet) {
-            // Already set by onload
-          }
+          // no-op fallback
         }, 100);
       } catch {
         // Fallback to default drag image

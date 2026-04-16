@@ -31,6 +31,9 @@ export interface ExportOptions {
     start: number;
     end: number;
     position: 'top' | 'center' | 'bottom';
+    fontSize?: number;
+    color?: string;
+    bgEnabled?: boolean;
   }>;
   format?: 'mp4' | 'webm';
   quality?: 'low' | 'medium' | 'high';

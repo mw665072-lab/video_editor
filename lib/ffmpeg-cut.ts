@@ -83,6 +83,10 @@ export async function trimSegment(
  * All blobs must have been encoded with the same codec parameters (which
  * trimSegment() guarantees: libx264 + aac, yuv420p).
  */
+export async function loadFFmpegCut() {
+  return loadFFmpeg()
+}
+
 export async function concatSegments(
   blobs: Blob[],
   onProgress?: (pct: number) => void,

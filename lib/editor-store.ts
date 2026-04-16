@@ -260,7 +260,7 @@ interface EditorState {
   // ============================================================
   // Playback Actions
   // ============================================================
-  setCurrentTime: (time: number) => void;
+  setCurrentTime: (time: number | ((prev: number) => number)) => void;
   togglePlay: () => void;
   setIsPlaying: (playing: boolean) => void;
   setPlaybackSpeed: (speed: number) => void;
@@ -788,17 +788,27 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const file = mediaFiles.find((f) => f.id === id);
     if (file) URL.revokeObjectURL(file.url);
 
-    // Clean up waveform data and cache
     const newWaveformData = new Map(waveformData);
     newWaveformData.delete(id);
     const newWaveformCache = new Map(waveformCache);
     newWaveformCache.delete(id);
 
-    set({
-      mediaFiles: mediaFiles.filter((f) => f.id !== id),
+    set((state) => ({
+      mediaFiles: state.mediaFiles.filter((f) => f.id !== id),
       waveformData: newWaveformData,
       waveformCache: newWaveformCache,
-    });
+      tracks: state.tracks.map((t) => ({
+        ...t,
+        clips: t.clips.filter((c) => c.mediaId !== id),
+      })),
+      selectedClipIds: state.selectedClipIds.filter((clipId) => {
+        const mediaClip = state.tracks.some((track) =>
+          track.clips.some((c) => c.id === clipId && c.mediaId === id)
+        );
+        return !mediaClip;
+      }),
+    }));
+    get().recalculateDuration();
   },
 
   getMediaFile: (id: string) => {
@@ -1397,8 +1407,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   // Playback Actions
   // ============================================================
 
-  setCurrentTime: (time: number) => {
-    set({ currentTime: Math.max(0, time) });
+  setCurrentTime: (timeOrUpdater: number | ((prev: number) => number)) => {
+    set((state) => {
+      const nextTime = typeof timeOrUpdater === 'function' ? timeOrUpdater(state.currentTime) : timeOrUpdater;
+      return { currentTime: Math.max(0, nextTime) };
+    });
   },
 
   togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
@@ -1499,14 +1512,15 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   recalculateDuration: () => {
     const { tracks } = get();
-    let maxEnd = 60;
+    let maxEnd = 0;
     for (const track of tracks) {
       for (const clip of track.clips) {
         const clipEnd = clip.startTime + clip.duration;
         if (clipEnd > maxEnd) maxEnd = clipEnd;
       }
     }
-    set({ totalDuration: maxEnd + 10 });
+    const buffer = Math.max(5, maxEnd * 0.05);
+    set({ totalDuration: Math.max(10, maxEnd + buffer) });
   },
 
   snapTime: (time: number) => {

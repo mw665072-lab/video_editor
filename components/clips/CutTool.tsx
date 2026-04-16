@@ -303,7 +303,7 @@ export function CutTool() {
   useEffect(() => {
     loadFFmpegCut()
       .then(() => setFfmpegReady(true))
-      .catch(err => console.error('[CutTool] FFmpeg init failed:', err))
+      .catch((err: unknown) => console.error('[CutTool] FFmpeg init failed:', err))
   }, [])
 
   // ── Sync preview player when selected segment changes ────────────────────
@@ -494,11 +494,17 @@ export function CutTool() {
         setExportStep(`Trimming ${seg.label}… (${i + 1} / ${segments.length})`)
         updateSegment(seg.id, { status: 'processing' })
 
+        const width = videoRef.current?.videoWidth || 1280
+        const height = videoRef.current?.videoHeight || 720
+        const fps = 30
         const blob = await trimSegment(
           seg.file,
           seg.startTime,
           seg.trimDuration,
           i,
+          width,
+          height,
+          fps,
           pct => setExportProgress(Math.round(base + (pct / 100) * segShare)),
         )
         trimmedBlobs.push(blob)

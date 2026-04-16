@@ -1,8 +1,15 @@
+import type { MouseEvent } from 'react'
 import {
   Segment,
 } from '@/store/editorStore'
-import { AudioWaveform } from '@/components/timeline/AudioWaveform'
 
+function AudioWaveform({ url, duration, color }: { url: string; duration: number; color: string }) {
+  return (
+    <div className="w-full h-full bg-zinc-900 flex items-center justify-center text-[10px] text-zinc-500">
+      <span>Audio waveform placeholder</span>
+    </div>
+  )
+}
 
 export function TimelineClip({
   segment,
@@ -18,8 +25,8 @@ export function TimelineClip({
   segment: Segment
   isSelected: boolean
   onSelect: () => void
-  onTrimStart: (id: string, e: React.MouseEvent) => void
-  onTrimEnd: (id: string, e: React.MouseEvent) => void
+  onTrimStart: (id: string, e: MouseEvent) => void
+  onTrimEnd: (id: string, e: MouseEvent) => void
   onDragStart?: (id: string) => void
   onDrop?: (id: string) => void
   zoom: number
@@ -97,4 +104,4 @@ export function TimelineClip({
       </div>
     </div>
   )
-}
+}

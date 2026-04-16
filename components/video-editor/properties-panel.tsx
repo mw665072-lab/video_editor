@@ -75,7 +75,23 @@ const TEXT_ANIMATIONS = [
   'slideDown',
   'bounce',
   'glitch',
-];
+] as const;
+
+function formatAnimationType(value: typeof TEXT_ANIMATIONS[number]) {
+  switch (value) {
+    case 'none': return 'None';
+    case 'fadeIn': return 'Fade In';
+    case 'fadeOut': return 'Fade Out';
+    case 'typewriter': return 'Typewriter';
+    case 'slideLeft': return 'Slide Left';
+    case 'slideRight': return 'Slide Right';
+    case 'slideUp': return 'Slide Up';
+    case 'slideDown': return 'Slide Down';
+    case 'bounce': return 'Bounce';
+    case 'glitch': return 'Glitch';
+    default: return String(value);
+  }
+}
 
 const TRANSITION_TYPES: ClipTransition['type'][] = [
   'none',
@@ -218,6 +234,8 @@ const PropertiesPanel: React.FC = () => {
     if (!selectedClip) return undefined;
     return getMediaFile(selectedClip.mediaId);
   }, [selectedClip, getMediaFile]);
+
+  const [expandedTextOverlay, setExpandedTextOverlay] = useState<string | null>(null);
 
   // Update clip label in store
   const updateClipLabel = useCallback(

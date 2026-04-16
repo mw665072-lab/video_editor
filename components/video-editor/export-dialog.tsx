@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { useEditorStore } from '@/lib/editor-store';
+import { useEditorStore, type MediaFile } from '@/lib/editor-store';
 import { trimSegment, concatSegments } from '@/lib/ffmpeg-cut';
 import {
   Dialog,
@@ -160,7 +160,7 @@ function estimateFileSize(
 // ============================================================
 
 type ClipType = ReturnType<typeof import('@/lib/editor-store').useEditorStore.getState>['tracks'][0]['clips'][0];
-type MediaType = NonNullable<ReturnType<typeof import('@/lib/editor-store').useEditorStore.getState>['getMediaFile']>;
+type MediaType = MediaFile;
 
 interface VideoClipEntry {
   clip: ClipType;
@@ -757,20 +757,12 @@ const ExportDialog: React.FC<{ open: boolean; onClose: () => void }> = ({ open, 
               </Button>
               <Button
                 onClick={handleExport}
-                disabled={status === 'preloading'}
                 className="bg-emerald-600 hover:bg-emerald-500 text-white gap-2"
               >
-                {status === 'preloading' ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Preloading...
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4" />
-                    Start Export
-                  </>
-                )}
+                <>
+                  <Download className="w-4 h-4" />
+                  Start Export
+                </>
               </Button>
             </DialogFooter>
           </div>
