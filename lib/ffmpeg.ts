@@ -137,8 +137,12 @@ export async function processLocalVideo(file: Blob, options: ExportOptions): Pro
     if (cap.position === 'top') yPos = 'h*0.1';
     else if (cap.position === 'center') yPos = '(h-text_h)/2';
 
-    const drawText = `drawtext=fontfile=${fontName}:text='${escapedText}':x=(w-text_w)/2:y=${yPos}:fontsize=32:fontcolor=white:box=1:boxcolor=black@0.5:boxborderw=5:enable='between(t,${cap.start},${cap.end})'`;
-    videoFilters.push(drawText);
+    // Enhanced caption styling
+    const fontSize = cap.fontSize || 32;
+    const color = cap.color || 'white';
+    const box = cap.bgEnabled !== false ? '1' : '0';
+    
+    videoFilters.push(`drawtext=fontfile=${fontName}:text='${escapedText}':x=(w-text_w)/2:y=${yPos}:fontsize=${fontSize}:fontcolor=${color}:box=${box}:boxcolor=black@0.6:boxborderw=10:enable='between(t,${cap.start},${cap.end})'`);
   });
 
   videoFilters.push("scale='trunc(iw/2)*2:trunc(ih/2)*2'");
@@ -152,6 +156,10 @@ export async function processLocalVideo(file: Blob, options: ExportOptions): Pro
     }
     if (options.audio.fadeIn > 0) {
       audioFilters.push(`afade=t=in:st=0:d=${options.audio.fadeIn}`);
+    }
+    if (options.audio.fadeOut > 0 && options.trim) {
+      const fadeOutStart = Math.max(0, options.trim.duration - options.audio.fadeOut);
+      audioFilters.push(`afade=t=out:st=${fadeOutStart}:d=${options.audio.fadeOut}`);
     }
   }
 

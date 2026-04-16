@@ -13,6 +13,9 @@ export async function trimSegment(
   startTime: number,
   trimDuration: number,
   segIdx: number,
+  width: number,
+  height: number,
+  fps: number,
   onProgress?: (pct: number) => void,
 ): Promise<Blob> {
   const ff = await loadFFmpeg()
@@ -29,29 +32,34 @@ export async function trimSegment(
   ff.on('progress', progressHandler)
 
   try {
+    // Normalization logic:
+    // 1. Force constant frame rate (CFR)
+    // 2. Scale with padding to maintain aspect ratio (pillarbox/letterbox)
+    // 3. Ensure even dimensions for H.264
+    const filter = `scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2`
+
     await ff.exec([
       '-i', inputName,
       '-ss', String(Math.max(0, startTime)),
       '-t', String(Math.max(0.1, trimDuration)),
 
-      // Video: H.264 high profile, yuv420p for widest compat
+      // Video: Strict normalization
       '-c:v', 'libx264',
       '-preset', 'ultrafast',
       '-crf', '23',
       '-profile:v', 'high',
       '-level:v', '4.1',
       '-pix_fmt', 'yuv420p',
-      // CRITICAL: even dimensions for H.264
-      '-vf', "scale='trunc(iw/2)*2:trunc(ih/2)*2'",
+      '-r', String(fps),           // Output frame rate
+      '-vf', filter,               // Scale & Pad
+      '-fps_mode', 'cfr',          // Constant frame rate is CRITICAL for concat demuxer
 
-      // Audio: AAC stereo
+      // Audio: AAC stereo normalization
       '-c:a', 'aac',
       '-b:a', '128k',
+      '-ar', '44100',              // Sample rate normalization
       '-ac', '2',
 
-      // Flags
-      '-movflags', '+faststart',
-      '-avoid_negative_ts', 'make_zero',
       '-y',
       outputName,
     ])
@@ -85,7 +93,7 @@ export async function concatSegments(
     return blobs[0]
   }
 
-  const ff = await loadFFmpegCut()
+  const ff = await loadFFmpeg()
   const ts = Date.now()
 
   // Write each segment to WASM FS
