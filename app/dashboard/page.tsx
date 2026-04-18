@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { getProfile, logout } from '@/lib/api'
 import { PageShell } from '@/components/layout/PageShell'
-import { User, Mail, Video, Download, Zap, LogOut } from 'lucide-react'
+import { User, Mail, Video, Download, Zap, LogOut, Scissors, CreditCard } from 'lucide-react'
 
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
@@ -28,162 +28,345 @@ export default function DashboardPage() {
   const downloadsProgress = user ? Math.min((user.downloadsThisMonth / downloadsLimit) * 100, 100) : 0
 
   return (
-    <PageShell
-      title="Dashboard"
-      subtitle="Overview of your account & activity"
-      actions={
-        <button
-          onClick={onLogout}
-          className="flex items-center gap-2 rounded-full bg-rose-500/10 hover:bg-rose-500 px-5 py-2.5 text-sm font-medium text-rose-400 hover:text-white transition-all"
-        >
-          <LogOut className="w-4 h-4" />
-          Logout
-        </button>
-      }
+    <div
+      className="relative min-h-screen overflow-hidden"
+      style={{
+        background: 'radial-gradient(ellipse 80% 60% at 50% -10%, #2d1800 0%, #0d0905 55%, #080604 100%)',
+      }}
     >
-      {error && (
-        <div className="mb-6 rounded-2xl border border-rose-500/30 bg-rose-950/50 p-4 text-rose-200">
-          {error}
-        </div>
-      )}
+      {/* Grid texture */}
+      <div
+        className="pointer-events-none fixed inset-0 z-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            'linear-gradient(#fa6a00 1px, transparent 1px), linear-gradient(90deg, #fa6a00 1px, transparent 1px)',
+          backgroundSize: '48px 48px',
+        }}
+      />
 
-      {user ? (
-        <>
-          {/* Slim Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            
-            {/* Profile Card - Slim */}
-            <div className="bg-[#0f172a] border border-slate-700 rounded-3xl p-5 hover:border-slate-500 transition-all duration-300">
-              <div className="flex items-center gap-3 mb-4">
-                <User className="w-5 h-5 text-cyan-400" />
-                <h3 className="font-semibold text-lg text-white">Profile</h3>
-              </div>
+      {/* Ambient glow blobs */}
+      <div
+        className="pointer-events-none absolute top-[-80px] left-[-80px] w-[320px] h-[320px] rounded-full blur-[120px] opacity-20"
+        style={{ background: '#fa6a00' }}
+      />
+      <div
+        className="pointer-events-none absolute bottom-[-80px] right-[-80px] w-[280px] h-[280px] rounded-full blur-[120px] opacity-10"
+        style={{ background: '#e84d00' }}
+      />
 
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-3xl font-bold border border-slate-600 flex-shrink-0">
-                  {user.name?.charAt(0).toUpperCase()}
-                </div>
-                <div className="min-w-0">
-                  <p className="font-semibold text-white text-base truncate">{user.name}</p>
-                  <p className="text-slate-400 text-sm flex items-center gap-2 truncate">
-                    <Mail className="w-4 h-4 flex-shrink-0" />
-                    {user.email}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-5 pt-4 border-t border-slate-700 grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-slate-500 text-xs">Status</p>
-                  <p className="text-emerald-400 font-medium flex items-center gap-2 mt-1">
-                    <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                    Active
-                  </p>
-                </div>
-                <div>
-                  <p className="text-slate-500 text-xs">Plan</p>
-                  <p className="font-semibold text-white mt-1">{user.subscriptionPlan}</p>
-                </div>
-              </div>
+      <div className="relative z-10">
+        <PageShell
+          title="Dashboard"
+          subtitle="Overview of your account & activity"
+          actions={
+            <button
+              onClick={onLogout}
+              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all duration-200"
+              style={{
+                background: '#1a0808',
+                border: '1px solid #3a1010',
+                color: '#c05050',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#2a0c0c'
+                e.currentTarget.style.color = '#e06060'
+                e.currentTarget.style.borderColor = '#5a1818'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#1a0808'
+                e.currentTarget.style.color = '#c05050'
+                e.currentTarget.style.borderColor = '#3a1010'
+              }}
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          }
+        >
+          {error && (
+            <div
+              className="mb-6 rounded-2xl p-4 text-sm"
+              style={{
+                background: '#1a0808',
+                border: '1px solid #3a1010',
+                color: '#e07070',
+              }}
+            >
+              {error}
             </div>
+          )}
 
-            {/* Clips Created - Slim */}
-            <div className="bg-[#0f172a] border border-slate-700 rounded-3xl p-5 hover:border-slate-500 transition-all duration-300">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-3">
-                  <Video className="w-5 h-5 text-cyan-400" />
-                  <h3 className="font-semibold text-lg text-white">Clips Created</h3>
-                </div>
-                <span className="px-3 py-1 text-xs bg-cyan-500/10 text-cyan-400 rounded-full">This Month</span>
-              </div>
+          {user ? (
+            <>
+              {/* ── Cards row ─────────────────────────────────────────── */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
-              <p className="text-4xl font-bold text-white tabular-nums mb-4">
-                {user.clipsThisMonth} <span className="text-xl text-slate-500 font-normal">/ {clipsLimit}</span>
-              </p>
-
-              <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                {/* Profile card */}
                 <div
-                  className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-700"
-                  style={{ width: `${clipsProgress}%` }}
-                />
-              </div>
-            </div>
+                  className="rounded-2xl p-5 transition-all duration-200"
+                  style={{
+                    background: '#13100c',
+                    border: '1px solid #2a1a08',
+                    boxShadow: '0 4px 32px rgba(0,0,0,0.5)',
+                  }}
+                >
+                  <div className="flex items-center gap-2.5 mb-5 pb-4" style={{ borderBottom: '1px solid #2a1a08' }}>
+                    <div
+                      className="w-7 h-7 rounded-lg flex items-center justify-center"
+                      style={{ background: 'rgba(250,106,0,0.15)', border: '1px solid rgba(250,106,0,0.2)' }}
+                    >
+                      <User className="w-3.5 h-3.5" style={{ color: '#fa6a00' }} />
+                    </div>
+                    <h3 className="font-bold text-white/90 text-sm tracking-wide uppercase">Profile</h3>
+                  </div>
 
-            {/* Downloads - Slim */}
-            <div className="bg-[#0f172a] border border-slate-700 rounded-3xl p-5 hover:border-slate-500 transition-all duration-300">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-3">
-                  <Download className="w-5 h-5 text-orange-400" />
-                  <h3 className="font-semibold text-lg text-white">Downloads</h3>
-                </div>
-                <span className="px-3 py-1 text-xs bg-orange-500/10 text-orange-400 rounded-full">This Month</span>
-              </div>
+                  <div className="flex items-center gap-3.5">
+                    <div
+                      className="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-black text-white shrink-0"
+                      style={{
+                        background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
+                        boxShadow: '0 2px 12px rgba(250,106,0,0.35)',
+                      }}
+                    >
+                      {user.name?.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="font-bold text-white">{user.name}</p>
+                      <p className="text-xs flex items-center gap-1.5 mt-0.5" style={{ color: '#6b4e2e' }}>
+                        <Mail className="w-3 h-3" />
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
 
-              <div className="flex justify-center my-4">
-                <div className="relative w-36 h-36">
-                  <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
-                    <circle cx="60" cy="60" r="52" fill="none" stroke="#1e2937" strokeWidth="10" />
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="52"
-                      fill="none"
-                      stroke="#f97316"
-                      strokeWidth="10"
-                      strokeDasharray={`${downloadsProgress * 3.27} 327`}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <p className="text-4xl font-bold text-white">{user.downloadsThisMonth}</p>
-                    <p className="text-sm text-slate-400">/ {downloadsLimit}</p>
+                  <div className="mt-4 pt-4 grid grid-cols-2 gap-3" style={{ borderTop: '1px solid #2a1a08' }}>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider mb-1" >Status</p>
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className="w-1.5 h-1.5 rounded-full"
+                          style={{ background: '#4ade80', boxShadow: '0 0 6px #4ade80' }}
+                        />
+                        <p className="text-sm font-semibold" style={{ color: '#4ade80' }}>Active</p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider mb-1" >Plan</p>
+                      <p
+                        className="text-sm font-black"
+                        style={{ color: '#fa6a00' }}
+                      >
+                        {user.subscriptionPlan}
+                      </p>
+                    </div>
                   </div>
                 </div>
+
+                {/* Clips card */}
+                <div
+                  className="rounded-2xl p-5 transition-all duration-200"
+                  style={{
+                    background: '#13100c',
+                    border: '1px solid #2a1a08',
+                    boxShadow: '0 4px 32px rgba(0,0,0,0.5)',
+                  }}
+                >
+                  <div className="flex items-center gap-2.5 mb-5 pb-4" style={{ borderBottom: '1px solid #2a1a08' }}>
+                    <div
+                      className="w-7 h-7 rounded-lg flex items-center justify-center"
+                      style={{ background: 'rgba(250,106,0,0.15)', border: '1px solid rgba(250,106,0,0.2)' }}
+                    >
+                      <Video className="w-3.5 h-3.5" style={{ color: '#fa6a00' }} />
+                    </div>
+                    <h3 className="font-bold text-white/90 text-sm tracking-wide uppercase">Clips Created</h3>
+                  </div>
+
+                  <p className="text-5xl font-black text-white mb-1 leading-none">
+                    {user.clipsThisMonth}
+                  </p>
+                  <p className="text-sm mb-5" 
+                  >
+                    of <span className="font-bold" style={{ color: '#7a5030' }}>{clipsLimit}</span> this month
+                  </p>
+
+                  {/* Progress bar */}
+                  <div
+                    className="h-2 rounded-full overflow-hidden"
+                    style={{ background: '#1a100a' }}
+                  >
+                    <div
+                      className="h-full rounded-full transition-all duration-700"
+                      style={{
+                        width: `${clipsProgress}%`,
+                        background: 'linear-gradient(90deg, #fa6a00 0%, #e84d00 100%)',
+                        boxShadow: '0 0 8px rgba(250,106,0,0.5)',
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs mt-2 text-right font-semibold" 
+                  >
+                    {Math.round(clipsProgress)}% used
+                  </p>
+                </div>
+
+                {/* Downloads card */}
+                <div
+                  className="rounded-2xl p-5 transition-all duration-200"
+                  style={{
+                    background: '#13100c',
+                    border: '1px solid #2a1a08',
+                    boxShadow: '0 4px 32px rgba(0,0,0,0.5)',
+                  }}
+                >
+                  <div className="flex items-center gap-2.5 mb-4 pb-4" style={{ borderBottom: '1px solid #2a1a08' }}>
+                    <div
+                      className="w-7 h-7 rounded-lg flex items-center justify-center"
+                      style={{ background: 'rgba(250,106,0,0.15)', border: '1px solid rgba(250,106,0,0.2)' }}
+                    >
+                      <Download className="w-3.5 h-3.5" style={{ color: '#fa6a00' }} />
+                    </div>
+                    <h3 className="font-bold text-white/90 text-sm tracking-wide uppercase">Downloads</h3>
+                  </div>
+
+                  {/* Circular progress */}
+                  <div className="flex justify-center my-3">
+                    <div className="relative w-32 h-32">
+                      <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="52" stroke="#1a100a" strokeWidth="10" fill="none" />
+                        <circle
+                          cx="60"
+                          cy="60"
+                          r="52"
+                          stroke="url(#orangeGrad)"
+                          strokeWidth="10"
+                          fill="none"
+                          strokeDasharray={`${downloadsProgress * 3.27} 327`}
+                          strokeLinecap="round"
+                        />
+                        <defs>
+                          <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#fa6a00" />
+                            <stop offset="100%" stopColor="#e84d00" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <p className="text-3xl font-black text-white leading-none">{user.downloadsThisMonth}</p>
+                        <p className="text-xs mt-0.5 font-semibold" 
+                        >/ {downloadsLimit}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-center font-semibold" 
+                  >
+                    {Math.round(downloadsProgress)}% of limit used
+                  </p>
+                </div>
               </div>
 
-              <p className="text-center text-slate-400 text-sm">
-                Available: <span className="text-orange-400 font-medium">{downloadsLimit - user.downloadsThisMonth}</span> left
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="mt-8 bg-[#0f172a] border border-slate-700 rounded-3xl p-7">
-            <h3 className="flex items-center gap-3 text-lg font-semibold mb-6 text-white">
-              <Zap className="w-5 h-5 text-amber-400" />
-              Quick Actions
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <Link
-                href="/editor"
-                className="group flex items-center justify-between bg-gradient-to-br from-slate-800 to-slate-700 hover:from-cyan-600 hover:to-blue-600 p-6 rounded-3xl transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/10"
+              {/* ── Quick Actions ─────────────────────────────────────── */}
+              <div
+                className="mt-6 rounded-2xl p-6"
+                style={{
+                  background: '#13100c',
+                  border: '1px solid #2a1a08',
+                  boxShadow: '0 4px 32px rgba(0,0,0,0.5)',
+                }}
               >
-                <div>
-                  <p className="text-lg font-semibold text-white">Open Editor</p>
-                  <p className="text-slate-400 group-hover:text-cyan-100 text-sm mt-1">Create a new clip now</p>
+                <div className="flex items-center gap-2.5 mb-5 pb-4" style={{ borderBottom: '1px solid #2a1a08' }}>
+                  <div
+                    className="w-7 h-7 rounded-lg flex items-center justify-center"
+                    style={{ background: 'rgba(250,106,0,0.15)', border: '1px solid rgba(250,106,0,0.2)' }}
+                  >
+                    <Zap className="w-3.5 h-3.5" style={{ color: '#fa6a00' }} />
+                  </div>
+                  <h3 className="font-bold text-white/90 text-sm tracking-wide uppercase">Quick Actions</h3>
                 </div>
-                <div className="text-4xl group-hover:rotate-12 transition-transform">✍️</div>
-              </Link>
 
-              <Link
-                href="/billing"
-                className="group flex items-center justify-between bg-gradient-to-br from-slate-800 to-slate-700 hover:from-violet-600 hover:to-fuchsia-600 p-6 rounded-3xl transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/10"
-              >
-                <div>
-                  <p className="text-lg font-semibold text-white">Manage Billing</p>
-                  <p className="text-slate-400 group-hover:text-violet-100 text-sm mt-1">Upgrade or view invoices</p>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {/* Open Editor */}
+                  <Link
+                    href="/editor"
+                    className="group flex items-center gap-4 rounded-xl p-5 transition-all duration-200"
+                    style={{
+                      background: '#0d0905',
+                      border: '1px solid #2a1a08',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = 'rgba(250,106,0,0.4)'
+                      e.currentTarget.style.background = 'rgba(250,106,0,0.04)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = '#2a1a08'
+                      e.currentTarget.style.background = '#0d0905'
+                    }}
+                  >
+                    <div
+                      className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all duration-200"
+                      style={{
+                        background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
+                        boxShadow: '0 2px 12px rgba(250,106,0,0.35)',
+                      }}
+                    >
+                      <Scissors className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-white">Open Editor</p>
+                      <p className="text-xs mt-0.5" 
+                      >Create a new clip</p>
+                    </div>
+                    <span className="ml-auto text-lg" >→</span>
+                  </Link>
+
+                  {/* Manage Billing */}
+                  <Link
+                    href="/billing"
+                    className="group flex items-center gap-4 rounded-xl p-5 transition-all duration-200"
+                    style={{
+                      background: '#0d0905',
+                      border: '1px solid #2a1a08',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = 'rgba(250,106,0,0.4)'
+                      e.currentTarget.style.background = 'rgba(250,106,0,0.04)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = '#2a1a08'
+                      e.currentTarget.style.background = '#0d0905'
+                    }}
+                  >
+                    <div
+                      className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+                      style={{
+                        background: '#1a100a',
+                        border: '1px solid #3a2210',
+                      }}
+                    >
+                      <CreditCard className="w-5 h-5" style={{ color: '#fa6a00' }} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-white">Manage Billing</p>
+                      <p className="text-xs mt-0.5" 
+                      >Upgrade your plan</p>
+                    </div>
+                    <span className="ml-auto text-lg" >→</span>
+                  </Link>
                 </div>
-                <div className="text-4xl group-hover:-rotate-12 transition-transform">💳</div>
-              </Link>
+              </div>
+            </>
+          ) : (
+            <div className="h-96 flex flex-col items-center justify-center gap-4">
+              {/* Loading spinner */}
+              <div
+                className="w-10 h-10 rounded-full border-2 border-t-transparent animate-spin"
+                style={{ borderColor: '#fa6a00', borderTopColor: 'transparent' }}
+              />
+              <p className="text-sm font-semibold" 
+              >Loading your dashboard…</p>
             </div>
-          </div>
-        </>
-      ) : (
-        <div className="h-96 flex items-center justify-center text-slate-400">
-          Loading your dashboard...
-        </div>
-      )}
-    </PageShell>
+          )}
+        </PageShell>
+      </div>
+    </div>
   )
 }

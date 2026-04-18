@@ -217,13 +217,13 @@ function TimelineComponent({
   }
 
   return (
-    <div className="w-full space-y-3 rounded-2xl border border-slate-700 bg-slate-950/70 p-3 shadow-lg">
+    <div className="w-full space-y-3 rounded-2xl border border-slate-700 bg-[#110A05]/70 p-3 shadow-lg">
       <div className="flex justify-between items-center px-2">
         <span className="text-xs font-medium text-slate-200">{formatTime(currentTime)}</span>
         <span className="text-xs font-medium text-slate-200">{formatTime(duration)}</span>
       </div>
 
-      <div className="relative rounded-xl border border-slate-800/80 bg-slate-900 overflow-hidden shadow-inner">
+      <div className="relative rounded-xl border border-slate-800/80 bg-[#110A05] overflow-hidden shadow-inner">
         {/* Timeline track */}
         <div
           ref={containerRef}

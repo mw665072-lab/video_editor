@@ -235,7 +235,7 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
           <Button
             variant={activeUploadMethod === 'file' ? 'default' : 'outline'}
             onClick={() => setUploadMethod('file')}
-            className="w-full sm:flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 hover:text-white bg-slate-900/60 font-semibold"
+            className="w-full sm:flex-1 rounded-lg px-4 py-2 text-white text-sm hover:bg-slate-800/60 hover:text-white bg-slate-900/60 font-semibold"
           >
             <Upload className="w-4 h-4 mr-2" />
             Upload File
@@ -243,7 +243,7 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
           <Button
             variant={activeUploadMethod === 'url' ? 'default' : 'outline'}
             onClick={() => setUploadMethod('url')}
-            className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 hover:text-white bg-slate-900/60 font-semibold"
+            className="flex-1 rounded-lg px-4 py-2 text-white text-sm hover:bg-slate-800/60 hover:text-white bg-slate-900/60 font-semibold"
           >
             <LinkIcon className="w-4 h-4 mr-2" />
             Load from URL
@@ -297,7 +297,7 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
             <Button
               onClick={handleLoadFromURL}
               disabled={urlLoading || !urlInput.trim()}
-              className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 hover:text-white bg-slate-900/60 font-semibold"
+              className="flex-1 rounded-lg px-4 py-2 text-white text-sm hover:bg-slate-800/60 hover:text-white bg-slate-900/60 font-semibold"
             >
               {urlLoading ? 'Loading...' : 'Load'}
             </Button>

@@ -23,6 +23,7 @@ export function PageShell({ title, subtitle, actions, children }: PageShellProps
         backgroundSize: '100% 100%, 100% 100%, 100% 100%',
         backgroundAttachment: 'fixed',
       }}
+      
     >
       {/* Fixed sidebar for desktop */}
       <aside className="fixed left-0 top-0 z-50 hidden h-screen w-[260px] border-r border-slate-800   lg:block">

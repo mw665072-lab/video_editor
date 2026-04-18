@@ -61,7 +61,7 @@ export function ExportDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-slate-950 border border-slate-700 shadow-2xl">
+      <DialogContent className="sm:max-w-md bg-[#110A05] border border-slate-700 shadow-2xl">
         <DialogHeader>
           <DialogTitle className="text-slate-50">Export Video</DialogTitle>
           <DialogDescription className="text-slate-300">
@@ -71,7 +71,7 @@ export function ExportDialog({
 
         <div className="space-y-6">
           {/* Summary */}
-          <div className="p-3 bg-slate-900 rounded-lg border border-slate-700">
+          <div className="p-3 bg-[#110A05] rounded-lg border border-slate-700">
             <div className="grid grid-cols-2 gap-4 text-sm text-slate-200">
               <div>
                 <p className="  mb-1">Clips</p>
@@ -95,7 +95,7 @@ export function ExportDialog({
                 placeholder="exported-video"
                 // disabled={progress.isExporting}
                 // placeholder color should be white
-                className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 bg-slate-900/60 hover:text-white text-white font-semibold placeholder:text-white"
+                className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-[#110A05]/60 bg-[#110A05]/60 hover:text-white text-white font-semibold placeholder:text-white"
               />
               <span className="  py-2">.mp4</span>
             </div>

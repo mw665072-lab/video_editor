@@ -108,7 +108,7 @@ export function ClipList({
 
   if (clips.length === 0) {
     return (
-      <div className="h-full min-h-[220px] flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-600 bg-slate-900/50 p-6 text-center">
+      <div className="h-full min-h-[220px] flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-600 bg-[#110A05]/50 p-6 text-center">
         <p className="text-lg font-semibold text-slate-100">No clips selected yet</p>
         <p className="mt-2 text-sm text-slate-300 max-w-[260px]">
           Select clips on the timeline to get started or use the Add Clip button.
@@ -121,7 +121,7 @@ export function ClipList({
   }
 
   return (
-    <div className="space-y-4  rounded-2xl border border-slate-700 bg-slate-900/80 p-3 shadow-lg">
+    <div className="space-y-4  rounded-2xl border border-slate-700 bg-[#110A05]/70 p-3 shadow-lg">
       <div className="flex items-center justify-between">
         <h3 className="text-base font-semibold text-slate-200">Selected Clips ({clips.length})</h3>
         <div className="text-sm text-slate-400">
@@ -139,10 +139,10 @@ export function ClipList({
             onDrop={(e) => handleDrop(e, clip.id)}
             className={`p-3 rounded-xl border transition-all cursor-move min-h-[104px] ${
               selectedClipId === clip.id
-                ? 'border-cyan-400 bg-cyan-500/10 ring-1 ring-cyan-500/40'
+                ? 'border-cyan-400 bg-cyan-500/25 ring-1 ring-cyan-500/40'
                 : draggedId === clip.id
                   ? 'border-cyan-300/40 opacity-70'
-                  : 'border-slate-700 bg-slate-950/70 hover:border-cyan-300'
+                  : 'border-slate-700 bg-[#110A05]/70 hover:border-cyan-300'
             }`}
             onClick={() => onClipSelect?.(clip.id)}
           >

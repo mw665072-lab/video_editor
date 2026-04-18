@@ -18,7 +18,7 @@ import { Timeline } from '../timeline/Timeline'
 import { ClipList } from '../clips/ClipList'
 import { ExportDialog } from '../dialog/ExportDialog'
 import { ClipSuggestionPanel } from '../clips/ClipSuggestionPanel'
-import { Trash2, FileDown, Wand2 } from 'lucide-react'
+import { Trash2, FileDown, Wand2, Play, Square } from 'lucide-react'
 
 
 
@@ -47,22 +47,16 @@ export function VideoEditor() {
     (typeof state.videoSource === 'string' ? state.videoSource : undefined)
   const canUseUrlWorkflow = typeof sourceForProcessing === 'string' && sourceForProcessing.length > 0
 
-  // ── Platform detection ────────────────────────────────────────────────────
-
-  // A source URL ending in .m3u8 is always an HLS stream (even if platform is 'proxy')
   const isHlsUrl =
     typeof playbackSource === 'string' &&
     (playbackSource.includes('/api/hls/') || playbackSource.endsWith('.m3u8'))
 
-  // Only use the HLS player for actual HLS playlists. Tokenized proxy URLs should use VideoPlayer.
   const useSocialPlayer = isHlsUrl
 
-  // Legacy proxy path: old /api/yt-clip?token=... streams — kept for backward compat
   const isProxyPlatform = !useSocialPlayer && (
     playbackSourceType === 'proxy'
   )
 
-  // YouTube: use react-youtube iframe embed (same as before)
   const isYouTubePlatform =
     !useSocialPlayer &&
     !isProxyPlatform &&
@@ -75,13 +69,11 @@ export function VideoEditor() {
       ? getYouTubeVideoId(playbackSource)
       : null
 
-  // Exports and AI processing need a stable backend-readable URL, not a Blob or transient HLS/proxy URL.
   const isClipExportableSource =
     !!sourceForProcessing &&
     state.videoSourceType !== 'unknown' &&
     state.videoSourceType !== undefined
 
-  // Backend proxy base URL — used to fall back when YouTube embedding fails
   const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/+$/, '')
 
   const selectedClip = state.selectedClipId
@@ -295,7 +287,6 @@ export function VideoEditor() {
     return ''
   }
 
-
   const handlePlayerTimeUpdate = useCallback(
     (time: number) => {
       playerTimeRef.current = time
@@ -348,23 +339,18 @@ export function VideoEditor() {
       return
     }
     
-    // Check if this is a token expiration error (410 Gone)
     if (errorMessage.includes('expired') || errorMessage.includes('not supported')) {
       const currentUrl = typeof playbackSource === 'string' ? playbackSource : ''
       
-      // Only try to refresh if we have a valid URL
       if (currentUrl && typeof currentUrl === 'string' && currentUrl.includes('/api/yt-clip')) {
         console.log('Token may have expired, attempting to refresh...')
         
         try {
-          // Extract original URL from token-based URL or use existing source
-          // For now, just show user-friendly message
           toast.error('Video session expired. Please reload the video URL.', {
             description: 'Long videos require refreshing the stream URL every few hours.',
             action: {
               label: 'Reload Video',
               onClick: () => {
-                // User will need to re-paste the URL or refresh page
                 window.location.reload()
               }
             }
@@ -477,8 +463,6 @@ export function VideoEditor() {
     }
   }, [playbackSource, getLivePlayerTime, syncUIFromPlayerTime, isSequencePlaying, sortedClips, safeSeek, playbackSourceType, handleStopSequence])
 
-  // ── HLS Cleanup on Mount ──────────────────────────────────────────────────
-  // Clears any stale transcoding jobs for THIS USER when they enter the editor
   useEffect(() => {
     hlsCleanup().then((res) => {
       if (res.success && res.cleanedCount > 0) {
@@ -501,13 +485,8 @@ export function VideoEditor() {
     toast.success(`Clip added: ${formatTime(start)} → ${formatTime(end)} (${clipDurationSeconds}s)`)    
   }, [state.videoDuration, addClip, getLivePlayerTime, clipDurationSeconds])
 
-
-
-
-
   useEffect(() => {
     if (!selectedClip || !playbackSource || isYouTubePlatform) return
-
     safeSeek(selectedClip.startTime)
   }, [selectedClip?.id, selectedClip?.startTime, playbackSource, isYouTubePlatform, safeSeek])
 
@@ -669,8 +648,6 @@ export function VideoEditor() {
           })
         }
 
-        // Usage is recorded server-side in the export endpoint for this flow.
-        // Avoid calling recordDownload() here to prevent double count.
         setExportProgress({
           isExporting: false,
           progress: 100,
@@ -701,35 +678,90 @@ export function VideoEditor() {
     [sortedClips, playbackSource, sourceForProcessing, clearVideo]
   )
 
+  // ─── Shared panel style ───────────────────────────────────────────────────
+  const panel =
+    'rounded-2xl border border-[#2a2118] bg-[#13100c]/80 backdrop-blur-sm shadow-[0_4px_32px_rgba(0,0,0,0.5)]'
+
   return (
-    <div className="  text-white overflow-x-hidden">
-      <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 lg:py-3">
-        {/* Header */}
-        <div className="rounded-2xl mb-6 sm:mb-8 border border-slate-800/70 bg-gradient-to-br from-slate-900/80 to-slate-950/60 p-4 sm:p-5 md:p-6 backdrop-blur shadow-xl backdrop-saturate-150">
+    <div
+      className="min-h-screen text-white overflow-x-hidden"
+      style={{
+        background: 'radial-gradient(ellipse 80% 60% at 50% -10%, #2d1800 0%, #0d0905 55%, #080604 100%)',
+      }}
+    >
+      {/* Subtle grid texture overlay */}
+      <div
+        className="pointer-events-none fixed inset-0 z-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            'linear-gradient(#fa6a00 1px, transparent 1px), linear-gradient(90deg, #fa6a00 1px, transparent 1px)',
+          backgroundSize: '48px 48px',
+        }}
+      />
+
+      <div className="relative z-10 mx-auto w-full max-w-[1440px] px-3 sm:px-5 md:px-8 py-4 sm:py-6">
+
+        {/* ── Header ─────────────────────────────────────────────────────── */}
+        <div
+          className="rounded-2xl mb-6 sm:mb-8 border border-[#2e1a06] p-4 sm:p-5 md:p-6"
+          style={{
+            background: 'linear-gradient(135deg, #1a0e05 0%, #0d0905 100%)',
+            boxShadow: '0 0 0 1px rgba(250,106,0,0.08), 0 8px 40px rgba(0,0,0,0.6)',
+          }}
+        >
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tighter bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Video Editor</h1>
-              <p className="text-xs sm:text-sm text-slate-400 mt-1">Create short clips from your videos</p>
-            </div>
-            {canUseUrlWorkflow && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearVideo}
-                className="rounded-lg border-slate-600 bg-slate-800/60 text-slate-100 hover:border-slate-400 hover:bg-slate-700 whitespace-nowrap"
+            <div className="flex items-center gap-3">
+              {/* Logo mark */}
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)' }}
               >
-                Clear Video
-              </Button>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <polygon points="5,2 18,10 5,18" fill="white" />
+                </svg>
+              </div>
+              <div>
+                <h1
+                  className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tighter leading-none"
+                  style={{
+                    background: 'linear-gradient(90deg, #ffffff 0%, #fa6a00 60%, #ff8c38 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  CLIP<span style={{ WebkitTextFillColor: '#fa6a00' }}>AI</span>
+                </h1>
+                <p className="text-xs text-[#6b4e2e] mt-0.5 font-medium tracking-widest uppercase">
+                  AI-Powered Clip Engine
+                </p>
+              </div>
+            </div>
+
+            {canUseUrlWorkflow && (
+              <button
+                onClick={clearVideo}
+                className="px-4 py-2 rounded-lg text-sm font-semibold border border-[#3a2210] text-[#c07040] hover:border-[#fa6a00]/50 hover:text-[#fa6a00] hover:bg-[#fa6a00]/5 transition-all duration-200 whitespace-nowrap"
+              >
+                ✕ Clear Video
+              </button>
             )}
           </div>
         </div>
-       
-      </div>
 
-      {!state.videoSource ? (
-        // Upload Step
-        <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4 md:px-6 lg:px-8">
-          <div className="flex-1 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-700/70 bg-gradient-to-br from-slate-900/50 to-slate-950/60 p-3 sm:p-4 md:p-6 lg:p-8 backdrop-blur">
+        {!state.videoSource ? (
+          // ── Upload Step ───────────────────────────────────────────────────
+          <div
+            className="flex-1 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed p-8 sm:p-12 text-center"
+            style={{
+              borderColor: '#2e1a06',
+              background: 'radial-gradient(ellipse at center, #1a0e05 0%, #0d0905 100%)',
+            }}
+          >
+            {/* Upload glow accent */}
+            <div
+              className="absolute w-64 h-64 rounded-full pointer-events-none opacity-20 blur-3xl"
+              style={{ background: '#fa6a00' }}
+            />
             <VideoUpload
               onVideoLoaded={(source, duration, fileName, sourceType, originalSource) => {
                 setVideo(source, duration, fileName, sourceType, originalSource)
@@ -743,395 +775,504 @@ export function VideoEditor() {
               }}
             />
           </div>
-        </div>
-      ) : (
-        // Editor Layout
-        <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4 md:px-6 lg:px-8">
+        ) : (
+          // ── Editor Layout ─────────────────────────────────────────────────
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 md:gap-6 lg:gap-7">
-            {/* Main Editor Area */}
-            <div className="lg:col-span-8 space-y-4 sm:space-y-5 md:space-y-6">
-            {/* Video Player */}
-            <div className="rounded-2xl border border-slate-800/50 bg-gradient-to-br from-slate-900/60 to-slate-950/40 p-4 sm:p-5 shadow-lg backdrop-blur-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 pb-3 sm:pb-4 border-b border-slate-700/50">
-                <h2 className="text-lg sm:text-xl font-semibold tracking-wide">Preview</h2>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {isBuffering && (
-                    <span className="text-xs text-yellow-400 animate-pulse">Buffering...</span>
-                  )}
-                  <div className="flex gap-2 w-full sm:w-auto">
-                    <Button
-                      size="sm"
+
+            {/* ── Main Editor Area ──────────────────────────────────────────── */}
+            <div className="lg:col-span-8 space-y-4 sm:space-y-5">
+
+              {/* Video Player Panel */}
+              <div className={panel + ' p-4 sm:p-5'}>
+                {/* Panel header */}
+                <div
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 pb-3 sm:pb-4 mb-4"
+                  style={{ borderBottom: '1px solid #2a1a08' }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-2 h-2 rounded-full animate-pulse"
+                      style={{ background: '#fa6a00', boxShadow: '0 0 8px #fa6a00' }}
+                    />
+                    <h2 className="text-base sm:text-lg font-bold tracking-wide text-white/90">
+                      Preview
+                    </h2>
+                    {isBuffering && (
+                      <span
+                        className="text-xs px-2 py-0.5 rounded-full font-semibold animate-pulse"
+                        style={{ background: '#2d1b00', color: '#fa6a00', border: '1px solid #fa6a00/30' }}
+                      >
+                        Buffering…
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Play / Stop buttons */}
+                  <div className="flex items-center gap-2">
+                    <button
                       onClick={handlePlaySequence}
                       disabled={!sortedClips.length || isSequencePlaying || isYouTubePlatform}
-                      className="flex-1 sm:flex-none rounded-lg bg-gradient-to-r from-slate-800 to-blue-800 text-white shadow-md hover:from-cyan-400 hover:to-blue-400 font-semibold text-sm"
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                      style={{
+                        background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
+                        boxShadow: '0 2px 12px rgba(250,106,0,0.35)',
+                        color: 'white',
+                      }}
                     >
+                      <Play className="w-3.5 h-3.5 fill-white" />
                       Play
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
+                    </button>
+                    <button
                       onClick={handleStopSequence}
-                      className="flex-1 sm:flex-none rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 hover:text-white bg-slate-900/60 font-semibold"
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold border transition-all duration-200 hover:border-[#fa6a00]/40 hover:text-[#fa6a00]"
+                      style={{
+                        border: '1px solid #2e1a06',
+                        background: '#1a100600',
+                        color: '#8a6040',
+                      }}
                     >
+                      <Square className="w-3.5 h-3.5" />
                       Stop
-                    </Button>
+                    </button>
                   </div>
                 </div>
-              </div>
 
-              {isYouTubePlatform && youtubeVideoId ? (
-                <div className="rounded-2xl border border-slate-700/50 bg-slate-900/50 overflow-hidden shadow-inner">
-                  {!showExternalPreview ? (
-                    <div className="p-4 bg-slate-900 rounded-lg border border-slate-700">
-                      <p className="mb-2 text-sm font-semibold text-slate-100">YouTube link detected</p>
-                      <p className="text-xs text-slate-300 mb-4">
-                        Preview loading for YouTube can generate many network requests.
-                        Use this button to load the embedded player only when needed.
-                      </p>
-                      <Button
-                        onClick={() => setShowExternalPreview(true)}
-                        size="sm"
-                        className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white"
-                      >
-                        Load YouTube Preview
-                      </Button>
-                    </div>
+                {/* Player area */}
+                <div
+                  className="rounded-xl overflow-hidden"
+                  style={{ border: '1px solid #2a1a08', background: '#080604' }}
+                >
+                  {isYouTubePlatform && youtubeVideoId ? (
+                    <>
+                      {!showExternalPreview ? (
+                        <div className="p-6 text-center">
+                          <p className="mb-2 text-sm font-semibold text-white/80">YouTube link detected</p>
+                          <p className="text-xs text-white/40 mb-4">
+                            Preview loading for YouTube can generate many network requests.
+                          </p>
+                          <button
+                            onClick={() => setShowExternalPreview(true)}
+                            className="px-5 py-2 rounded-lg text-sm font-bold transition-all"
+                            style={{
+                              background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
+                              color: 'white',
+                            }}
+                          >
+                            Load YouTube Preview
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="relative w-full aspect-video sm:min-h-[300px] md:min-h-[380px] max-h-[70vh] overflow-hidden bg-black">
+                            <YouTube
+                              videoId={youtubeVideoId}
+                              opts={youTubeOptions}
+                              onReady={handleYouTubeReady}
+                              onStateChange={handleYouTubeStateChange}
+                              onError={() => {
+                                setIsYouTubeReady(false)
+                                const originalUrl = state.videoOriginalSource || (typeof state.videoSource === 'string' ? state.videoSource : '')
+                                if (originalUrl) {
+                                  toast.loading('YouTube player restricted — switching to stream proxy…', { id: 'yt-fallback' })
+                                  ytResolve(originalUrl)
+                                    .then((resolved) => {
+                                      const proxyUrl = resolved.streamUrl.startsWith('http')
+                                        ? resolved.streamUrl
+                                        : `${BACKEND_URL}${resolved.streamUrl}`
+                                      setYoutubeFallbackUrl(proxyUrl)
+                                      toast.success('Loaded via stream proxy', { id: 'yt-fallback' })
+                                    })
+                                    .catch((fallbackError) => {
+                                      console.error('Failed to resolve fallback stream:', fallbackError)
+                                      toast.error('YouTube fallback failed — try a different video or URL', { id: 'yt-fallback' })
+                                    })
+                                } else {
+                                  toast.error('YouTube player error — try a different video or URL')
+                                }
+                              }}
+                              className="absolute inset-0 h-full w-full"
+                            />
+                          </div>
+                          {!isYouTubeReady && (
+                            <div
+                              className="p-3 text-sm"
+                              style={{ background: '#1a0e05', borderTop: '1px solid #2a1a08', color: '#fa6a00' }}
+                            >
+                              <p className="font-semibold">Loading YouTube preview…</p>
+                              <p className="text-xs opacity-60 mt-0.5">Check your URL and network if loading fails.</p>
+                            </div>
+                          )}
+                          <div
+                            className="p-3"
+                            style={{ background: '#1a0e05', borderTop: '1px solid #2a1a08' }}
+                          >
+                            <p className="text-xs font-semibold text-[#fa6a00]">● YouTube — clip preview enabled</p>
+                            <p className="text-xs text-white/40 mt-0.5">Export stays disabled for embedded sources.</p>
+                          </div>
+                          {state.videoDuration <= 0 && (
+                            <div className="p-3 grid grid-cols-1 sm:grid-cols-2 gap-2" style={{ borderTop: '1px solid #2a1a08' }}>
+                              <label className="text-sm text-white/60">Set video duration (seconds)</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="number"
+                                  min={1}
+                                  className="flex-1 rounded-lg px-3 py-1.5 text-sm text-white outline-none"
+                                  style={{ background: '#1a0e05', border: '1px solid #3a2210' }}
+                                  value={state.videoDuration || ''}
+                                  onChange={(e) => {
+                                    const value = Number(e.target.value)
+                                    if (!Number.isNaN(value) && value > 0) setVideoDuration(value)
+                                  }}
+                                  placeholder="e.g., 600"
+                                />
+                                <span className="text-xs text-white/30 self-center">For timeline</span>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </>
                   ) : (
                     <>
-                      <div className="relative w-full aspect-video sm:min-h-[300px] md:min-h-[380px] max-h-[70vh] overflow-hidden rounded-lg bg-black">
-                        <YouTube
-                          videoId={youtubeVideoId}
-                          opts={youTubeOptions}
-                          onReady={handleYouTubeReady}
-                          onStateChange={handleYouTubeStateChange}
-                          onError={() => {
-                            setIsYouTubeReady(false)
-                            const originalUrl = state.videoOriginalSource || (typeof state.videoSource === 'string' ? state.videoSource : '')
-                            if (originalUrl) {
-                              toast.loading('YouTube player restricted — switching to stream proxy…', { id: 'yt-fallback' })
-                              ytResolve(originalUrl)
-                                .then((resolved) => {
-                                  const proxyUrl = resolved.streamUrl.startsWith('http')
-                                    ? resolved.streamUrl
-                                    : `${BACKEND_URL}${resolved.streamUrl}`
-                                  setYoutubeFallbackUrl(proxyUrl)
-                                  toast.success('Loaded via stream proxy', { id: 'yt-fallback' })
-                                })
-                                .catch((fallbackError) => {
-                                  console.error('Failed to resolve fallback stream:', fallbackError)
-                                  toast.error('YouTube fallback failed — try a different video or URL', { id: 'yt-fallback' })
-                                })
-                            } else {
-                              toast.error('YouTube player error — try a different video or URL')
-                            }
-                          }}
-                          className="absolute inset-0 h-full w-full"
-                        />
-                      </div>
-                      {!isYouTubeReady && (
-                        <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-300 dark:border-blue-800">
-                          <p className="text-sm font-medium">Loading YouTube preview...</p>
-                          <p className="text-xs text-muted-foreground">
-                            This may take a moment. Check your URL and network policy if loading fails.
-                          </p>
-                        </div>
+                      {useSocialPlayer && typeof playbackSource === 'string' ? (
+                        <>
+                          <SocialVideoPlayer
+                            hlsUrl={playbackSource}
+                            currentTime={state.currentTime}
+                            onTimeUpdate={handlePlayerTimeUpdate}
+                            onDurationUpdate={(d) => { if (d && d > 0) setVideoDuration(d) }}
+                            onPlay={() => { setPlaying(true); setBufferingState(false); setProxyVideoReady(true) }}
+                            onPause={() => { setPlaying(false); setIsSequencePlaying(false); setBufferingState(false) }}
+                            onBuffering={setBufferingState}
+                            onError={handleVideoError}
+                            clipStart={selectedClip?.startTime}
+                            clipEnd={selectedClip?.endTime}
+                            videoRef={htmlVideoRef}
+                          />
+                          {proxyVideoReady && (
+                            <div className="px-4 py-2.5 flex items-center gap-2" style={{ borderTop: '1px solid #2a1a08' }}>
+                              <span
+                                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                                style={{ background: '#1a0e05', border: '1px solid #fa6a00/30', color: '#fa6a00' }}
+                              >
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#fa6a00] animate-pulse" />
+                                HLS Stream — live playback
+                              </span>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {isProxyPlatform && !proxyVideoReady && (
+                            <div
+                              className="flex items-center gap-3 px-4 py-3 m-3 rounded-lg"
+                              style={{ background: '#1a0e05', border: '1px solid #3a2210' }}
+                            >
+                              <div
+                                className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin shrink-0"
+                                style={{ borderColor: '#fa6a00', borderTopColor: 'transparent' }}
+                              />
+                              <div>
+                                <p className="text-sm font-semibold" style={{ color: '#fa6a00' }}>Loading via proxy…</p>
+                                <p className="text-xs opacity-60 mt-0.5">yt-dlp extracting stream URL (~5–10s)</p>
+                              </div>
+                            </div>
+                          )}
+                          <VideoPlayer
+                            src={playbackSource}
+                            currentTime={state.currentTime}
+                            onTimeUpdate={handlePlayerTimeUpdate}
+                            onDurationUpdate={(d) => { if (d && d > 0) setVideoDuration(d) }}
+                            onPlay={() => { setPlaying(true); setBufferingState(false); setProxyVideoReady(true) }}
+                            onPause={() => { setPlaying(false); setIsSequencePlaying(false); setBufferingState(false) }}
+                            onBuffering={setBufferingState}
+                            onError={handleVideoError}
+                            clipStart={selectedClip?.startTime}
+                            clipEnd={selectedClip?.endTime}
+                            videoRef={htmlVideoRef}
+                          />
+                        </>
                       )}
-                      <div className="p-3 rounded-lg border border-cyan-500/40 bg-cyan-500/10">
-                        <p className="text-sm font-medium text-cyan-100">YouTube link detected</p>
-                        <p className="text-xs text-cyan-100/90">
-                          Clip sequence preview is enabled for YouTube; export stays disabled for external sources.
-                        </p>
-                      </div>
-                      {state.videoDuration <= 0 && (
-                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          <label className="text-sm">Set video duration (seconds)</label>
+                      {state.videoDuration <= 0 && (isProxyPlatform || useSocialPlayer) && (
+                        <div className="p-3 grid grid-cols-1 sm:grid-cols-2 gap-2 px-4" style={{ borderTop: '1px solid #2a1a08' }}>
+                          <label className="text-sm text-white/50">Set video duration (seconds)</label>
                           <div className="flex gap-2">
                             <input
                               type="number"
                               min={1}
-                              className="input input-bordered flex-1"
+                              className="rounded-lg px-3 py-1.5 text-sm text-white outline-none flex-1"
+                              style={{ background: '#1a0e05', border: '1px solid #3a2210' }}
                               value={state.videoDuration || ''}
                               onChange={(e) => {
                                 const value = Number(e.target.value)
-                                if (!Number.isNaN(value) && value > 0) {
-                                  setVideoDuration(value)
-                                }
+                                if (!Number.isNaN(value) && value > 0) setVideoDuration(value)
                               }}
-                              placeholder="e.g., 600"
+                              placeholder="e.g., 120"
                             />
-                            <span className="text-xs text-muted-foreground self-center">Recommended for timeline</span>
+                            <span className="text-xs text-white/30 self-center">For timeline</span>
                           </div>
                         </div>
                       )}
                     </>
                   )}
                 </div>
-              ) : (
-                <>
-                  {/* ── HLS / Social platform player (Facebook, TikTok, Instagram, etc.) ── */}
-                  {useSocialPlayer && typeof playbackSource === 'string' ? (
-                    <>
+              </div>
 
-                      <SocialVideoPlayer
-                        hlsUrl={playbackSource}
-                        currentTime={state.currentTime}
-                        onTimeUpdate={handlePlayerTimeUpdate}
-                        onDurationUpdate={(d) => { if (d && d > 0) setVideoDuration(d) }}
-                        onPlay={() => {
-                          setPlaying(true)
-                          setBufferingState(false)
-                          setProxyVideoReady(true)
-                        }}
-                        onPause={() => {
-                          setPlaying(false)
-                          setIsSequencePlaying(false)
-                          setBufferingState(false)
-                        }}
-                        onBuffering={setBufferingState}
-                        onError={handleVideoError}
-                        clipStart={selectedClip?.startTime}
-                        clipEnd={selectedClip?.endTime}
-                        videoRef={htmlVideoRef}
-                      />
-                      {proxyVideoReady && (
-                        <div className="mt-2 flex items-center gap-2 px-1">
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/20 border border-purple-500/40 px-2.5 py-0.5 text-xs font-medium text-purple-300">
-                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
-                            HLS Stream — smooth playback, no full download
-                          </span>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                  <>
-                  {/* ── Legacy proxy player (old /api/yt-clip?token= streams) ── */}
-                  {isProxyPlatform && !proxyVideoReady && (
-                    <div className="flex items-center gap-3 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-4 py-3 mb-2">
-                      <div className="w-4 h-4 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin shrink-0" />
-                      <div>
-                        <p className="text-sm font-medium text-cyan-100">Loading video via proxy…</p>
-                        <p className="text-xs text-cyan-200/70">yt-dlp is extracting the stream URL. This takes ~5–10s then plays instantly.</p>
-                      </div>
-                    </div>
+              {/* Timeline Panel */}
+              <div className={panel + ' p-4 sm:p-5 space-y-3'}>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 pb-2" style={{ borderBottom: '1px solid #2a1a08' }}>
+                  <h2 className="text-base sm:text-lg font-bold tracking-wide text-white/90">Timeline</h2>
+                  <p className="text-xs text-[#4a3020]">Scroll · Drag · Click to jump · Ctrl+wheel to zoom</p>
+                </div>
+
+                <div className="flex flex-col xs:flex-row xs:flex-wrap items-stretch xs:items-center justify-between gap-2 xs:gap-3">
+                  {sortedClips.length === 0 && (
+                    <button
+                      onClick={handleAddClip}
+                      className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
+                      style={{
+                        background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
+                        color: 'white',
+                        boxShadow: '0 2px 12px rgba(250,106,0,0.3)',
+                      }}
+                    >
+                      + Add Clip
+                    </button>
                   )}
-                  <VideoPlayer
-                    src={playbackSource}
-                    currentTime={state.currentTime}
-                    onTimeUpdate={handlePlayerTimeUpdate}
-                    onDurationUpdate={(d) => { if (d && d > 0) setVideoDuration(d) }}
-                    onPlay={() => {
-                      setPlaying(true)
-                      setBufferingState(false)
-                      setProxyVideoReady(true)
+                </div>
+
+                <Timeline
+                  duration={state.videoDuration}
+                  clips={sortedClips}
+                  currentTime={state.currentTime}
+                  onTimeChange={handleTimeChange}
+                  onClipSelect={selectClip}
+                  selectedClipId={state.selectedClipId}
+                  onClipStartChange={(clipId, startTime) => {
+                    const clip = sortedClips.find(c => c.id === clipId)
+                    if (clip) updateClip({ ...clip, startTime })
+                  }}
+                  onClipEndChange={(clipId, endTime) => {
+                    const clip = sortedClips.find(c => c.id === clipId)
+                    if (clip) updateClip({ ...clip, endTime })
+                  }}
+                />
+              </div>
+
+              {/* Clip length selector */}
+              <div
+                className="flex flex-col sm:flex-row sm:items-center sm:flex-wrap gap-3 rounded-xl p-4"
+                style={{ background: '#13100c', border: '1px solid #2a1a08' }}
+              >
+                <label className="text-sm font-bold text-white/70 tracking-wide whitespace-nowrap">Clip length:</label>
+                <div className="flex gap-2">
+                  {[5, 10, 15, 20].map((sec) => (
+                    <button
+                      key={sec}
+                      onClick={() => setClipDurationSeconds(sec)}
+                      className="px-3 py-1.5 rounded-lg text-sm font-bold transition-all duration-200"
+                      style={
+                        clipDurationSeconds === sec
+                          ? {
+                              background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
+                              color: 'white',
+                              boxShadow: '0 2px 8px rgba(250,106,0,0.4)',
+                            }
+                          : {
+                              background: '#1a100a',
+                              color: '#6b4e2e',
+                              border: '1px solid #2a1a08',
+                            }
+                      }
+                    >
+                      {sec}s
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-[#3a2810] sm:ml-auto">Default for new clips</p>
+              </div>
+
+              {/* Quick Actions */}
+              {sortedClips.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    onClick={() => handleAddClip()}
+                    className="py-2.5 rounded-xl text-sm font-bold transition-all duration-200"
+                    style={{
+                      background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
+                      color: 'white',
+                      boxShadow: '0 2px 16px rgba(250,106,0,0.3)',
                     }}
-                    onPause={() => {
-                      setPlaying(false)
-                      setIsSequencePlaying(false)
-                      setBufferingState(false)
+                  >
+                    + Add Clip at Current Time
+                  </button>
+                  <button
+                    onClick={() => {
+                      clearClips()
+                      selectClip(null)
+                      toast.success('All clips cleared')
                     }}
-                    onBuffering={setBufferingState}
-                    onError={handleVideoError}
-                    clipStart={selectedClip?.startTime}
-                    clipEnd={selectedClip?.endTime}
-                    videoRef={htmlVideoRef}
-                  />
-                  </>
-                  )}
-                  {state.videoDuration <= 0 && (isProxyPlatform || useSocialPlayer) && (
-                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 px-1">
-                      <label className="text-sm text-slate-300">Set video duration (seconds)</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="number"
-                          min={1}
-                          className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-sm text-white outline-none flex-1"
-                          value={state.videoDuration || ''}
-                          onChange={(e) => {
-                            const value = Number(e.target.value)
-                            if (!Number.isNaN(value) && value > 0) setVideoDuration(value)
-                          }}
-                          placeholder="e.g., 120"
-                        />
-                        <span className="text-xs text-slate-400 self-center">Needed for timeline</span>
-                      </div>
-                    </div>
-                  )}
-                </>
+                    className="py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200 hover:border-red-500/40 hover:text-red-400"
+                    style={{
+                      background: '#13100c',
+                      border: '1px solid #2a1a08',
+                      color: '#7a4030',
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Clear All
+                  </button>
+                </div>
               )}
             </div>
 
-            {/* Timeline */}
-            <div className="space-y-3 rounded-2xl border border-slate-700/50 bg-gradient-to-br from-slate-900/60 to-slate-950/40 p-4 sm:p-5 shadow-lg backdrop-blur-sm">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 pb-2 text-slate-400">
-                <p className="text-xs hidden sm:block">Scrollable & draggable • Click to jump • Ctrl+wheel to zoom</p>
-                <p className="text-xs sm:hidden">Scroll • Drag • Click to jump</p>
-              </div>
-              <div className="flex flex-col xs:flex-row xs:flex-wrap items-stretch xs:items-center justify-between gap-2 xs:gap-3">
-                <h2 className="text-lg sm:text-xl font-semibold tracking-wide">Timeline</h2>
-                {sortedClips.length === 0 && (
-                  <Button size="sm" onClick={handleAddClip} className="bg-gradient-to-r from-primary to-cyan-500 text-white">
-                    Add Clip
-                  </Button>
-                )}
-              </div>
-              <Timeline
-                duration={state.videoDuration}
-                clips={sortedClips}
-                currentTime={state.currentTime}
-                onTimeChange={handleTimeChange}
-                onClipSelect={selectClip}
-                selectedClipId={state.selectedClipId}
-                onClipStartChange={(clipId, startTime) => {
-                  const clip = sortedClips.find(c => c.id === clipId)
-                  if (clip) {
-                    updateClip({ ...clip, startTime })
-                  }
-                }}
-                onClipEndChange={(clipId, endTime) => {
-                  const clip = sortedClips.find(c => c.id === clipId)
-                  if (clip) {
-                    updateClip({ ...clip, endTime })
-                  }
-                }}
-              />
-            </div>
+            {/* ── Sidebar ───────────────────────────────────────────────────── */}
+            <div className="lg:col-span-4 space-y-4 sm:space-y-5">
 
-            {/* Clip duration selector + actions */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:flex-wrap gap-3 rounded-xl border border-slate-700/50 bg-gradient-to-br from-slate-900/60 to-slate-950/40 p-4 sm:p-4">
-              <label className="text-sm font-semibold tracking-wide whitespace-nowrap">Clip length:</label>
-              <select
-                value={clipDurationSeconds}
-                onChange={(e) => setClipDurationSeconds(Number(e.target.value))}
-                className="rounded-lg border border-slate-500 bg-slate-800 px-3 py-2 text-sm font-medium text-white outline-none transition hover:border-cyan-300 focus:border-cyan-400"
-              >
-                {[5, 10, 15, 20].map((sec) => (
-                  <option key={sec} value={sec}>{sec}s</option>
-                ))}
-              </select>
-              <p className="text-xs text-slate-400 sm:ml-auto">Default for new clips</p>
-            </div>
-
-            {/* Quick Actions */}
-            {sortedClips.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => handleAddClip()}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-400 hover:to-blue-400 font-semibold w-full"
-                >
-                  Add Clip at Current Time
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    clearClips()
-                    selectClip(null)
-                    toast.success('All clips cleared')
-                  }}
-                  className="text-destructive hover:text-destructive w-full"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Clear All
-                </Button>
-              </div>
-            )}
-          </div>
-
-            {/* Sidebar */}
-            <div className="lg:col-span-4 space-y-4 sm:space-y-5 md:space-y-6">
               {/* AI Suggestions Toggle */}
               {canUseUrlWorkflow && (
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
                   onClick={() => setShowAISuggestions(!showAISuggestions)}
-                  className="w-full border-purple-500/50 text-purple-300 hover:bg-purple-500/10 hover:text-purple-200 font-semibold"
+                  className="w-full py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200"
+                  style={{
+                    background: showAISuggestions
+                      ? 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)'
+                      : '#13100c',
+                    border: showAISuggestions ? 'none' : '1px solid #2a1a08',
+                    color: showAISuggestions ? 'white' : '#7a5030',
+                    boxShadow: showAISuggestions ? '0 2px 16px rgba(250,106,0,0.3)' : 'none',
+                  }}
                 >
-                  <Wand2 className="w-4 h-4 mr-2" />
-                  {showAISuggestions ? 'Hide Suggestions' : 'AI Suggestions'}
-                </Button>
+                  <Wand2 className="w-4 h-4" />
+                  {showAISuggestions ? 'Hide AI Suggestions' : '✦ AI Suggestions'}
+                </button>
               )}
 
               {/* AI Suggestions Panel */}
               {showAISuggestions && canUseUrlWorkflow && (
-                <div className="bg-gradient-to-br from-slate-900/60 to-slate-950/40 rounded-2xl border border-purple-500/30 p-4 sm:p-5 backdrop-blur-sm">
+                <div
+                  className="rounded-2xl p-4 sm:p-5"
+                  style={{
+                    background: '#13100c',
+                    border: '1px solid rgba(250,106,0,0.2)',
+                    boxShadow: '0 0 0 1px rgba(250,106,0,0.05), 0 8px 32px rgba(0,0,0,0.4)',
+                  }}
+                >
                   <ClipSuggestionPanel
                     videoUrl={sourceForProcessing || ''}
-                    onClipAdd={(startTime, endTime) => {
-                      addClip(startTime, endTime)
-                    }}
-                    onClipPreview={(startTime) => {
-                      safeSeek(startTime)
-                    }}
+                    onClipAdd={(startTime, endTime) => addClip(startTime, endTime)}
+                    onClipPreview={(startTime) => safeSeek(startTime)}
                   />
                 </div>
               )}
 
               {/* Clips Panel */}
-              <div className="bg-gradient-to-br from-slate-900/60 to-slate-950/40 rounded-2xl border border-slate-700/50 p-4 sm:p-5 min-h-[300px] sm:min-h-[380px] backdrop-blur-sm">
-                <h2 className="text-lg sm:text-xl font-semibold mb-4 text-slate-100">Clips</h2>
-              <ClipList
-                clips={sortedClips}
-                selectedClipId={state.selectedClipId}
-                onClipSelect={selectClip}
-                onClipRemove={removeClip}
-                onClipReorder={reorderClips}
-                onClipUpdate={updateClip}
-              />
-            </div>
+              <div
+                className="rounded-2xl p-4 sm:p-5 min-h-[300px] sm:min-h-[380px]"
+                style={{
+                  background: '#13100c',
+                  border: '1px solid #2a1a08',
+                  boxShadow: '0 4px 32px rgba(0,0,0,0.5)',
+                }}
+              >
+                <div className="flex items-center gap-2 mb-4 pb-3" style={{ borderBottom: '1px solid #2a1a08' }}>
+                  <span
+                    className="w-2 h-2 rounded-full"
+                    style={{ background: '#fa6a00' }}
+                  />
+                  <h2 className="text-base sm:text-lg font-bold text-white/90">Clips</h2>
+                  {sortedClips.length > 0 && (
+                    <span
+                      className="ml-auto px-2 py-0.5 rounded-full text-xs font-bold"
+                      style={{ background: '#2a1a08', color: '#fa6a00' }}
+                    >
+                      {sortedClips.length}
+                    </span>
+                  )}
+                </div>
+                <ClipList
+                  clips={sortedClips}
+                  selectedClipId={state.selectedClipId}
+                  onClipSelect={selectClip}
+                  onClipRemove={removeClip}
+                  onClipReorder={reorderClips}
+                  onClipUpdate={updateClip}
+                />
+              </div>
 
               {/* Export Panel */}
               {sortedClips.length > 0 && (
-                <>
-                  <Separator className="my-4 sm:my-6" />
-                  <div className="space-y-4 sm:space-y-5">
-                    <Button
+                <div className="space-y-3">
+                  <div style={{ borderTop: '1px solid #2a1a08', paddingTop: '1rem' }}>
+                    <button
                       onClick={() => setExportDialogOpen(true)}
-                      className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 shadow-lg font-semibold text-base sm:text-lg py-2.5 sm:py-3"
-                      size="lg"
+                      className="w-full py-3.5 rounded-xl text-base font-black flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                      style={{
+                        background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
+                        color: 'white',
+                        boxShadow: '0 4px 24px rgba(250,106,0,0.45)',
+                        letterSpacing: '0.04em',
+                      }}
                     >
-                      <FileDown className="w-4 h-4 mr-2" />
-                      Export Video
-                    </Button>
-
-                    {exportDisabledReason && (
-                      <p className="text-xs text-red-400/80 text-center bg-red-950/20 rounded-lg p-3 border border-red-800/30">
-                        {exportDisabledReason}
-                      </p>
-                    )}
-
-                    {!canUseUrlWorkflow && (
-                      <p className="text-xs text-amber-300/80 text-center bg-amber-950/20 rounded-lg p-3 border border-amber-800/30">
-                        Local uploads are best for preview and manual clipping. For the most reliable thumbnails, AI suggestions, and export, use a supported video URL.
-                      </p>
-                    )}
-
-                    {previewUrl && (
-                      <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-4 space-y-3">
-                        <p className="text-sm font-semibold text-slate-200">Preview</p>
-                        <video src={previewUrl} controls className="w-full max-h-[30vh] sm:max-h-[40vh] object-contain rounded-lg" />
-                        <a
-                          href={previewUrl}
-                          download="clip-export.mp4"
-                          className="inline-block text-sm font-medium text-cyan-400 hover:text-cyan-300 transition"
-                        >
-                          ↓ Download Video
-                        </a>
-                      </div>
-                    )}
-
-                    <p className="text-xs text-slate-400 text-center">
-                      Backend processing, streamed to your browser
-                    </p>
+                      <FileDown className="w-5 h-5" />
+                      EXPORT VIDEO
+                    </button>
                   </div>
-                </>
+
+                  {exportDisabledReason && (
+                    <div
+                      className="rounded-lg p-3 text-xs text-center"
+                      style={{
+                        background: '#1a0808',
+                        border: '1px solid #3a1010',
+                        color: '#c05050',
+                      }}
+                    >
+                      {exportDisabledReason}
+                    </div>
+                  )}
+
+                  {!canUseUrlWorkflow && (
+                    <div
+                      className="rounded-lg p-3 text-xs text-center"
+                      style={{
+                        background: '#1a1206',
+                        border: '1px solid #3a2a10',
+                        color: '#c09050',
+                      }}
+                    >
+                      Local uploads are best for preview. Use a supported URL for AI suggestions and export.
+                    </div>
+                  )}
+
+                  {previewUrl && (
+                    <div
+                      className="rounded-xl p-4 space-y-3"
+                      style={{ background: '#13100c', border: '1px solid #2a1a08' }}
+                    >
+                      <p className="text-sm font-semibold text-white/80">Preview</p>
+                      <video src={previewUrl} controls className="w-full max-h-[30vh] sm:max-h-[40vh] object-contain rounded-lg" />
+                      <a
+                        href={previewUrl}
+                        download="clip-export.mp4"
+                        className="inline-block text-sm font-bold transition-all"
+                        style={{ color: '#fa6a00' }}
+                      >
+                        ↓ Download Video
+                      </a>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-center" style={{ color: '#3a2810' }}>
+                    Backend processing · streamed to browser
+                  </p>
+                </div>
               )}
             </div>
+
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Export Dialog */}
       <ExportDialog
