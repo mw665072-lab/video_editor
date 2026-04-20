@@ -24,6 +24,7 @@ import VideoPreview from './video-editor/video-preview';
 import { useEditorStore } from '@/lib/editor-store';
 import Timeline from './video-editor/timeline';
 import ExportDialog from './video-editor/export-dialog';
+import { formatStatusBarTime } from '@/lib/utils';
 
 const VideoEditor: React.FC = () => {
   const store = useEditorStore();
@@ -451,15 +452,6 @@ const VideoEditor: React.FC = () => {
   );
 };
 
-function formatStatusBarTime(seconds: number): string {
-  const hrs = Math.floor(seconds / 3600);
-  const mins = Math.floor((seconds % 3600) / 60);
-  const secs = Math.floor(seconds % 60);
-  const frames = Math.floor((seconds % 1) * 30);
-  if (hrs > 0) {
-    return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}:${frames.toString().padStart(2, '0')}`;
-  }
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}:${frames.toString().padStart(2, '0')}`;
-}
+
 
 export default VideoEditor;
