@@ -106,7 +106,7 @@ export const platforms = [
   { name: "Facebook", color: "#5B9CF6", bg: "rgba(91,156,246,0.12)", border: "rgba(91,156,246,0.3)", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> },
 ];
 
-export const clipDurations = ["5s", "10s", "15s", "30s", "60s", "Custom"];
+export const clipDurations = ["5s", "7s", "10s", "15s", "30s", "60s", "Custom"];
 
 export const stats = [
   { num: "12M+", label: "Clips Created" },

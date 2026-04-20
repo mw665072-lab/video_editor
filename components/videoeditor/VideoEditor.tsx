@@ -746,6 +746,15 @@ export function VideoEditor() {
               </button>
             )}
           </div>
+
+          {process.env.NODE_ENV !== 'production' && (
+            <div
+              className="mt-4 rounded-2xl border border-yellow-600/20 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-100"
+              style={{ boxShadow: '0 0 0 1px rgba(245,158,11,0.12)' }}
+            >
+              <strong className="font-semibold">Preview notice:</strong> This editor is running in a non-production mode and may not be fully polished or stable. Use it for evaluation and testing only.
+            </div>
+          )}
         </div>
 
         {!state.videoSource ? (
@@ -873,21 +882,21 @@ export function VideoEditor() {
                                 setIsYouTubeReady(false)
                                 const originalUrl = state.videoOriginalSource || (typeof state.videoSource === 'string' ? state.videoSource : '')
                                 if (originalUrl) {
-                                  toast.loading('YouTube player restricted — switching to stream proxy…', { id: 'yt-fallback' })
+                                  toast.loading('We’re preparing your video for playback…', { id: 'stream-fallback' });
                                   ytResolve(originalUrl)
                                     .then((resolved) => {
                                       const proxyUrl = resolved.streamUrl.startsWith('http')
                                         ? resolved.streamUrl
                                         : `${BACKEND_URL}${resolved.streamUrl}`
                                       setYoutubeFallbackUrl(proxyUrl)
-                                      toast.success('Loaded via stream proxy', { id: 'yt-fallback' })
+                                      toast.success('Loaded via stream proxy', { id: 'stream-fallback' })
                                     })
                                     .catch((fallbackError) => {
                                       console.error('Failed to resolve fallback stream:', fallbackError)
-                                      toast.error('YouTube fallback failed — try a different video or URL', { id: 'yt-fallback' })
+                                      toast.error('YouTube fallback failed — try a different video or URL', { id: 'stream-fallback' })
                                     })
                                 } else {
-                                  toast.error('YouTube player error — try a different video or URL')
+                                  toast.error('YouTube player error — try a different video or URL', { id: 'stream-fallback' })
                                 }
                               }}
                               className="absolute inset-0 h-full w-full"
@@ -982,7 +991,12 @@ export function VideoEditor() {
                             src={playbackSource}
                             currentTime={state.currentTime}
                             onTimeUpdate={handlePlayerTimeUpdate}
-                            onDurationUpdate={(d) => { if (d && d > 0) setVideoDuration(d) }}
+                            onDurationUpdate={(d) => {
+                              if (d && d > 0) {
+                                setVideoDuration(d)
+                                setProxyVideoReady(true)
+                              }
+                            }}
                             onPlay={() => { setPlaying(true); setBufferingState(false); setProxyVideoReady(true) }}
                             onPause={() => { setPlaying(false); setIsSequencePlaying(false); setBufferingState(false) }}
                             onBuffering={setBufferingState}
@@ -1065,29 +1079,48 @@ export function VideoEditor() {
                 style={{ background: '#13100c', border: '1px solid #2a1a08' }}
               >
                 <label className="text-sm font-bold text-white/70 tracking-wide whitespace-nowrap">Clip length:</label>
-                <div className="flex gap-2">
-                  {[5, 10, 15, 20].map((sec) => (
-                    <button
-                      key={sec}
-                      onClick={() => setClipDurationSeconds(sec)}
-                      className="px-3 py-1.5 rounded-lg text-sm font-bold transition-all duration-200"
-                      style={
-                        clipDurationSeconds === sec
-                          ? {
-                              background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
-                              color: 'white',
-                              boxShadow: '0 2px 8px rgba(250,106,0,0.4)',
-                            }
-                          : {
-                              background: '#1a100a',
-                              color: '#6b4e2e',
-                              border: '1px solid #2a1a08',
-                            }
+                <div className="flex flex-wrap gap-2">
+                  {[5, 7, 10, 15, 20].map((sec) => {
+                    const isActive = clipDurationSeconds === sec
+                    return (
+                      <button
+                        key={sec}
+                        onClick={() => setClipDurationSeconds(sec)}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all duration-200 ${
+                          isActive
+                            ? 'text-white shadow-[0_2px_8px_rgba(250,106,0,0.4)]'
+                            : 'text-[#6b4e2e] border border-[#2a1a08] hover:bg-[#1f140b] hover:text-[#e0a060]'
+                        }`}
+                        style={
+                          isActive
+                            ? {
+                                background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
+                              }
+                            : {
+                                background: '#1a100a',
+                              }
+                        }
+                      >
+                        {sec}s
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={clipDurationSeconds}
+                    onChange={(e) => {
+                      const value = Number(e.target.value)
+                      if (!Number.isNaN(value) && value > 0) {
+                        setClipDurationSeconds(value)
                       }
-                    >
-                      {sec}s
-                    </button>
-                  ))}
+                    }}
+                    className="w-20 rounded-lg border border-[#2a1a08] bg-[#1a100a] px-3 py-1.5 text-sm font-semibold text-white outline-none transition-colors duration-200 focus:border-[#fa6a00] focus:ring-1 focus:ring-[#fa6a00]/20"
+                  />
+                  <span className="text-xs text-[#3a2810]">seconds</span>
                 </div>
                 <p className="text-xs text-[#3a2810] sm:ml-auto">Default for new clips</p>
               </div>
