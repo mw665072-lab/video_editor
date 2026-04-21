@@ -154,7 +154,7 @@ export interface ClipProperties {
 // Types — State
 // ============================================================
 
-interface EditorState {
+export interface EditorState {
   // Media library
   mediaFiles: MediaFile[];
 
