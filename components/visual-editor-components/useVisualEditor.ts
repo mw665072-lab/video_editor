@@ -24,6 +24,8 @@ interface UseVisualEditorReturn {
   setShowProperties: Dispatch<SetStateAction<boolean>>;
   showMediaBrowser: boolean;
   setShowMediaBrowser: Dispatch<SetStateAction<boolean>>;
+  showBlueprint: boolean;
+  setShowBlueprint: Dispatch<SetStateAction<boolean>>;
   isMobile: boolean;
 }
 
@@ -44,8 +46,9 @@ const useVisualEditor = (): UseVisualEditorReturn => {
 
   // ── UI state ──────────────────────────────────────────────────────────────
   const [exportOpen,       setExportOpen]       = useState(false);
-  const [showProperties,   setShowProperties]   = useState(true);
+  const [showProperties,   setShowProperties]   = useState(false);
   const [showMediaBrowser, setShowMediaBrowser] = useState(true);
+  const [showBlueprint,    setShowBlueprint]    = useState(true);
   const [isMobile,         setIsMobile]         = useState(false);
 
   // ── 1. Responsive breakpoint detection ───────────────────────────────────
@@ -58,6 +61,7 @@ const useVisualEditor = (): UseVisualEditorReturn => {
       if (matches) {
         setShowProperties(false);
         setShowMediaBrowser(false);
+        setShowBlueprint(false);
       }
     };
 
@@ -221,7 +225,11 @@ const useVisualEditor = (): UseVisualEditorReturn => {
         e.preventDefault();
         const [firstId] = s.selectedClipIds;
         if (firstId) {
-          shift ? s.rippleDelete(firstId) : s.removeClips(s.selectedClipIds);
+          if (shift) {
+            s.rippleDelete(firstId);
+          } else {
+            s.removeClips(s.selectedClipIds);
+          }
         }
         return;
       }
@@ -279,6 +287,12 @@ const useVisualEditor = (): UseVisualEditorReturn => {
         return;
       }
 
+      if (key === 'b' && ctrl) {
+        e.preventDefault();
+        setShowBlueprint((v) => !v);
+        return;
+      }
+
       // ── Quick speed presets (no modifier, no clip selected) ─────────────
       if (!ctrl && !shift && s.selectedClipIds.length === 0) {
         if (key === '1') { s.setPlaybackSpeed(1); return; }
@@ -300,6 +314,8 @@ const useVisualEditor = (): UseVisualEditorReturn => {
     setShowProperties,
     showMediaBrowser,
     setShowMediaBrowser,
+    showBlueprint,
+    setShowBlueprint,
     isMobile,
   };
 };

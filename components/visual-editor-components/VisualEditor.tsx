@@ -6,7 +6,6 @@ import React, {
   Suspense,
   useCallback,
   useMemo,
-  useRef,
 } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,6 +19,7 @@ import {
   PanelRightClose,
   PanelRightOpen,
   SlidersHorizontal,
+  Sparkles,
   X,
   Loader2,
 } from 'lucide-react';
@@ -33,28 +33,29 @@ const Toolbar         = lazy(() => import('../video-editor/toolbar'));
 const VideoPreview    = lazy(() => import('../video-editor/video-preview'));
 const Timeline        = lazy(() => import('../video-editor/timeline'));
 const ExportDialog    = lazy(() => import('../video-editor/export-dialog'));
+const ProductionBlueprintPanel = lazy(() => import('./ProductionBlueprintPanel'));
 
 // ─── Static class strings (outside component — avoids string recreation per render) ─
 const ROOT_CLS =
-  'h-full w-full min-h-0 flex flex-col text-slate-100 overflow-hidden relative editor-root';
+  'h-full w-full min-h-0 flex flex-col text-[#f6e0c8] overflow-hidden relative editor-root';
 
 const SIDEBAR_CLS =
-  'hidden lg:flex lg:w-72 xl:w-80 flex-col flex-shrink-0 border-r border-zinc-800/70 bg-zinc-900/95 shadow-[inset_-1px_0_0_rgba(148,163,184,0.04)]';
+  'hidden lg:flex lg:w-72 xl:w-80 flex-col flex-shrink-0 border-r border-[#2a2118] bg-[#13100c]/90 shadow-[inset_-1px_0_0_rgba(250,106,0,0.05)]';
 
 const PANEL_LABEL_CLS =
-  'px-4 py-3 border-b border-zinc-800/70 bg-zinc-950/80 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 select-none';
+  'px-4 py-3 border-b border-[#2a2118] bg-[#1a0e05]/85 text-[10px] font-bold uppercase tracking-[0.2em] text-[#8a6a45] select-none';
 
 const STATUS_BAR_CLS =
-  'flex flex-col gap-2 px-4 py-2.5 bg-zinc-950/95 border-t border-zinc-800/70 text-[11px] text-zinc-400 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between';
+  'flex flex-col gap-2 px-4 py-2.5 bg-[#0d0905]/95 border-t border-[#2a2118] text-[11px] text-[#8a6a45] backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between';
 
 // ─── Tiny skeleton shown while lazy chunks load ──────────────────────────────
 const PanelSkeleton = memo(({ className }: { className?: string }) => (
   <div
-    className={`flex items-center justify-center bg-zinc-900/60 ${className ?? 'h-full w-full'}`}
+    className={`flex items-center justify-center bg-[#13100c]/70 ${className ?? 'h-full w-full'}`}
     aria-label="Loading panel…"
     role="status"
   >
-    <Loader2 className="w-5 h-5 text-zinc-600 animate-spin" />
+    <Loader2 className="w-5 h-5 text-[#fa6a00] animate-spin" />
   </div>
 ));
 PanelSkeleton.displayName = 'PanelSkeleton';
@@ -77,7 +78,7 @@ const IconBtn = memo(
             variant="ghost"
             size="icon"
             aria-label={label}
-            className={`h-8 w-8 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/60 transition-colors ${className ?? ''}`}
+            className={`h-8 w-8 rounded-xl text-[#8a6a45] hover:text-[#fa6a00] hover:bg-[#fa6a00]/10 transition-colors ${className ?? ''}`}
             onClick={onClick}
           >
             {children}
@@ -102,8 +103,8 @@ const PropertiesPanelWrapper = memo(({ onClose }: PropertiesPanelWrapperProps) =
     aria-label="Properties panel"
     className="
       w-full lg:w-[300px] flex-shrink-0 flex flex-col
-      border-t border-zinc-800/60 lg:border-t-0 lg:border-l
-      bg-zinc-900/95 relative
+      border-t border-[#2a2118] lg:border-t-0 lg:border-l
+      bg-[#13100c]/95 relative
       animate-in slide-in-from-right-4 duration-200
     "
   >
@@ -135,26 +136,26 @@ const MobileMediaOverlay = memo(({ onClose }: MobileMediaOverlayProps) => (
     aria-modal="true"
     aria-label="Media Browser"
     className="
-      absolute inset-0 z-30 bg-zinc-950/96 backdrop-blur-xl p-4
+      absolute inset-0 z-30 bg-[#05070C]/96 backdrop-blur-xl p-4
       animate-in fade-in duration-150
     "
   >
     <div className="flex items-center justify-between mb-4">
       <div>
-        <p className="text-sm font-semibold text-slate-100">Media Browser</p>
-        <p className="text-xs text-slate-500">Tap to choose clips and assets.</p>
+        <p className="text-sm font-semibold text-[#f6e0c8]">Media Browser</p>
+        <p className="text-xs text-[#8a6a45]">Tap to choose clips and assets.</p>
       </div>
       <Button
         variant="ghost"
         size="icon"
         aria-label="Close Media Browser"
         onClick={onClose}
-        className="h-8 w-8 text-zinc-400 hover:text-zinc-100"
+        className="h-8 w-8 rounded-xl text-[#8a6a45] hover:text-[#fa6a00] hover:bg-[#fa6a00]/10"
       >
         <X className="w-4 h-4" />
       </Button>
     </div>
-    <div className="h-[calc(100%-3.5rem)] overflow-hidden rounded-3xl border border-zinc-800/70 bg-zinc-900/95 shadow-2xl">
+    <div className="h-[calc(100%-3.5rem)] overflow-hidden rounded-3xl border border-[#2a2118] bg-[#13100c]/90 shadow-2xl">
       <Suspense fallback={<PanelSkeleton />}>
         <MediaBrowser />
       </Suspense>
@@ -179,42 +180,42 @@ const StatusBar = memo(
         <StatusItem label="Tool">
           <span
             className={`capitalize font-medium tabular-nums ${
-              activeTool === 'cut' ? 'text-red-400' : 'text-slate-300'
+              activeTool === 'cut' ? 'text-red-400' : 'text-[#c07040]'
             }`}
           >
             {activeTool}
           </span>
         </StatusItem>
         <StatusItem label="Zoom">
-          <span className="text-slate-300 tabular-nums">{zoom.toFixed(0)} px/s</span>
+          <span className="text-[#c07040] tabular-nums">{zoom.toFixed(0)} px/s</span>
         </StatusItem>
         <StatusItem label="Speed">
-          <span className={`tabular-nums ${playbackSpeed !== 1 ? 'text-amber-400' : 'text-slate-300'}`}>
+          <span className={`tabular-nums ${playbackSpeed !== 1 ? 'text-amber-400' : 'text-[#c07040]'}`}>
             {playbackSpeed}×
           </span>
         </StatusItem>
         <StatusItem label="Clips">
-          <span className="text-slate-300 tabular-nums">{clipCount}</span>
+          <span className="text-[#c07040] tabular-nums">{clipCount}</span>
         </StatusItem>
         <StatusItem label="Tracks">
-          <span className="text-slate-300 tabular-nums">{trackCount}</span>
+          <span className="text-[#c07040] tabular-nums">{trackCount}</span>
         </StatusItem>
       </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
         <StatusItem label="Time">
-          <span className="text-emerald-400 font-mono tabular-nums">
+          <span className="text-[#fa6a00] font-mono tabular-nums">
             {formatStatusBarTime(currentTime)}
           </span>
         </StatusItem>
-        <span className="hidden md:inline text-zinc-600 text-[10px] tracking-wide">
+        <span className="hidden md:inline text-[#6b4e2e] text-[10px] tracking-wide">
           <kbd className="kbd">Space</kbd> Play ·{' '}
           <kbd className="kbd">J/K/L</kbd> Shuttle ·{' '}
           <kbd className="kbd">,/.</kbd> Frame ·{' '}
           <kbd className="kbd">S</kbd> Split ·{' '}
           <kbd className="kbd">⇧Del</kbd> Ripple Delete
         </span>
-        <span className="md:hidden text-zinc-600 text-[10px]">
+        <span className="md:hidden text-[#6b4e2e] text-[10px]">
           Space: Play · S: Split · Del: Delete
         </span>
       </div>
@@ -226,7 +227,7 @@ StatusBar.displayName = 'StatusBar';
 const StatusItem = memo(
   ({ label, children }: { label: string; children: React.ReactNode }) => (
     <span>
-      <span className="text-zinc-600">{label}: </span>
+      <span className="text-[#6b4e2e]">{label}: </span>
       {children}
     </span>
   ),
@@ -243,11 +244,12 @@ const VisualEditor: React.FC = () => {
     setShowProperties,
     showMediaBrowser,
     setShowMediaBrowser,
+    showBlueprint,
+    setShowBlueprint,
     isMobile,
   } = useVisualEditor();
 
   // ── Stable callbacks (no inline arrow functions in JSX) ──────────────────
-  const handleOpenExport        = useCallback(() => setExportOpen(true), [setExportOpen]);
   const handleCloseExport       = useCallback(() => setExportOpen(false), [setExportOpen]);
   const handleShowProperties    = useCallback(() => setShowProperties(true), [setShowProperties]);
   const handleHideProperties    = useCallback(() => setShowProperties(false), [setShowProperties]);
@@ -257,6 +259,7 @@ const VisualEditor: React.FC = () => {
   );
   const handleOpenMediaBrowser  = useCallback(() => setShowMediaBrowser(true), [setShowMediaBrowser]);
   const handleCloseMediaBrowser = useCallback(() => setShowMediaBrowser(false), [setShowMediaBrowser]);
+  const handleToggleBlueprint   = useCallback(() => setShowBlueprint((v) => !v), [setShowBlueprint]);
 
   // ── Memoised derived values ───────────────────────────────────────────────
   const clipCount  = useMemo(
@@ -268,7 +271,7 @@ const VisualEditor: React.FC = () => {
   return (
     <div className={ROOT_CLS}>
       {/* ── Toolbar ── */}
-      <Suspense fallback={<div className="h-10 bg-zinc-950/80 border-b border-zinc-800/70" />}>
+      <Suspense fallback={<div className="h-10 bg-[#0d0905]/80 border-b border-[#2a2118]" />}>
         <Toolbar />
       </Suspense>
 
@@ -287,10 +290,10 @@ const VisualEditor: React.FC = () => {
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
           {/* Mobile top-bar */}
-          <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-zinc-800/70 bg-zinc-950/85 lg:hidden">
+          <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-[#2a2118] bg-[#0d0905]/85 lg:hidden">
             <div>
-              <p className="text-sm font-semibold text-slate-100">Visual Editor</p>
-              <p className="text-[11px] text-slate-500">Responsive editing for every screen.</p>
+              <p className="text-sm font-semibold text-[#f6e0c8]">Visual Editor</p>
+              <p className="text-[11px] text-[#8a6a45]">Responsive editing for every screen.</p>
             </div>
             <div className="flex items-center gap-1">
               <IconBtn
@@ -309,25 +312,70 @@ const VisualEditor: React.FC = () => {
               >
                 <SlidersHorizontal className="w-4 h-4" />
               </IconBtn>
+              <IconBtn
+                label="Toggle Studio Tools"
+                shortcut="Ctrl+B"
+                side="bottom"
+                onClick={handleToggleBlueprint}
+                className={showBlueprint ? 'text-[#fa6a00] bg-[#fa6a00]/10' : ''}
+              >
+                <Sparkles className="w-4 h-4" />
+              </IconBtn>
             </div>
+          </div>
+
+          <div className="hidden items-center justify-between border-b border-[#2a2118] bg-[#0d0905]/80 px-4 py-2 lg:flex">
+            <div className="flex min-w-0 items-center gap-2 text-[11px] text-[#8a6a45]">
+              <Sparkles className="h-3.5 w-3.5 text-[#fa6a00]" />
+              <span className="truncate">Clip-style tools for importing, cutting, captions, effects, and export</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-7 gap-1.5 rounded-md px-2 text-[11px] ${
+                showBlueprint
+                  ? 'bg-[#fa6a00]/10 text-[#fa6a00] hover:bg-[#fa6a00]/15 hover:text-[#ff8c38]'
+                  : 'text-[#8a6a45] hover:bg-[#fa6a00]/10 hover:text-[#fa6a00]'
+              }`}
+              onClick={handleToggleBlueprint}
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              Studio Tools
+            </Button>
           </div>
 
           {/* Preview + Timeline canvases */}
           <div
-            className="flex-1 overflow-hidden px-4 py-4 sm:px-5 sm:py-5 space-y-4 min-h-0"
+            className={`flex-1 overflow-hidden px-3 py-3 sm:px-4 sm:py-4 min-h-0 ${
+              showBlueprint ? 'grid gap-3 xl:grid-cols-[minmax(320px,400px)_minmax(560px,1fr)]' : 'space-y-3'
+            }`}
             role="main"
             aria-label="Editor workspace"
           >
-            <div className="rounded-[28px] border border-zinc-800/75 bg-zinc-950/90 shadow-[0_30px_80px_rgba(0,0,0,0.22)] overflow-hidden min-h-[260px] h-[38vh] sm:h-[42vh] lg:h-[45vh]">
-              <Suspense fallback={<PanelSkeleton className="h-full w-full" />}>
-                <VideoPreview />
-              </Suspense>
-            </div>
+            {showBlueprint && (
+              <div className="min-h-[320px] overflow-hidden">
+                <Suspense fallback={<PanelSkeleton className="h-full w-full rounded-2xl border border-[#2a2118]" />}>
+                  <ProductionBlueprintPanel />
+                </Suspense>
+              </div>
+            )}
 
-            <div className="rounded-[28px] border border-zinc-800/70 bg-zinc-950/85 shadow-inner overflow-hidden min-h-[220px] h-[24vh] sm:h-[26vh] lg:h-[28vh]">
+            <div className={`min-h-0 ${showBlueprint ? 'flex flex-col gap-3 overflow-hidden' : 'space-y-3'}`}>
+              <div className={`rounded-2xl border border-[#2a2118] bg-black shadow-[0_4px_32px_rgba(0,0,0,0.5)] overflow-hidden min-h-[220px] ${
+                showBlueprint ? 'h-[34vh] xl:h-[38vh]' : 'h-[36vh] sm:h-[42vh] lg:h-[48vh]'
+              }`}>
+                <Suspense fallback={<PanelSkeleton className="h-full w-full" />}>
+                  <VideoPreview />
+                </Suspense>
+              </div>
+
+              <div className={`rounded-2xl border border-[#2a2118] bg-[#13100c]/80 shadow-inner overflow-hidden min-h-[220px] ${
+                showBlueprint ? 'flex-1' : 'h-[25vh] sm:h-[28vh] lg:h-[30vh]'
+              }`}>
               <Suspense fallback={<PanelSkeleton className="h-full w-full" />}>
                 <Timeline />
               </Suspense>
+              </div>
             </div>
           </div>
         </div>

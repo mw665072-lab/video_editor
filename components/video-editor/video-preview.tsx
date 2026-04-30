@@ -52,6 +52,7 @@ const DEFAULT_FPS = 30;
 const FRAME_DURATION = 1 / DEFAULT_FPS;
 const MAX_VIDEO_RETRIES = 3;
 const RETRY_DELAYS = [500, 1500, 3000] as const;
+const PLAYBACK_TIME_PUBLISH_INTERVAL_MS = 90;
 
 // ============================================================
 // Pure helpers (module-level, never recreated)
@@ -154,18 +155,18 @@ const EmptyPreviewState = memo(() => (
       }}
     />
     <div className="relative mb-6">
-      <div className="w-20 h-20 rounded-2xl bg-zinc-800/60 border border-zinc-700/40 flex items-center justify-center animate-[pulse_3s_ease-in-out_infinite]">
-        <Clapperboard className="w-9 h-9 text-zinc-500" strokeWidth={1.5} />
+      <div className="w-20 h-20 rounded-2xl bg-[#1a100a]/70 border border-[#2a2118] flex items-center justify-center animate-[pulse_3s_ease-in-out_infinite]">
+        <Clapperboard className="w-9 h-9 text-[#8a6a45]" strokeWidth={1.5} />
       </div>
-      <div className="absolute -inset-2 rounded-3xl border border-zinc-700/20 animate-[ping_3s_ease-in-out_infinite]" />
+      <div className="absolute -inset-2 rounded-3xl border border-[#fa6a00]/20 animate-[ping_3s_ease-in-out_infinite]" />
     </div>
-    <p className="text-zinc-500 text-sm font-medium">Drop media to preview</p>
-    <p className="text-zinc-600 text-xs mt-2">Add clips to the timeline to get started</p>
+    <p className="text-[#c07040] text-sm font-medium">Drop media to preview</p>
+    <p className="text-[#8a6a45] text-xs mt-2">Add clips to the timeline to get started</p>
     <div className="flex items-center gap-3 mt-4">
-      <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700/50 rounded text-[10px] text-zinc-500 font-mono">Space</kbd>
-      <span className="text-zinc-600 text-[10px]">Play / Pause</span>
-      <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700/50 rounded text-[10px] text-zinc-500 font-mono">J K L</kbd>
-      <span className="text-zinc-600 text-[10px]">Shuttle</span>
+      <kbd className="px-1.5 py-0.5 bg-[#1a100a] border border-[#2a2118] rounded text-[10px] text-[#8a6a45] font-mono">Space</kbd>
+      <span className="text-[#5d4226] text-[10px]">Play / Pause</span>
+      <kbd className="px-1.5 py-0.5 bg-[#1a100a] border border-[#2a2118] rounded text-[10px] text-[#8a6a45] font-mono">J K L</kbd>
+      <span className="text-[#5d4226] text-[10px]">Shuttle</span>
     </div>
   </div>
 ));
@@ -173,11 +174,11 @@ EmptyPreviewState.displayName = 'EmptyPreviewState';
 
 const LoadingPreviewState = memo<{ name?: string }>(({ name }) => (
   <div className="absolute inset-0 flex flex-col items-center justify-center bg-black select-none">
-    <div className="w-12 h-12 rounded-full bg-zinc-800/60 border border-zinc-700/40 flex items-center justify-center mb-4">
-      <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
+    <div className="w-12 h-12 rounded-full bg-[#1a100a]/70 border border-[#2a2118] flex items-center justify-center mb-4">
+      <Loader2 className="w-6 h-6 text-[#fa6a00] animate-spin" />
     </div>
-    <p className="text-zinc-400 text-xs font-medium">Loading media...</p>
-    {name && <p className="text-zinc-600 text-[10px] mt-1 max-w-[200px] truncate">{name}</p>}
+    <p className="text-[#c07040] text-xs font-medium">Loading media...</p>
+    {name && <p className="text-[#5d4226] text-[10px] mt-1 max-w-[200px] truncate">{name}</p>}
   </div>
 ));
 LoadingPreviewState.displayName = 'LoadingPreviewState';
@@ -200,15 +201,15 @@ const VideoFallbackPreview = memo<VideoFallbackProps>(
         <img src={mediaThumbnail} alt={mediaName} className="max-w-full max-h-full object-contain w-full h-full" />
       ) : (
         <div className="flex flex-col items-center gap-3">
-          <AlertTriangle className="w-12 h-12 text-zinc-600" />
-          <p className="text-zinc-500 text-xs">Video preview unavailable</p>
+          <AlertTriangle className="w-12 h-12 text-[#5d4226]" />
+          <p className="text-[#8a6a45] text-xs">Video preview unavailable</p>
         </div>
       )}
       <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
-        <div className="bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2 text-[11px] text-zinc-300 border border-zinc-700/30 space-y-0.5 pointer-events-none">
+        <div className="bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2 text-[11px] text-[#c07040] border border-[#2a2118]/70 space-y-0.5 pointer-events-none">
           <div className="flex items-center gap-1.5">
-            <Film className="w-3 h-3 text-zinc-500" />
-            <span className="text-zinc-200 font-medium truncate max-w-[200px]">{clipLabel || mediaName}</span>
+            <Film className="w-3 h-3 text-[#8a6a45]" />
+            <span className="text-[#f6e0c8] font-medium truncate max-w-[200px]">{clipLabel || mediaName}</span>
           </div>
         </div>
         <div className="bg-amber-500/20 backdrop-blur-sm rounded-lg px-2 py-1 text-[10px] text-amber-400 border border-amber-500/30 pointer-events-none">
@@ -216,7 +217,7 @@ const VideoFallbackPreview = memo<VideoFallbackProps>(
         </div>
       </div>
       {mediaWidth > 0 && mediaHeight > 0 && (
-        <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm rounded px-2 py-0.5 text-[10px] text-zinc-400 font-mono pointer-events-none">
+        <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm rounded px-2 py-0.5 text-[10px] text-[#c07040] font-mono pointer-events-none">
           {mediaWidth}×{mediaHeight}
         </div>
       )}
@@ -225,7 +226,7 @@ const VideoFallbackPreview = memo<VideoFallbackProps>(
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 gap-1.5 text-[10px] text-zinc-400 hover:text-white bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700/50 rounded-lg px-2"
+            className="h-7 gap-1.5 text-[10px] text-[#c07040] hover:text-white bg-[#1a100a]/80 hover:bg-[#2a2118]/80 border border-[#2a2118] rounded-lg px-2"
             onClick={onRetry}
           >
             <RotateCcw className="w-3 h-3" />
@@ -259,13 +260,13 @@ const AudioPreviewState = memo<AudioPreviewProps>(({ mediaName, clipLabel, clipD
         <Music className="w-8 h-8 text-violet-400" />
       </div>
     </div>
-    <p className="text-zinc-300 text-sm font-medium z-10 truncate max-w-[300px] px-4 text-center">{clipLabel || mediaName}</p>
-    <p className="text-zinc-600 text-xs mt-1 z-10">Audio clip · {formatTimeCode(clipDuration)}</p>
+    <p className="text-[#f6e0c8] text-sm font-medium z-10 truncate max-w-[300px] px-4 text-center">{clipLabel || mediaName}</p>
+    <p className="text-[#5d4226] text-xs mt-1 z-10">Audio clip · {formatTimeCode(clipDuration)}</p>
     <div className="flex items-center gap-1.5 mt-4 z-10">
-      <div className="w-1 h-3 bg-emerald-400 rounded-full animate-[audioBar_0.6s_ease-in-out_infinite]" />
-      <div className="w-1 h-4 bg-emerald-400 rounded-full animate-[audioBar_0.6s_ease-in-out_infinite_0.2s]" />
-      <div className="w-1 h-2 bg-emerald-400 rounded-full animate-[audioBar_0.6s_ease-in-out_infinite_0.4s]" />
-      <span className="text-emerald-400 text-[10px] ml-1 font-medium">NOW PLAYING</span>
+      <div className="w-1 h-3 bg-[#fa6a00] rounded-full animate-[audioBar_0.6s_ease-in-out_infinite]" />
+      <div className="w-1 h-4 bg-[#fa6a00] rounded-full animate-[audioBar_0.6s_ease-in-out_infinite_0.2s]" />
+      <div className="w-1 h-2 bg-[#fa6a00] rounded-full animate-[audioBar_0.6s_ease-in-out_infinite_0.4s]" />
+      <span className="text-[#ffb06a] text-[10px] ml-1 font-medium">NOW PLAYING</span>
     </div>
   </div>
 ));
@@ -285,13 +286,13 @@ const VolumePopup = memo<VolumePopupProps>(({ volume, isMuted, onVolumeChange, o
   const displayVolume = isMuted ? 0 : volume * 100;
   return (
     <div className="flex flex-col items-center gap-3 p-3 w-48">
-      <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400 hover:text-white" onClick={onMuteToggle}>
+      <Button variant="ghost" size="icon" className="h-8 w-8 text-[#8a6a45] hover:text-white" onClick={onMuteToggle}>
         {isMuted || volume === 0 ? <VolumeX className="w-4 h-4" /> : volume < 0.5 ? <Volume1 className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
       </Button>
       <div className="w-full flex items-center justify-center h-32">
         <Slider value={[displayVolume]} onValueChange={(v) => onVolumeChange(v[0] / 100)} max={100} step={1} orientation="vertical" className="h-full" />
       </div>
-      <span className="text-[11px] text-zinc-500 font-mono tabular-nums">{Math.round(displayVolume)}%</span>
+      <span className="text-[11px] text-[#8a6a45] font-mono tabular-nums">{Math.round(displayVolume)}%</span>
     </div>
   );
 });
@@ -368,17 +369,17 @@ interface ClipInfoOverlayProps {
 const ClipInfoOverlay = memo<ClipInfoOverlayProps>(
   ({ clipLabel, mediaName, mediaWidth, mediaHeight, trimStart, trimEnd, duration, startTime, clipSpeed }) => (
     <>
-      <div className="absolute bottom-2 left-2 z-10 bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2 text-[11px] text-zinc-300 border border-zinc-700/30 space-y-0.5 pointer-events-none">
+      <div className="absolute bottom-2 left-2 z-10 bg-black/70 backdrop-blur-sm rounded-lg px-3 py-2 text-[11px] text-[#c07040] border border-[#2a2118]/70 space-y-0.5 pointer-events-none">
         <div className="flex items-center gap-1.5">
-          <Film className="w-3 h-3 text-zinc-500" />
-          <span className="text-zinc-200 font-medium truncate max-w-[200px]">{clipLabel || mediaName}</span>
+          <Film className="w-3 h-3 text-[#8a6a45]" />
+          <span className="text-[#f6e0c8] font-medium truncate max-w-[200px]">{clipLabel || mediaName}</span>
         </div>
-        <div className="text-zinc-500 font-mono tabular-nums">
-          <span className="text-zinc-400">{formatTimeCode(trimStart)}</span>
+        <div className="text-[#8a6a45] font-mono tabular-nums">
+          <span className="text-[#c07040]">{formatTimeCode(trimStart)}</span>
           {' → '}
-          <span className="text-zinc-400">{formatTimeCode(trimStart + duration - trimEnd)}</span>
+          <span className="text-[#c07040]">{formatTimeCode(trimStart + duration - trimEnd)}</span>
         </div>
-        <div className="text-zinc-600 font-mono tabular-nums">
+        <div className="text-[#5d4226] font-mono tabular-nums">
           Timeline: {formatTimeCode(startTime)} → {formatTimeCode(startTime + duration)}
         </div>
         {clipSpeed !== 1 && (
@@ -386,7 +387,7 @@ const ClipInfoOverlay = memo<ClipInfoOverlayProps>(
         )}
       </div>
       {mediaWidth > 0 && mediaHeight > 0 && (
-        <div className="absolute top-2 right-2 z-10 bg-black/50 backdrop-blur-sm rounded px-2 py-0.5 text-[10px] text-zinc-400 font-mono pointer-events-none">
+        <div className="absolute top-2 right-2 z-10 bg-black/50 backdrop-blur-sm rounded px-2 py-0.5 text-[10px] text-[#c07040] font-mono pointer-events-none">
           {mediaWidth}×{mediaHeight}
         </div>
       )}
@@ -433,37 +434,37 @@ const TransportControls = memo<TransportProps>(({
 
   return (
     <>
-      <div className="flex items-center gap-1 px-3 py-1.5 bg-zinc-900 border-t border-zinc-800">
-        <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-500 hover:text-white" onClick={onStepBack} title="Previous Frame (,)">
+      <div className="flex items-center gap-1 px-3 py-1.5 bg-[#13100c] border-t border-[#2a2118]">
+        <Button variant="ghost" size="icon" className="h-7 w-7 text-[#8a6a45] hover:text-white" onClick={onStepBack} title="Previous Frame (,)">
           <ChevronsLeft className="w-3.5 h-3.5" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-500 hover:text-white" onClick={onSeekToStart} title="Go to Start">
+        <Button variant="ghost" size="icon" className="h-7 w-7 text-[#8a6a45] hover:text-white" onClick={onSeekToStart} title="Go to Start">
           <SkipBack className="w-3.5 h-3.5" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-zinc-200 hover:text-white bg-zinc-800 hover:bg-zinc-700 rounded-full mx-0.5"
+          className="h-8 w-8 text-white hover:text-white bg-[#fa6a00] hover:bg-[#e84d00] rounded-full mx-0.5"
           onClick={onTogglePlay}
           title="Play / Pause (Space)"
         >
           {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
         </Button>
-        <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-500 hover:text-white" onClick={onSeekToEnd} title="Go to End">
+        <Button variant="ghost" size="icon" className="h-7 w-7 text-[#8a6a45] hover:text-white" onClick={onSeekToEnd} title="Go to End">
           <SkipForward className="w-3.5 h-3.5" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-500 hover:text-white" onClick={onStepForward} title="Next Frame (.)">
+        <Button variant="ghost" size="icon" className="h-7 w-7 text-[#8a6a45] hover:text-white" onClick={onStepForward} title="Next Frame (.)">
           <ChevronsRight className="w-3.5 h-3.5" />
         </Button>
 
-        <div className="w-px h-5 bg-zinc-800 mx-1" />
+        <div className="w-px h-5 bg-[#2a2118] mx-1" />
 
         <div className="flex items-center gap-1.5 text-[11px] font-mono tabular-nums">
-          <span className="text-emerald-400">{formatTimeCode(currentTime)}</span>
-          <span className="text-zinc-700">/</span>
-          <span className="text-zinc-500">{formatTimeCode(totalDuration)}</span>
-          <span className="text-zinc-700 ml-1.5">|</span>
-          <span className="text-zinc-600 ml-1">{totalClips} clip{totalClips !== 1 ? 's' : ''}</span>
+          <span className="text-[#fa6a00]">{formatTimeCode(currentTime)}</span>
+          <span className="text-[#5d4226]">/</span>
+          <span className="text-[#8a6a45]">{formatTimeCode(totalDuration)}</span>
+          <span className="text-[#5d4226] ml-1.5">|</span>
+          <span className="text-[#5d4226] ml-1">{totalClips} clip{totalClips !== 1 ? 's' : ''}</span>
         </div>
 
         <div className="flex-1" />
@@ -473,22 +474,22 @@ const TransportControls = memo<TransportProps>(({
             <Button
               variant="ghost"
               size="sm"
-              className={`h-7 gap-1 text-[11px] font-mono tabular-nums px-2 ${playbackSpeed !== 1 ? 'text-amber-400 hover:text-amber-300' : 'text-zinc-500 hover:text-white'}`}
+              className={`h-7 gap-1 text-[11px] font-mono tabular-nums px-2 ${playbackSpeed !== 1 ? 'text-amber-400 hover:text-amber-300' : 'text-[#8a6a45] hover:text-white'}`}
               title="Playback Speed"
             >
               <Gauge className="w-3 h-3" />
               {speedLabel}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-zinc-900 border-zinc-800 min-w-[100px]">
+          <DropdownMenuContent align="end" className="bg-[#13100c] border-[#2a2118] min-w-[100px]">
             {PLAYBACK_SPEEDS.map((speed) => (
               <DropdownMenuItem
                 key={speed}
-                className={`text-xs font-mono tabular-nums cursor-pointer ${playbackSpeed === speed ? 'text-emerald-400 bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}
+                className={`text-xs font-mono tabular-nums cursor-pointer ${playbackSpeed === speed ? 'text-[#ffb06a] bg-[#1a100a]' : 'text-[#c07040] hover:text-white hover:bg-[#1a100a]'}`}
                 onClick={() => onSetSpeed(speed)}
               >
                 {speed === 1 ? `${speed}x (Normal)` : `${speed}x`}
-                {playbackSpeed === speed && <span className="ml-auto text-emerald-400">✓</span>}
+                {playbackSpeed === speed && <span className="ml-auto text-[#fa6a00]">✓</span>}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
@@ -496,21 +497,21 @@ const TransportControls = memo<TransportProps>(({
 
         <Popover open={volumeOpen} onOpenChange={onVolumeOpenChange}>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-500 hover:text-white" title="Volume">
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-[#8a6a45] hover:text-white" title="Volume">
               <VolumeIcon className="w-3.5 h-3.5" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="end" side="top" className="bg-zinc-900 border-zinc-800 p-0 w-auto rounded-xl shadow-xl">
+          <PopoverContent align="end" side="top" className="bg-[#13100c] border-[#2a2118] p-0 w-auto rounded-xl shadow-xl">
             <VolumePopup volume={volume} isMuted={isMuted} onVolumeChange={onVolumeChange} onMuteToggle={onMuteToggle} />
           </PopoverContent>
         </Popover>
 
-        <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-500 hover:text-white" onClick={onToggleFullscreen} title="Toggle Fullscreen">
+        <Button variant="ghost" size="icon" className="h-7 w-7 text-[#8a6a45] hover:text-white" onClick={onToggleFullscreen} title="Toggle Fullscreen">
           {isFullscreen ? <Minimize className="w-3.5 h-3.5" /> : <Maximize className="w-3.5 h-3.5" />}
         </Button>
       </div>
 
-      <div className="px-3 pb-2 pt-0.5 bg-zinc-900">
+      <div className="px-3 pb-2 pt-0.5 bg-[#13100c]">
         <Slider value={[currentTime]} onValueChange={onSeek} max={totalDuration} step={0.001} className="w-full" />
       </div>
     </>
@@ -639,6 +640,7 @@ const VideoPreview: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
   const timeRafRef = useRef<number>(0);
+  const lastPublishedTimeRef = useRef({ time: 0, at: 0 });
   const lastClipKeyRef = useRef<string | null>(null);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Stable refs for rAF callbacks (avoid stale closures without triggering re-render)
@@ -776,7 +778,7 @@ const VideoPreview: React.FC = () => {
       renderCanvas();
       rafRef.current = requestAnimationFrame(loop);
     };
-    if (activeClip || isPlaying) {
+    if (isPlaying) {
       rafRef.current = requestAnimationFrame(loop);
     } else {
       renderCanvas();
@@ -785,7 +787,11 @@ const VideoPreview: React.FC = () => {
       running = false;
       cancelAnimationFrame(rafRef.current);
     };
-  }, [activeClip, isPlaying, renderCanvas]);
+  }, [isPlaying, renderCanvas]);
+
+  useEffect(() => {
+    if (!isPlaying) renderCanvas();
+  }, [currentTime, isPlaying, renderCanvas, videoReady]);
 
   // ── Video source loading ──
   const loadVideoSource = useCallback((video: HTMLVideoElement, url: string) => {
@@ -922,7 +928,15 @@ const VideoPreview: React.FC = () => {
         setCurrentTime(clip.startTime + clip.duration);
         return;
       }
-      setCurrentTime(clip.startTime + sourceTime - clip.trimStart);
+      const timelineTime = clip.startTime + sourceTime - clip.trimStart;
+      const now = performance.now();
+      const last = lastPublishedTimeRef.current;
+      if (now - last.at >= PLAYBACK_TIME_PUBLISH_INTERVAL_MS || Math.abs(timelineTime - last.time) >= 0.25) {
+        lastPublishedTimeRef.current = { time: timelineTime, at: now };
+        setCurrentTime(timelineTime);
+      } else {
+        currentTimeRef.current = timelineTime;
+      }
       timeRafRef.current = requestAnimationFrame(tick);
     };
     timeRafRef.current = requestAnimationFrame(tick);
@@ -1041,7 +1055,7 @@ const VideoPreview: React.FC = () => {
         {/* Buffering indicator */}
         {videoLoading && activeClip && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/80">
-            <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+            <Loader2 className="w-8 h-8 text-[#fa6a00] animate-spin" />
           </div>
         )}
 

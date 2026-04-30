@@ -20,16 +20,19 @@ import ExportDialog from './export-dialog';
 const VideoEditor: React.FC = () => {
   const store = useEditorStore();
   const [exportOpen, setExportOpen] = useState(false);
-  const [showProperties, setShowProperties] = useState(true);
+  const [showProperties, setShowProperties] = useState(false);
 
-  // Responsive: hide properties panel by default on small screens
+  // Properties stay hidden by default on every screen; users can open them when needed.
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 1023px)');
-    setShowProperties(!mq.matches);
+    if (mq.matches) {
+      setShowProperties(false);
+    }
 
     const handler = (e: MediaQueryListEvent) => {
-      // Only auto-set on initial mount / breakpoint change; don't override user choice
-      // We use a flag to detect first load
+      if (e.matches) {
+        setShowProperties(false);
+      }
     };
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
