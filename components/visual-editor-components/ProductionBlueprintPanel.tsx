@@ -16,6 +16,7 @@ import {
   Copy,
   Download,
   Film,
+  ImageIcon,
   Layers3,
   Maximize2,
   Mic2,
@@ -27,10 +28,13 @@ import {
   Sparkles,
   Split,
   Trash2,
+  Upload,
   Wand2,
+  X,
 } from 'lucide-react';
 import {
   useEditorStore,
+  type CaptionStylePreset,
   type ClipEffects,
   type ColorGrading,
   type TimelineTrack,
@@ -42,8 +46,6 @@ type EffectPreset = {
   effects: Partial<ClipEffects>;
   color?: Partial<ColorGrading>;
 };
-
-type CaptionStyle = 'creator' | 'podcast' | 'minimal';
 
 const EFFECT_PRESETS: EffectPreset[] = [
   {
@@ -79,6 +81,8 @@ const ASPECT_PRESETS = [
   { id: 'podcast', label: 'Podcast', size: '1280x720', badge: 'HD' },
 ];
 
+const CAPTION_STYLES: CaptionStylePreset[] = ['creator', 'podcast', 'minimal'];
+
 function formatTime(seconds: number) {
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
@@ -100,6 +104,12 @@ function splitCaptionText(text: string) {
     .map((line) => line.trim())
     .filter(Boolean)
     .slice(0, 12);
+}
+
+function captionY(position: 'top' | 'middle' | 'bottom') {
+  if (position === 'top') return 0.2;
+  if (position === 'middle') return 0.5;
+  return 0.78;
 }
 
 function ActionButton({
@@ -147,7 +157,6 @@ function Stat({ label, value }: { label: string; value: string | number }) {
 
 const ProductionBlueprintPanel = () => {
   const [captionText, setCaptionText] = useState('Hook line\nMain idea\nCall to action');
-  const [captionStyle, setCaptionStyle] = useState<CaptionStyle>('creator');
   const [clipGap, setClipGap] = useState(0);
   const [projectTitle, setProjectTitle] = useState('Untitled edit');
 
@@ -156,6 +165,8 @@ const ProductionBlueprintPanel = () => {
   const selectedClipIds = useEditorStore((s) => s.selectedClipIds);
   const currentTime = useEditorStore((s) => s.currentTime);
   const totalDuration = useEditorStore((s) => s.totalDuration);
+  const brandKit = useEditorStore((s) => s.brandKit);
+  const textOverlayCount = useEditorStore((s) => s.textOverlays.length);
   const addTrack = useEditorStore((s) => s.addTrack);
   const splitClip = useEditorStore((s) => s.splitClip);
   const duplicateClip = useEditorStore((s) => s.duplicateClip);
@@ -168,6 +179,8 @@ const ProductionBlueprintPanel = () => {
   const resetClipEffects = useEditorStore((s) => s.resetClipEffects);
   const fitZoomToContent = useEditorStore((s) => s.fitZoomToContent);
   const getMediaFile = useEditorStore((s) => s.getMediaFile);
+  const updateBrandKit = useEditorStore((s) => s.updateBrandKit);
+  const resetBrandKit = useEditorStore((s) => s.resetBrandKit);
   const selectedClips = useMemo(
     () => getSelectedClips(tracks, selectedClipIds),
     [tracks, selectedClipIds],
@@ -224,7 +237,7 @@ const ProductionBlueprintPanel = () => {
         startTime: baseStart,
         duration: Math.min(baseDuration, 6),
         trackIndex: selectedClip?.trackIndex ?? 0,
-        fontFamily: 'Inter',
+        fontFamily: brandKit.headingFontFamily || brandKit.fontFamily,
         shadow: true,
         shadowColor: '#000000',
         shadowBlur: 8,
@@ -245,8 +258,8 @@ const ProductionBlueprintPanel = () => {
           y: 0.18,
           fontSize: 44,
           fontWeight: '900',
-          color: '#ffffff',
-          backgroundColor: '#000000',
+          color: brandKit.primaryColor,
+          backgroundColor: brandKit.secondaryColor,
           backgroundOpacity: 0,
           textAlign: 'center',
           animation: 'slideUp',
@@ -260,8 +273,8 @@ const ProductionBlueprintPanel = () => {
           y: 0.78,
           fontSize: 24,
           fontWeight: '700',
-          color: '#ffffff',
-          backgroundColor: '#111827',
+          color: brandKit.primaryColor,
+          backgroundColor: brandKit.secondaryColor,
           backgroundOpacity: 0.85,
           textAlign: 'center',
           animation: 'fadeIn',
@@ -275,8 +288,8 @@ const ProductionBlueprintPanel = () => {
           y: 0.14,
           fontSize: 18,
           fontWeight: '800',
-          color: '#0f172a',
-          backgroundColor: '#5eead4',
+          color: brandKit.secondaryColor,
+          backgroundColor: brandKit.accentColor,
           backgroundOpacity: 1,
           textAlign: 'center',
           animation: 'bounce',
@@ -286,7 +299,7 @@ const ProductionBlueprintPanel = () => {
 
       toast.success('Added text overlay');
     },
-    [addTextOverlayToStore, currentTime, projectTitle, selectedClip, selectedMedia],
+    [addTextOverlayToStore, brandKit, currentTime, projectTitle, selectedClip, selectedMedia],
   );
 
   const addCaptions = useCallback(() => {
@@ -298,20 +311,20 @@ const ProductionBlueprintPanel = () => {
     const perLine = Math.max(1.2, total / lines.length);
 
     lines.forEach((line, index) => {
-      const isCreator = captionStyle === 'creator';
-      const isPodcast = captionStyle === 'podcast';
+      const isCreator = brandKit.captionStyle === 'creator';
+      const isPodcast = brandKit.captionStyle === 'podcast';
       addTextOverlayToStore({
         text: line,
         startTime: start + index * perLine,
         duration: Math.min(perLine + 0.15, total - index * perLine),
         trackIndex: selectedClip?.trackIndex ?? 0,
         x: 0.5,
-        y: isPodcast ? 0.84 : 0.76,
-        fontSize: isCreator ? 34 : isPodcast ? 26 : 22,
-        fontFamily: 'Inter',
+        y: isPodcast ? 0.84 : captionY(brandKit.captionPosition),
+        fontSize: isCreator ? brandKit.captionFontSize : isPodcast ? Math.max(22, brandKit.captionFontSize - 8) : Math.max(18, brandKit.captionFontSize - 12),
+        fontFamily: brandKit.fontFamily,
         fontWeight: isCreator ? '900' : '700',
-        color: '#ffffff',
-        backgroundColor: isCreator ? '#111827' : '#000000',
+        color: brandKit.primaryColor,
+        backgroundColor: isCreator ? brandKit.secondaryColor : '#000000',
         backgroundOpacity: isCreator ? 0.8 : isPodcast ? 0.55 : 0,
         textAlign: 'center',
         animation: isCreator ? 'typewriter' : 'fadeIn',
@@ -330,7 +343,84 @@ const ProductionBlueprintPanel = () => {
     });
 
     toast.success(`Added ${lines.length} caption overlay${lines.length === 1 ? '' : 's'}`);
-  }, [addTextOverlayToStore, captionStyle, captionText, currentTime, selectedClip]);
+  }, [addTextOverlayToStore, brandKit, captionText, currentTime, selectedClip]);
+
+  const uploadBrandLogo = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please upload an image logo');
+        event.target.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        updateBrandKit({ logoUrl: String(reader.result) });
+        toast.success('Brand logo saved');
+      };
+      reader.onerror = () => toast.error('Could not read logo file');
+      reader.readAsDataURL(file);
+      event.target.value = '';
+    },
+    [updateBrandKit],
+  );
+
+  const addBrandIntroOutro = useCallback(
+    (kind: 'intro' | 'outro') => {
+      const duration = Math.min(3, Math.max(1.5, totalDuration || 3));
+      const startTime = kind === 'intro' ? 0 : Math.max(0, totalDuration - duration);
+      const text = kind === 'intro' ? brandKit.introText : brandKit.outroText;
+
+      addTextOverlayToStore({
+        text: text || (kind === 'intro' ? 'Welcome back' : 'Follow for more'),
+        startTime,
+        duration,
+        trackIndex: 0,
+        x: 0.5,
+        y: kind === 'intro' ? 0.22 : 0.78,
+        fontSize: 42,
+        fontFamily: brandKit.headingFontFamily || brandKit.fontFamily,
+        fontWeight: '900',
+        color: brandKit.primaryColor,
+        backgroundColor: brandKit.secondaryColor,
+        backgroundOpacity: 0.78,
+        textAlign: 'center',
+        animation: kind === 'intro' ? 'slideUp' : 'fadeIn',
+        animationDuration: 0.45,
+        shadow: true,
+        shadowColor: '#000000',
+        shadowBlur: 10,
+        outline: true,
+        outlineColor: '#000000',
+        outlineWidth: 1,
+        lineHeight: 1.1,
+        letterSpacing: 0,
+        maxWidth: 780,
+        rotation: 0,
+      });
+
+      toast.success(`Added branded ${kind}`);
+    },
+    [addTextOverlayToStore, brandKit, totalDuration],
+  );
+
+  const applyBrandToExistingText = useCallback(() => {
+    pushHistory('Apply brand kit to text overlays');
+    useEditorStore.setState((state) => ({
+      textOverlays: state.textOverlays.map((overlay) => ({
+        ...overlay,
+        fontFamily: brandKit.fontFamily,
+        color: brandKit.primaryColor,
+        backgroundColor: overlay.backgroundOpacity > 0 ? brandKit.secondaryColor : overlay.backgroundColor,
+        outlineColor: '#000000',
+        shadowColor: '#000000',
+      })),
+    }));
+    toast.success('Applied brand kit to text overlays');
+  }, [brandKit, pushHistory]);
 
   const applyPreset = useCallback(
     (preset: EffectPreset) => {
@@ -419,10 +509,11 @@ const ProductionBlueprintPanel = () => {
 
       <Tabs defaultValue="build" className="flex min-h-0 flex-1 flex-col">
         <div className="border-b border-[#2a2118] px-2 py-2 sm:px-3">
-          <TabsList className="grid h-auto w-full grid-cols-3 gap-1 bg-[#1a100a] p-1 lg:grid-cols-6">
+          <TabsList className="grid h-auto w-full grid-cols-3 gap-1 bg-[#1a100a] p-1 lg:grid-cols-7">
             <TabsTrigger value="build" className="h-8 text-[11px]"><Layers3 className="mr-1 h-3.5 w-3.5" />Arrange</TabsTrigger>
             <TabsTrigger value="edit" className="h-8 text-[11px]"><Scissors className="mr-1 h-3.5 w-3.5" />Edit</TabsTrigger>
             <TabsTrigger value="text" className="h-8 text-[11px]"><Captions className="mr-1 h-3.5 w-3.5" />Text</TabsTrigger>
+            <TabsTrigger value="brand" className="h-8 text-[11px]"><Sparkles className="mr-1 h-3.5 w-3.5" />Brand</TabsTrigger>
             <TabsTrigger value="look" className="h-8 text-[11px]"><Palette className="mr-1 h-3.5 w-3.5" />Look</TabsTrigger>
             <TabsTrigger value="audio" className="h-8 text-[11px]"><AudioLines className="mr-1 h-3.5 w-3.5" />Audio</TabsTrigger>
             <TabsTrigger value="export" className="h-8 text-[11px]"><Download className="mr-1 h-3.5 w-3.5" />Export</TabsTrigger>
@@ -492,22 +583,186 @@ const ProductionBlueprintPanel = () => {
             />
 
             <div className="grid gap-2 sm:grid-cols-3">
-              {(['creator', 'podcast', 'minimal'] as CaptionStyle[]).map((style) => (
+              {CAPTION_STYLES.map((style) => (
                 <Button
                   key={style}
                   variant="outline"
-                  onClick={() => setCaptionStyle(style)}
+                  onClick={() => updateBrandKit({ captionStyle: style })}
                   className={`h-9 rounded-xl text-[11px] ${
-                    captionStyle === style ? 'border-[#fa6a00]/40 bg-[#fa6a00]/15 text-[#fa6a00]' : 'border-[#2a1a08] bg-[#1a100a] text-[#c07040]'
+                    brandKit.captionStyle === style ? 'border-[#fa6a00]/40 bg-[#fa6a00]/15 text-[#fa6a00]' : 'border-[#2a1a08] bg-[#1a100a] text-[#c07040]'
                   }`}
                 >
-                  {captionStyle === style && <Check className="mr-1 h-3.5 w-3.5" />}
+                  {brandKit.captionStyle === style && <Check className="mr-1 h-3.5 w-3.5" />}
                   {style}
                 </Button>
               ))}
             </div>
 
             <ActionButton icon={<Captions className="h-4 w-4" />} label="Create Caption Overlays" onClick={addCaptions} tone="primary" />
+          </TabsContent>
+
+          <TabsContent value="brand" className="m-0 space-y-4 p-3 sm:p-4">
+            <div className="rounded-2xl border border-[#2a2118] bg-[#1a100a]/60 p-3">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-xs font-bold text-white">Brand Kit</div>
+                  <div className="text-[11px] text-[#8a6a45]">Saved locally and reused for titles, captions, intro, outro, and preview watermark.</div>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={resetBrandKit}
+                  className="h-8 rounded-xl border-[#2a1a08] bg-[#1a100a] px-2 text-[11px] text-[#c07040] hover:bg-[#fa6a00]/10"
+                >
+                  <RotateCcw className="mr-1 h-3.5 w-3.5" />
+                  Reset
+                </Button>
+              </div>
+
+              <div className="grid gap-3 lg:grid-cols-[120px_1fr]">
+                <div className="rounded-2xl border border-dashed border-[#3a2818] bg-[#0d0905] p-3">
+                  {brandKit.logoUrl ? (
+                    <div className="space-y-2">
+                      <img src={brandKit.logoUrl} alt="Brand logo" className="h-20 w-full rounded-xl object-contain" />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => updateBrandKit({ logoUrl: '' })}
+                        className="h-8 w-full rounded-xl border-red-500/30 bg-red-500/10 text-[11px] text-red-200"
+                      >
+                        <X className="mr-1 h-3.5 w-3.5" />
+                        Remove
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex h-28 flex-col items-center justify-center text-center text-[11px] text-[#8a6a45]">
+                      <ImageIcon className="mb-2 h-6 w-6 text-[#fa6a00]" />
+                      Logo watermark
+                    </div>
+                  )}
+                  <label className="mt-2 flex h-8 cursor-pointer items-center justify-center rounded-xl border border-[#2a1a08] bg-[#1a100a] text-[11px] font-semibold text-[#c07040] hover:bg-[#fa6a00]/10">
+                    <Upload className="mr-1 h-3.5 w-3.5" />
+                    Upload
+                    <input type="file" accept="image/*" onChange={uploadBrandLogo} className="sr-only" />
+                  </label>
+                </div>
+
+                <div className="grid gap-3">
+                  <Input
+                    value={brandKit.name}
+                    onChange={(event) => updateBrandKit({ name: event.target.value })}
+                    className="h-9 rounded-xl border-[#2a1a08] bg-[#1a100a] text-xs text-white focus-visible:border-[#fa6a00]"
+                    placeholder="Brand name"
+                  />
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {([
+                      ['primaryColor', 'Text'],
+                      ['secondaryColor', 'Panels'],
+                      ['accentColor', 'Accent'],
+                    ] as const).map(([key, label]) => (
+                      <label key={key} className="rounded-xl border border-[#2a1a08] bg-[#0d0905] p-2 text-[10px] uppercase tracking-widest text-[#8a6a45]">
+                        {label}
+                        <input
+                          type="color"
+                          value={brandKit[key]}
+                          onChange={(event) => updateBrandKit({ [key]: event.target.value })}
+                          className="mt-2 h-8 w-full cursor-pointer rounded-lg border-0 bg-transparent p-0"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <Input
+                      value={brandKit.headingFontFamily}
+                      onChange={(event) => updateBrandKit({ headingFontFamily: event.target.value })}
+                      className="h-9 rounded-xl border-[#2a1a08] bg-[#1a100a] text-xs text-white focus-visible:border-[#fa6a00]"
+                      placeholder="Heading font"
+                    />
+                    <Input
+                      value={brandKit.fontFamily}
+                      onChange={(event) => updateBrandKit({ fontFamily: event.target.value })}
+                      className="h-9 rounded-xl border-[#2a1a08] bg-[#1a100a] text-xs text-white focus-visible:border-[#fa6a00]"
+                      placeholder="Caption/body font"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-[#2a2118] bg-[#1a100a]/60 p-3">
+              <div className="mb-3 flex items-center justify-between text-[11px] text-[#8a6a45]">
+                <span>Caption size</span>
+                <span className="font-mono text-[#fa6a00]">{brandKit.captionFontSize}px</span>
+              </div>
+              <Slider value={[brandKit.captionFontSize]} min={18} max={56} step={1} onValueChange={([value]) => updateBrandKit({ captionFontSize: value })} />
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                {(['top', 'middle', 'bottom'] as const).map((position) => (
+                  <Button
+                    key={position}
+                    type="button"
+                    variant="outline"
+                    onClick={() => updateBrandKit({ captionPosition: position })}
+                    className={`h-8 rounded-xl text-[11px] ${
+                      brandKit.captionPosition === position ? 'border-[#fa6a00]/40 bg-[#fa6a00]/15 text-[#fa6a00]' : 'border-[#2a1a08] bg-[#1a100a] text-[#c07040]'
+                    }`}
+                  >
+                    {position}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Textarea
+                value={brandKit.introText}
+                onChange={(event) => updateBrandKit({ introText: event.target.value })}
+                className="min-h-20 rounded-2xl border-[#2a1a08] bg-[#1a100a] text-xs text-white focus-visible:border-[#fa6a00]"
+                placeholder="Intro text"
+              />
+              <Textarea
+                value={brandKit.outroText}
+                onChange={(event) => updateBrandKit({ outroText: event.target.value })}
+                className="min-h-20 rounded-2xl border-[#2a1a08] bg-[#1a100a] text-xs text-white focus-visible:border-[#fa6a00]"
+                placeholder="Outro text"
+              />
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-3">
+              <ActionButton icon={<Sparkles className="h-4 w-4" />} label="Add Intro" onClick={() => addBrandIntroOutro('intro')} tone="primary" />
+              <ActionButton icon={<Sparkles className="h-4 w-4" />} label="Add Outro" onClick={() => addBrandIntroOutro('outro')} tone="primary" />
+              <ActionButton icon={<Wand2 className="h-4 w-4" />} label="Apply to Text" onClick={applyBrandToExistingText} disabled={!textOverlayCount} />
+            </div>
+
+            <div className="rounded-2xl border border-[#2a2118] bg-[#0d0905] p-3">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <span className="text-xs font-bold text-white">Watermark</span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => updateBrandKit({ watermarkEnabled: !brandKit.watermarkEnabled })}
+                  className={`h-8 rounded-xl px-3 text-[11px] ${
+                    brandKit.watermarkEnabled ? 'border-[#fa6a00]/40 bg-[#fa6a00]/15 text-[#fa6a00]' : 'border-[#2a1a08] bg-[#1a100a] text-[#c07040]'
+                  }`}
+                >
+                  {brandKit.watermarkEnabled ? 'Enabled' : 'Disabled'}
+                </Button>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-4">
+                {(['top-left', 'top-right', 'bottom-left', 'bottom-right'] as const).map((position) => (
+                  <Button
+                    key={position}
+                    type="button"
+                    variant="outline"
+                    onClick={() => updateBrandKit({ watermarkPosition: position })}
+                    className={`h-8 rounded-xl text-[10px] ${
+                      brandKit.watermarkPosition === position ? 'border-[#fa6a00]/40 bg-[#fa6a00]/15 text-[#fa6a00]' : 'border-[#2a1a08] bg-[#1a100a] text-[#c07040]'
+                    }`}
+                  >
+                    {position.replace('-', ' ')}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="look" className="m-0 space-y-4 p-3 sm:p-4">

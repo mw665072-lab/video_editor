@@ -8,7 +8,7 @@ import React, {
   useMemo,
   memo,
 } from 'react';
-import { useEditorStore, type ClipEffects, type ColorGrading, type TextOverlay } from '@/lib/editor-store';
+import { useEditorStore, type BrandKit, type ClipEffects, type ColorGrading, type TextOverlay } from '@/lib/editor-store';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -70,6 +70,20 @@ function formatTimeCode(seconds: number, fps: number = DEFAULT_FPS): string {
     `${sec.toString().padStart(2, '0')}.` +
     `${frames.toString().padStart(2, '0')}`
   );
+}
+
+function getWatermarkPositionClass(position: BrandKit['watermarkPosition']) {
+  switch (position) {
+    case 'top-left':
+      return 'left-4 top-4';
+    case 'bottom-left':
+      return 'bottom-4 left-4';
+    case 'bottom-right':
+      return 'bottom-4 right-4';
+    case 'top-right':
+    default:
+      return 'right-4 top-4';
+  }
 }
 
 /** Build a CSS filter string combining ClipEffects + ColorGrading. Pure function. */
@@ -545,6 +559,7 @@ const VideoPreview: React.FC = () => {
   const playbackSpeed = useEditorStore((s) => s.playbackSpeed);
   const totalDuration = useEditorStore((s) => s.totalDuration);
   const tracks = useEditorStore((s) => s.tracks);
+  const brandKit = useEditorStore((s) => s.brandKit);
 
   // Actions (stable references from zustand — will not cause re-renders)
   const setCurrentTime = useEditorStore((s) => s.setCurrentTime);
@@ -825,9 +840,18 @@ const VideoPreview: React.FC = () => {
     const video = videoRef.current;
     if (!video) return;
 
-    const onCanPlay = () => { setVideoLoading(false); setVideoReady(true); setVideoError(false); setVideoRetryCount(0); };
+    const markReady = () => {
+      setVideoLoading(false);
+      setVideoReady(true);
+      setVideoError(false);
+      setVideoRetryCount(0);
+      renderCanvas();
+    };
+    const onCanPlay = markReady;
+    const onLoadedData = markReady;
     const onWaiting = () => setVideoLoading(true);
-    const onPlaying = () => { setVideoLoading(false); setVideoReady(true); setVideoError(false); };
+    const onSeeked = () => renderCanvas();
+    const onPlaying = markReady;
     const onError = () => {
       setVideoLoading(false);
       setVideoError(true);
@@ -850,17 +874,21 @@ const VideoPreview: React.FC = () => {
       });
     };
 
+    video.addEventListener('loadeddata', onLoadedData);
     video.addEventListener('canplay', onCanPlay);
     video.addEventListener('waiting', onWaiting);
+    video.addEventListener('seeked', onSeeked);
     video.addEventListener('playing', onPlaying);
     video.addEventListener('error', onError);
     return () => {
+      video.removeEventListener('loadeddata', onLoadedData);
       video.removeEventListener('canplay', onCanPlay);
       video.removeEventListener('waiting', onWaiting);
+      video.removeEventListener('seeked', onSeeked);
       video.removeEventListener('playing', onPlaying);
       video.removeEventListener('error', onError);
     };
-  }, [activeClipId]);
+  }, [activeClipId, renderCanvas]);
 
   useEffect(() => () => { if (retryTimerRef.current) clearTimeout(retryTimerRef.current); }, []);
 
@@ -877,23 +905,32 @@ const VideoPreview: React.FC = () => {
     const video = videoRef.current;
     if (!video || !activeClip || !media || videoError || !videoReady || isPlaying) return;
     const clipTime = currentTime - activeClip.startTime + activeClip.trimStart;
-    if (Math.abs(video.currentTime - clipTime) > 0.1) video.currentTime = clipTime;
-  }, [currentTime, activeClip, media, isPlaying, videoError, videoReady]);
+    if (Math.abs(video.currentTime - clipTime) > 0.1) {
+      video.currentTime = clipTime;
+    } else {
+      renderCanvas();
+    }
+  }, [currentTime, activeClip, media, isPlaying, videoError, videoReady, renderCanvas]);
 
   // ── Play/pause + rate sync ──
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    if (!activeClip || videoError || !videoReady) { video.pause(); return; }
+    if (!activeClip || videoError || !videoReady) {
+      video.pause();
+      return;
+    }
     if (isPlaying) {
       const clipTime = currentTime - activeClip.startTime + activeClip.trimStart;
       if (Math.abs(video.currentTime - clipTime) > 0.1) video.currentTime = clipTime;
       video.playbackRate = playbackSpeed * clipSpeed;
-      video.play().catch(() => { });
+      video.play().catch(() => {
+        setIsPlaying(false);
+      });
     } else {
       video.pause();
     }
-  }, [isPlaying, activeClip, videoError, videoReady, playbackSpeed, clipSpeed]); // intentionally excludes currentTime
+  }, [isPlaying, activeClip, videoError, videoReady, playbackSpeed, clipSpeed, setIsPlaying]); // intentionally excludes currentTime to avoid re-seeking during playback
 
   // Keep playback rate synced mid-play without seeking
   useEffect(() => {
@@ -1050,6 +1087,14 @@ const VideoPreview: React.FC = () => {
           <div className="absolute inset-0 z-10 overflow-hidden pointer-events-none">
             <TextOverlayRenderer overlays={textOverlays} currentTime={currentTime} />
           </div>
+        )}
+
+        {brandKit.logoUrl && brandKit.watermarkEnabled && showVideo && (
+          <img
+            src={brandKit.logoUrl}
+            alt={`${brandKit.name || 'Brand'} watermark`}
+            className={`pointer-events-none absolute z-10 max-h-12 max-w-28 rounded-lg object-contain opacity-85 drop-shadow-[0_8px_20px_rgba(0,0,0,0.65)] ${getWatermarkPositionClass(brandKit.watermarkPosition)}`}
+          />
         )}
 
         {/* Buffering indicator */}

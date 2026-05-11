@@ -12,7 +12,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     getProfile()
-      .then((data) => setUser(data.user))
+      .then((data) => {
+        if (data.user?.role === 'ADMIN' || data.user?.isAdmin) {
+          window.location.href = '/admin'
+          return
+        }
+        setUser(data.user)
+      })
       .catch((err) => setError(err.message))
   }, [])
 

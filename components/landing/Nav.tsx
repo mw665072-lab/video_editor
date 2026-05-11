@@ -4,10 +4,17 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { S } from "./landingStyles";
+import { CmsNavItem, getPublicCms } from "@/lib/api";
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [siteName, setSiteName] = useState("CLIPAI");
+  const [links, setLinks] = useState<CmsNavItem[]>([
+    { id: "features", label: "Features", href: "/#features", location: "navbar", audience: "public", icon: "", order: 10, isActive: true, external: false },
+    { id: "how", label: "How it works", href: "/#howitworks", location: "navbar", audience: "public", icon: "", order: 20, isActive: true, external: false },
+    { id: "pricing", label: "Pricing", href: "/price", location: "navbar", audience: "public", icon: "", order: 30, isActive: true, external: false },
+  ]);
   const router = useRouter();
 
   useEffect(() => {
@@ -16,12 +23,26 @@ export default function Nav() {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  const links = ["Features", "How it works", "Pricing"];
+  useEffect(() => {
+    let cancelled = false;
+    getPublicCms()
+      .then((cms) => {
+        if (cancelled) return;
+        setSiteName(cms.settings.logoText || cms.settings.siteName || "CLIPAI");
+        if (cms.nav.navbar.length) setLinks(cms.nav.navbar.filter((item) => item.isActive));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  const getHref = (label: string) => {
-    if (label === "Pricing") return "/price";
-    const anchor = label.toLowerCase().replace(/ /g, "");
-    return `/#${anchor}`;
+  const navigate = (item: CmsNavItem) => {
+    if (item.external) {
+      window.open(item.href, "_blank", "noopener,noreferrer");
+      return;
+    }
+    router.push(item.href);
   };
 
   return (
@@ -35,23 +56,22 @@ export default function Nav() {
             <polygon points="5 3 19 12 5 21 5 3" />
           </svg>
         </div>
-        CLIPAI
+        {siteName}
       </a>
 
       <ul style={S.navLinks} className="hidden md:flex">
-        {links.map((l) => (
-          <li key={l}>
+        {links.map((item) => (
+          <li key={`${item.location}-${item.id}-${item.href}`}>
             <a
-              href={getHref(l)}
+              href={item.href}
               style={S.navLink}
               onClick={(e) => {
                 e.preventDefault();
-                const href = getHref(l);
-                router.push(href);
+                navigate(item);
               }}
               onMouseEnter={(e) => (e.currentTarget.style.color = "#FB923C")}
               onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
-            >{l}</a>
+            >{item.label}</a>
           </li>
         ))}
       </ul>
@@ -83,11 +103,15 @@ export default function Nav() {
           border: "1px solid rgba(255,255,255,0.12)", padding: 12,
           boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
         }}>
-          {links.map((l) => (
-            <a key={l} href={`#${l.toLowerCase().replace(/ /g, "")}`}
-              onClick={() => setMobileOpen(false)}
+          {links.map((item) => (
+            <a key={`${item.location}-${item.id}-${item.href}`} href={item.href}
+              onClick={(e) => {
+                e.preventDefault();
+                setMobileOpen(false);
+                navigate(item);
+              }}
               style={{ display: "block", padding: "10px 16px", fontSize: 14, color: "rgba(255,255,255,0.8)", borderRadius: 10, textDecoration: "none" }}
-            >{l}</a>
+            >{item.label}</a>
           ))}
         </div>
       )}

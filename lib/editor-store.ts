@@ -98,6 +98,31 @@ export interface SubtitleEntry {
 }
 
 // ============================================================
+// Types — Brand Kit
+// ============================================================
+
+export type CaptionStylePreset = 'creator' | 'podcast' | 'minimal';
+export type BrandWatermarkPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+export type BrandCaptionPosition = 'top' | 'middle' | 'bottom';
+
+export interface BrandKit {
+  name: string;
+  logoUrl: string;
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  fontFamily: string;
+  headingFontFamily: string;
+  captionStyle: CaptionStylePreset;
+  captionFontSize: number;
+  captionPosition: BrandCaptionPosition;
+  introText: string;
+  outroText: string;
+  watermarkEnabled: boolean;
+  watermarkPosition: BrandWatermarkPosition;
+}
+
+// ============================================================
 // Types — Keyframes
 // ============================================================
 
@@ -197,6 +222,15 @@ export interface EditorState {
 
   // Subtitles
   subtitles: SubtitleEntry[];
+
+  // Brand kit
+  brandKit: BrandKit;
+
+  // ============================================================
+  // Brand Kit Actions
+  // ============================================================
+  updateBrandKit: (updates: Partial<BrandKit>) => void;
+  resetBrandKit: () => void;
 
   // ============================================================
   // Media Actions
@@ -328,6 +362,45 @@ const DEFAULT_TRANSITION: ClipTransition = {
   type: 'none',
   duration: 0.5,
 };
+
+const BRAND_KIT_STORAGE_KEY = 'visual-editor-brand-kit-v1';
+
+export const DEFAULT_BRAND_KIT: BrandKit = {
+  name: 'Creator Brand',
+  logoUrl: '',
+  primaryColor: '#ffffff',
+  secondaryColor: '#1a100a',
+  accentColor: '#fa6a00',
+  fontFamily: 'Inter',
+  headingFontFamily: 'Inter',
+  captionStyle: 'creator',
+  captionFontSize: 34,
+  captionPosition: 'bottom',
+  introText: 'Welcome back',
+  outroText: 'Follow for more',
+  watermarkEnabled: true,
+  watermarkPosition: 'top-right',
+};
+
+function loadBrandKit(): BrandKit {
+  if (typeof window === 'undefined') return DEFAULT_BRAND_KIT;
+  try {
+    const raw = window.localStorage.getItem(BRAND_KIT_STORAGE_KEY);
+    if (!raw) return DEFAULT_BRAND_KIT;
+    return { ...DEFAULT_BRAND_KIT, ...JSON.parse(raw) };
+  } catch {
+    return DEFAULT_BRAND_KIT;
+  }
+}
+
+function persistBrandKit(brandKit: BrandKit) {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(BRAND_KIT_STORAGE_KEY, JSON.stringify(brandKit));
+  } catch {
+    // Local storage can fail in private mode or when quota is exceeded.
+  }
+}
 
 // ============================================================
 // Helpers — Colors & Playback
@@ -674,6 +747,35 @@ function createClip(
   };
 }
 
+function findFirstVisibleVideoClip(tracks: TimelineTrack[]): TimelineClip | null {
+  let firstClip: TimelineClip | null = null;
+
+  for (const track of tracks) {
+    if (track.type !== 'video' || !track.visible) continue;
+    for (const clip of track.clips) {
+      if (!firstClip || clip.startTime < firstClip.startTime) {
+        firstClip = clip;
+      }
+    }
+  }
+
+  return firstClip;
+}
+
+function findVisibleVideoClipAtTime(tracks: TimelineTrack[], time: number): TimelineClip | null {
+  for (const track of tracks) {
+    if (track.type !== 'video' || !track.visible) continue;
+    for (let i = track.clips.length - 1; i >= 0; i--) {
+      const clip = track.clips[i];
+      if (time >= clip.startTime && time < clip.startTime + clip.duration) {
+        return clip;
+      }
+    }
+  }
+
+  return null;
+}
+
 // ============================================================
 // Store
 // ============================================================
@@ -741,6 +843,25 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   // New state fields
   textOverlays: [],
   subtitles: [],
+  brandKit: loadBrandKit(),
+
+  // ============================================================
+  // Brand Kit Actions
+  // ============================================================
+
+  updateBrandKit: (updates: Partial<BrandKit>) => {
+    set((state) => {
+      const brandKit = { ...state.brandKit, ...updates };
+      persistBrandKit(brandKit);
+      return { brandKit };
+    });
+  },
+
+  resetBrandKit: () => {
+    const brandKit = { ...DEFAULT_BRAND_KIT };
+    persistBrandKit(brandKit);
+    set({ brandKit });
+  },
 
   // ============================================================
   // Media Actions
@@ -928,6 +1049,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       tracks: state.tracks.map((t, i) =>
         i === trackIndex ? { ...t, clips: [...t.clips, newClip] } : t
       ),
+      selectedClipIds: [newClip.id],
+      currentTime: media.type === 'video' || media.type === 'image' ? clipStartTime : state.currentTime,
+      isPlaying: false,
     }));
 
     get().recalculateDuration();
@@ -1414,7 +1538,27 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     });
   },
 
-  togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
+  togglePlay: () => set((state) => {
+    if (state.isPlaying) {
+      return { isPlaying: false };
+    }
+
+    const activeVideoClip = findVisibleVideoClipAtTime(state.tracks, state.currentTime);
+    if (activeVideoClip) {
+      return { isPlaying: true };
+    }
+
+    const firstVideoClip = findFirstVisibleVideoClip(state.tracks);
+    if (firstVideoClip) {
+      return {
+        currentTime: firstVideoClip.startTime,
+        selectedClipIds: [firstVideoClip.id],
+        isPlaying: true,
+      };
+    }
+
+    return { isPlaying: false };
+  }),
   setIsPlaying: (playing: boolean) => set({ isPlaying: playing }),
 
   setPlaybackSpeed: (speed: number) => {
@@ -1495,19 +1639,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   // ============================================================
 
   getActiveVideoAtTime: (time: number) => {
-    const { tracks } = get();
-    for (const track of tracks) {
-      // For video tracks: only skip if not visible (muted only affects audio, not display)
-      // For audio tracks: skip entirely (audio clips don't show in video preview)
-      if (track.type !== 'video' || !track.visible) continue;
-      for (let i = track.clips.length - 1; i >= 0; i--) {
-        const clip = track.clips[i];
-        if (time >= clip.startTime && time < clip.startTime + clip.duration) {
-          return clip;
-        }
-      }
-    }
-    return null;
+    return findVisibleVideoClipAtTime(get().tracks, time);
   },
 
   recalculateDuration: () => {

@@ -1,6 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { ErrorBoundary } from '@/components/error/ErrorBoundary'
@@ -48,6 +49,20 @@ export default function VisualEditorPage() {
         <div className="h-full overflow-hidden rounded-3xl border border-slate-800   shadow-[0_20px_45px_rgba(3,17,37,.55)] backdrop-blur-xl">
           <VisualEditor />
         </div>
+        <section className="mt-6 rounded-3xl border border-[#2a2118] bg-[#13100c] p-5 text-white shadow-[0_16px_50px_rgba(0,0,0,0.35)]">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#fa6a00]">Blogs</p>
+              <h2 className="mt-2 text-2xl font-black">Learn editing workflows while you build</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#c07040]">
+                Browse creator guides, platform updates, thumbnail ideas, caption tips, and production playbooks.
+              </p>
+            </div>
+            <Link href="/blogs" className="rounded-2xl bg-[#fa6a00] px-5 py-3 text-center text-sm font-black text-white shadow-lg shadow-[#fa6a00]/20">
+              View all blogs
+            </Link>
+          </div>
+        </section>
         <Toaster position="top-right" />
       </PageShell>
     </ErrorBoundary>

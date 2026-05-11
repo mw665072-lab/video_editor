@@ -208,6 +208,7 @@ const PropertiesPanel: React.FC = () => {
     tracks,
     selectedClipIds,
     getMediaFile,
+    brandKit,
     textOverlays,
     updateClipEffects,
     updateClipColorGrading,
@@ -283,10 +284,10 @@ const PropertiesPanel: React.FC = () => {
       x: 0.5,
       y: 0.5,
       fontSize: 24,
-      fontFamily: 'Inter',
+      fontFamily: brandKit.fontFamily,
       fontWeight: '700',
-      color: '#ffffff',
-      backgroundColor: '#000000',
+      color: brandKit.primaryColor,
+      backgroundColor: brandKit.secondaryColor,
       backgroundOpacity: 0,
       textAlign: 'center',
       animation: 'none',
@@ -304,7 +305,7 @@ const PropertiesPanel: React.FC = () => {
     });
     // Select the new overlay for expansion
     setExpandedTextOverlay(newId);
-  }, [selectedClip, addTextOverlay]);
+  }, [addTextOverlay, brandKit, selectedClip]);
 
   // Filter text overlays for this clip
   const clipTextOverlays = useMemo(() => {

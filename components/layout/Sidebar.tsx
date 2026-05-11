@@ -1,24 +1,83 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { getProfile, logout } from '@/lib/api'
+import { CmsNavItem, getProfile, getPublicCms, logout } from '@/lib/api'
 import { usePathname } from 'next/navigation'
-import { Menu, X, LayoutDashboard, Scissors, Layers, User, CreditCard, LogOut, Zap } from 'lucide-react'
+import {
+  Menu,
+  X,
+  LayoutDashboard,
+  Scissors,
+  Layers,
+  User,
+  CreditCard,
+  LogOut,
+  Zap,
+  BookOpen,
+  BarChart3,
+  PenSquare,
+  Settings,
+  FileText,
+  Sparkles,
+} from 'lucide-react'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/editor', label: 'Clip Editor', icon: Scissors },
   { href: '/visual-editor', label: 'Visual Editor', icon: Layers },
+  { href: '/blogs', label: 'Blogs', icon: BookOpen },
   { href: '/auth/profile', label: 'Profile', icon: User },
   { href: '/billing', label: 'Billing', icon: CreditCard },
 ]
 
+const adminNavItems = [
+  { href: '/admin', label: 'Admin Stats', icon: BarChart3 },
+  { href: '/admin/blogs', label: 'Create Blogs', icon: PenSquare },
+  { href: '/admin/cms', label: 'CMS Builder', icon: Settings },
+  { href: '/blogs', label: 'Public Blogs', icon: BookOpen },
+]
+
+const iconMap: Record<string, any> = {
+  'layout-dashboard': LayoutDashboard,
+  scissors: Scissors,
+  layers: Layers,
+  user: User,
+  'credit-card': CreditCard,
+  'book-open': BookOpen,
+  'bar-chart-3': BarChart3,
+  'pen-square': PenSquare,
+  settings: Settings,
+  'file-text': FileText,
+  sparkles: Sparkles,
+}
+
+const normalizeCmsItems = (items: CmsNavItem[]) =>
+  items
+    .filter((item) => item.isActive)
+    .sort((a, b) => a.order - b.order)
+    .map((item) => ({ href: item.href, label: item.label, icon: iconMap[item.icon] || FileText, external: item.external }))
+
 export function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [cmsUserItems, setCmsUserItems] = useState(navItems)
+  const [cmsAdminItems, setCmsAdminItems] = useState(adminNavItems)
   const pathname = usePathname()
   const router = useRouter()
+  const isAdmin = user?.role === 'ADMIN' || user?.isAdmin
+  const items = isAdmin ? cmsAdminItems : cmsUserItems
+
+  useEffect(() => {
+    getProfile().then((data) => setUser(data.user)).catch(() => setUser(null))
+    getPublicCms()
+      .then((cms) => {
+        if (cms.nav.sidebarUser.length) setCmsUserItems(normalizeCmsItems(cms.nav.sidebarUser))
+        if (cms.nav.sidebarAdmin.length) setCmsAdminItems(normalizeCmsItems(cms.nav.sidebarAdmin))
+      })
+      .catch(() => undefined)
+  }, [])
 
   const handleLogout = async () => {
     await logout()
@@ -47,11 +106,11 @@ export function Sidebar() {
                 boxShadow: '0 2px 10px rgba(250,106,0,0.35)',
               }}
             >
-              U
+              {user?.name?.charAt(0)?.toUpperCase() || (isAdmin ? 'A' : 'U')}
             </span>
             <div>
-              <p className="text-sm font-bold text-white/90">Workspace</p>
-              <p className="text-[11px]" style={{ color: '#6b4e2e' }}>Tap menu</p>
+              <p className="text-sm font-bold text-white/90">{isAdmin ? 'Admin Panel' : 'Workspace'}</p>
+              <p className="text-[11px]" style={{ color: '#6b4e2e' }}>{isAdmin ? 'Platform control' : 'Tap menu'}</p>
             </div>
           </div>
           <button
@@ -101,21 +160,24 @@ export function Sidebar() {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              Your Workspace
+              {isAdmin ? 'Admin Console' : 'Your Workspace'}
             </p>
-            <p className="text-xs font-medium" style={{ color: '#4a3020' }}>Quick access</p>
+            <p className="text-xs font-medium" style={{ color: '#4a3020' }}>{isAdmin ? 'Stats, users, content' : 'Quick access'}</p>
           </div>
         </div>
 
         {/* Nav items */}
         <nav className="flex flex-col gap-1.5">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href
+          {items.map((item) => {
+            const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
             const Icon = item.icon
+            const external = 'external' in item && item.external
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                target={external ? '_blank' : undefined}
+                rel={external ? 'noopener noreferrer' : undefined}
                 className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-200"
                 style={
                   isActive
@@ -170,12 +232,20 @@ export function Sidebar() {
           <div className="flex items-center gap-1.5 mb-1.5">
             <Zap size={11} style={{ color: '#fa6a00' }} />
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: '#fa6a00' }}>
-              Tips
+              {isAdmin ? 'Admin' : 'Tips'}
             </p>
           </div>
           <p className="text-xs leading-relaxed" style={{ color: '#4a3020' }}>
-            Use <span className="font-semibold" style={{ color: '#7a5030' }}>Clip Editor</span> for trimming and exporting, or{' '}
-            <span className="font-semibold" style={{ color: '#7a5030' }}>Visual Editor</span> for filters, audio, and captions.
+            {isAdmin ? (
+              <>
+                Review platform usage, publish blog content, and track creator engagement from admin views.
+              </>
+            ) : (
+              <>
+                Use <span className="font-semibold" style={{ color: '#7a5030' }}>Clip Editor</span> for trimming and exporting, or{' '}
+                <span className="font-semibold" style={{ color: '#7a5030' }}>Visual Editor</span> for filters, audio, and captions.
+              </>
+            )}
           </p>
         </div>
 

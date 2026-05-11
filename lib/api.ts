@@ -381,6 +381,279 @@ export async function verifyEmail(token: string) {
   return response.json()
 }
 
+export interface BlogPost {
+  id: string
+  title: string
+  slug: string
+  excerpt: string
+  contentHtml: string
+  coverImageUrl: string
+  category: string
+  tags: string[]
+  status: 'draft' | 'published' | 'archived'
+  authorName: string
+  likeCount: number
+  dislikeCount: number
+  commentCount: number
+  userReaction: 'like' | 'dislike' | null
+  comments: Array<{ id: string; userName: string; body: string; createdAt: string }>
+  publishedAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface BlogPayload {
+  title: string
+  slug?: string
+  excerpt: string
+  contentHtml: string
+  coverImageUrl?: string
+  coverImagePublicId?: string
+  category: string
+  tags: string[]
+  status: 'draft' | 'published' | 'archived'
+}
+
+async function parseApiResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(text || `Request failed with ${response.status}`)
+  }
+  return response.json()
+}
+
+export async function listBlogs(params: { category?: string; search?: string; page?: number; limit?: number } = {}) {
+  const query = new URLSearchParams()
+  if (params.category) query.set('category', params.category)
+  if (params.search) query.set('search', params.search)
+  if (params.page) query.set('page', String(params.page))
+  if (params.limit) query.set('limit', String(params.limit))
+  const response = await fetch(`${BASE_URL}/api/blogs?${query.toString()}`, { cache: 'no-store' })
+  return parseApiResponse<{ posts: BlogPost[]; total: number; page: number; pages: number }>(response)
+}
+
+export async function listBlogCategories() {
+  const response = await fetch(`${BASE_URL}/api/blogs/categories`, { cache: 'no-store' })
+  return parseApiResponse<{ categories: string[] }>(response)
+}
+
+export async function getBlog(slug: string) {
+  const response = await requestWithAuth(`/api/blogs/${encodeURIComponent(slug)}`, { method: 'GET' })
+  return parseApiResponse<{ post: BlogPost }>(response)
+}
+
+export async function reactToBlog(id: string, reaction: 'like' | 'dislike' | 'none') {
+  const response = await requestWithAuth(`/api/blogs/${encodeURIComponent(id)}/reaction`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reaction }),
+  })
+  return parseApiResponse<{ post: BlogPost }>(response)
+}
+
+export async function addBlogComment(id: string, body: string) {
+  const response = await requestWithAuth(`/api/blogs/${encodeURIComponent(id)}/comments`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ body }),
+  })
+  return parseApiResponse<{ post: BlogPost }>(response)
+}
+
+export async function listAdminBlogs() {
+  const response = await requestWithAuth('/api/admin/blogs', { method: 'GET' })
+  return parseApiResponse<{ posts: BlogPost[] }>(response)
+}
+
+export async function createAdminBlog(payload: BlogPayload) {
+  const response = await requestWithAuth('/api/admin/blogs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return parseApiResponse<{ post: BlogPost }>(response)
+}
+
+export async function updateAdminBlog(id: string, payload: BlogPayload) {
+  const response = await requestWithAuth(`/api/admin/blogs/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return parseApiResponse<{ post: BlogPost }>(response)
+}
+
+export async function deleteAdminBlog(id: string) {
+  const response = await requestWithAuth(`/api/admin/blogs/${encodeURIComponent(id)}`, { method: 'DELETE' })
+  return parseApiResponse<{ success: boolean }>(response)
+}
+
+export async function uploadBlogImage(dataUrl: string) {
+  const response = await requestWithAuth('/api/admin/blogs/upload-image', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dataUrl }),
+  })
+  return parseApiResponse<{ image: { secureUrl: string; publicId: string; width?: number; height?: number } }>(response)
+}
+
+export interface AdminStats {
+  totalUsers: number
+  adminUsers: number
+  totalExports: number
+  clipsThisMonth: number
+  downloadsThisMonth: number
+  comments: number
+  likes: number
+  dislikes: number
+  planBreakdown: Record<string, number>
+  exportsByStatus: Record<string, number>
+  blogStatus: Record<string, number>
+  recentUsers: Array<{ id: string; name: string; email: string; role: string; subscriptionPlan: string; createdAt: string }>
+  recentBlogs: Array<{ id: string; title: string; slug: string; status: string; category: string; updatedAt: string }>
+}
+
+export async function getAdminStats() {
+  const response = await requestWithAuth('/api/admin/stats', { method: 'GET' })
+  return parseApiResponse<{ stats: AdminStats }>(response)
+}
+
+export type CmsNavLocation = 'navbar' | 'footer' | 'sidebar_user' | 'sidebar_admin'
+export type CmsAudience = 'public' | 'user' | 'admin' | 'all'
+export type CmsPageStatus = 'draft' | 'published' | 'archived'
+
+export interface CmsSettings {
+  siteName: string
+  logoText: string
+  tagline: string
+  headerTitle: string
+  headerSubtitle: string
+  footerDescription: string
+  footerCopyright: string
+  socialLinks: Array<{ label: string; href: string; icon?: string }>
+}
+
+export interface CmsNavItem {
+  id: string
+  label: string
+  href: string
+  location: CmsNavLocation
+  audience: CmsAudience
+  icon: string
+  order: number
+  isActive: boolean
+  external: boolean
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface CmsPage {
+  id: string
+  title: string
+  slug: string
+  excerpt: string
+  contentHtml: string
+  status: CmsPageStatus
+  metaTitle: string
+  metaDescription: string
+  showInNavbar: boolean
+  showInFooter: boolean
+  authorName: string
+  publishedAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface PublicCms {
+  settings: CmsSettings
+  nav: {
+    navbar: CmsNavItem[]
+    footer: CmsNavItem[]
+    sidebarUser: CmsNavItem[]
+    sidebarAdmin: CmsNavItem[]
+  }
+  pages: CmsPage[]
+}
+
+export interface AdminCms {
+  settings: CmsSettings
+  navItems: CmsNavItem[]
+  pages: CmsPage[]
+}
+
+export type CmsNavPayload = Omit<CmsNavItem, 'id' | 'createdAt' | 'updatedAt'>
+export type CmsPagePayload = Omit<CmsPage, 'id' | 'authorName' | 'publishedAt' | 'createdAt' | 'updatedAt'>
+
+export async function getPublicCms() {
+  const response = await fetch(`${BASE_URL}/api/cms/public`, { cache: 'no-store' })
+  return parseApiResponse<PublicCms>(response)
+}
+
+export async function getCmsPage(slug: string) {
+  const response = await fetch(`${BASE_URL}/api/cms/pages/${encodeURIComponent(slug)}`, { cache: 'no-store' })
+  return parseApiResponse<{ page: CmsPage }>(response)
+}
+
+export async function getAdminCms() {
+  const response = await requestWithAuth('/api/admin/cms', { method: 'GET' })
+  return parseApiResponse<AdminCms>(response)
+}
+
+export async function updateCmsSettings(payload: CmsSettings) {
+  const response = await requestWithAuth('/api/admin/cms/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return parseApiResponse<{ settings: CmsSettings }>(response)
+}
+
+export async function createCmsNavItem(payload: CmsNavPayload) {
+  const response = await requestWithAuth('/api/admin/cms/nav', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return parseApiResponse<{ item: CmsNavItem }>(response)
+}
+
+export async function updateCmsNavItem(id: string, payload: CmsNavPayload) {
+  const response = await requestWithAuth(`/api/admin/cms/nav/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return parseApiResponse<{ item: CmsNavItem }>(response)
+}
+
+export async function deleteCmsNavItem(id: string) {
+  const response = await requestWithAuth(`/api/admin/cms/nav/${encodeURIComponent(id)}`, { method: 'DELETE' })
+  return parseApiResponse<{ success: boolean }>(response)
+}
+
+export async function createCmsPage(payload: CmsPagePayload) {
+  const response = await requestWithAuth('/api/admin/cms/pages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return parseApiResponse<{ page: CmsPage }>(response)
+}
+
+export async function updateCmsPage(id: string, payload: CmsPagePayload) {
+  const response = await requestWithAuth(`/api/admin/cms/pages/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return parseApiResponse<{ page: CmsPage }>(response)
+}
+
+export async function deleteCmsPage(id: string) {
+  const response = await requestWithAuth(`/api/admin/cms/pages/${encodeURIComponent(id)}`, { method: 'DELETE' })
+  return parseApiResponse<{ success: boolean }>(response)
+}
+
 export async function createSubscriptionCheckout(priceId: string) {
   const response = await requestWithAuth('/api/subscription/checkout', {
     method: 'POST',
