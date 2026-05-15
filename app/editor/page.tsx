@@ -85,7 +85,7 @@ export default function EditorPage() {
 
   return (
     <ErrorBoundary>
-      <PageShell title="Video Editor" subtitle="Create, trim, and export video clips">
+      <PageShell title="" subtitle="">
         <div className="h-full overflow-hidden rounded-3xl border border-slate-800  shadow-[0_20px_45px_rgba(3,17,37,.55)] backdrop-blur-xl">
           <VideoEditor />
         </div>

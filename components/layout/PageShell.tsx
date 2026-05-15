@@ -12,6 +12,8 @@ interface PageShellProps {
 }
 
 export function PageShell({ title, subtitle, actions, children }: PageShellProps) {
+  const hasHeader = Boolean(title || subtitle || actions)
+
   return (
     <main
       className="min-h-screen text-white"
@@ -42,9 +44,9 @@ export function PageShell({ title, subtitle, actions, children }: PageShellProps
       {/* Main Content Area */}
       <div className="lg:ml-[260px]">
         <div className="mx-auto w-full max-w-[1600px] p-4 sm:p-6 md:p-8">
-          <GlobalHeader title={title} subtitle={subtitle} actions={actions} />
+          {hasHeader && <GlobalHeader title={title} subtitle={subtitle} actions={actions} />}
 
-          <section className="mt-6 flex-1 min-h-[calc(100vh-7rem)] overflow-hidden rounded-2xl border border-slate-800 p-5 shadow-xl">
+          <section className={`${hasHeader ? 'mt-6' : ''} flex-1 min-h-[calc(100vh-7rem)] overflow-hidden rounded-2xl border border-slate-800 p-5 shadow-xl`}>
             {children}
           </section>
         </div>

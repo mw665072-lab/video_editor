@@ -19,8 +19,7 @@ import { ClipList } from '../clips/ClipList'
 import { ExportDialog } from '../dialog/ExportDialog'
 import { ClipSuggestionPanel } from '../clips/ClipSuggestionPanel'
 import { Trash2, FileDown, Wand2, Play, Square } from 'lucide-react'
-
-
+import { EditorAiTools } from './EditorAiTools'
 
 export function VideoEditor() {
   const {
@@ -701,66 +700,21 @@ export function VideoEditor() {
 
       <div className="relative z-10 mx-auto w-full max-w-[1440px] px-3 sm:px-5 md:px-8 py-4 sm:py-6">
 
-        {/* ── Header ─────────────────────────────────────────────────────── */}
-        <div
-          className="rounded-2xl mb-6 sm:mb-8 border border-[#2e1a06] p-4 sm:p-5 md:p-6"
-          style={{
-            background: 'linear-gradient(135deg, #1a0e05 0%, #0d0905 100%)',
-            boxShadow: '0 0 0 1px rgba(250,106,0,0.08), 0 8px 40px rgba(0,0,0,0.6)',
-          }}
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-            <div className="flex items-center gap-3">
-              {/* Logo mark */}
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)' }}
-              >
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <polygon points="5,2 18,10 5,18" fill="white" />
-                </svg>
-              </div>
-              <div>
-                <h1
-                  className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tighter leading-none"
-                  style={{
-                    background: 'linear-gradient(90deg, #ffffff 0%, #fa6a00 60%, #ff8c38 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}
-                >
-                  CLIP<span style={{ WebkitTextFillColor: '#fa6a00' }}>AI</span>
-                </h1>
-                <p className="text-xs text-[#6b4e2e] mt-0.5 font-medium tracking-widest uppercase">
-                  AI-Powered Clip Engine
-                </p>
-              </div>
-            </div>
-
-            {canUseUrlWorkflow && (
-              <button
-                onClick={clearVideo}
-                className="px-4 py-2 rounded-lg text-sm font-semibold border border-[#3a2210] text-[#c07040] hover:border-[#fa6a00]/50 hover:text-[#fa6a00] hover:bg-[#fa6a00]/5 transition-all duration-200 whitespace-nowrap"
-              >
-                ✕ Clear Video
-              </button>
-            )}
-          </div>
-
-          {process.env.NODE_ENV !== 'production' && (
-            <div
-              className="mt-4 rounded-2xl border border-yellow-600/20 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-100"
-              style={{ boxShadow: '0 0 0 1px rgba(245,158,11,0.12)' }}
+        {canUseUrlWorkflow && (
+          <div className="mb-4 flex justify-end">
+            <button
+              onClick={clearVideo}
+              className="px-4 py-2 rounded-lg text-sm font-semibold border border-[#3a2210] text-[#c07040] hover:border-[#fa6a00]/50 hover:text-[#fa6a00] hover:bg-[#fa6a00]/5 transition-all duration-200 whitespace-nowrap"
             >
-              <strong className="font-semibold">Preview notice:</strong> This editor is running in a non-production mode and may not be fully polished or stable. Use it for evaluation and testing only.
-            </div>
-          )}
-        </div>
+              Clear Video
+            </button>
+          </div>
+        )}
 
         {!state.videoSource ? (
           // ── Upload Step ───────────────────────────────────────────────────
           <div
-            className="flex-1 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed p-8 sm:p-12 text-center"
+            className="flex-1 flex flex-col items-center justify-center gap-6 rounded-3xl border-2 border-dashed p-5 text-center sm:p-8"
             style={{
               borderColor: '#2e1a06',
               background: 'radial-gradient(ellipse at center, #1a0e05 0%, #0d0905 100%)',
@@ -770,6 +724,17 @@ export function VideoEditor() {
             <div
               className="absolute w-64 h-64 rounded-full pointer-events-none opacity-20 blur-3xl"
               style={{ background: '#fa6a00' }}
+            />
+            <EditorAiTools
+              onVideoLoaded={(source, duration, fileName, sourceType, originalSource) => {
+                setVideo(source, duration, fileName, sourceType, originalSource)
+                setYoutubeFallbackUrl(null)
+                setProxyVideoReady(false)
+                toast.success('Video loaded successfully')
+              }}
+              onDurationResolved={(duration) => {
+                setVideoDuration(duration)
+              }}
             />
             <VideoUpload
               onVideoLoaded={(source, duration, fileName, sourceType, originalSource) => {

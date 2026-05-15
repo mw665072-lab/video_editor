@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CmsNavItem, getProfile, getPublicCms, logout } from '@/lib/api'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import {
   Menu,
   X,
@@ -21,6 +21,12 @@ import {
   Settings,
   FileText,
   Sparkles,
+  Search,
+  Captions,
+  ImagePlus,
+  ScrollText,
+  Scan,
+  Video,
 } from 'lucide-react'
 
 const navItems = [
@@ -51,6 +57,12 @@ const iconMap: Record<string, any> = {
   settings: Settings,
   'file-text': FileText,
   sparkles: Sparkles,
+  search: Search,
+  captions: Captions,
+  'image-plus': ImagePlus,
+  'scroll-text': ScrollText,
+  scan: Scan,
+  video: Video,
 }
 
 const normalizeCmsItems = (items: CmsNavItem[]) =>
@@ -59,12 +71,32 @@ const normalizeCmsItems = (items: CmsNavItem[]) =>
     .sort((a, b) => a.order - b.order)
     .map((item) => ({ href: item.href, label: item.label, icon: iconMap[item.icon] || FileText, external: item.external }))
 
+const editorToolHrefs = new Set([
+  '/editor?tool=ai-clipping',
+  '/editor?tool=find-moments',
+  '/visual-editor?tool=subtitles',
+  '/visual-editor?tool=thumbnail',
+  '/editor?tool=transcript',
+  '/editor?tool=summary',
+  '/visual-editor?tool=reframe',
+  '/visual-editor?tool=ai-video',
+])
+
+const cleanSidebarItems = (items: typeof navItems) => items.filter((item) => !editorToolHrefs.has(item.href))
+
+const mergeMissingSidebarItems = (primary: typeof navItems, fallback: typeof navItems) => {
+  const cleanedPrimary = cleanSidebarItems(primary)
+  const seen = new Set(cleanedPrimary.map((item) => item.href))
+  return [...cleanedPrimary, ...fallback.filter((item) => !seen.has(item.href))]
+}
+
 export function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [cmsUserItems, setCmsUserItems] = useState(navItems)
   const [cmsAdminItems, setCmsAdminItems] = useState(adminNavItems)
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const router = useRouter()
   const isAdmin = user?.role === 'ADMIN' || user?.isAdmin
   const items = isAdmin ? cmsAdminItems : cmsUserItems
@@ -73,7 +105,7 @@ export function Sidebar() {
     getProfile().then((data) => setUser(data.user)).catch(() => setUser(null))
     getPublicCms()
       .then((cms) => {
-        if (cms.nav.sidebarUser.length) setCmsUserItems(normalizeCmsItems(cms.nav.sidebarUser))
+        if (cms.nav.sidebarUser.length) setCmsUserItems(mergeMissingSidebarItems(normalizeCmsItems(cms.nav.sidebarUser), navItems))
         if (cms.nav.sidebarAdmin.length) setCmsAdminItems(normalizeCmsItems(cms.nav.sidebarAdmin))
       })
       .catch(() => undefined)
@@ -169,7 +201,12 @@ export function Sidebar() {
         {/* Nav items */}
         <nav className="flex flex-col gap-1.5">
           {items.map((item) => {
-            const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
+            const currentPath = searchParams.size ? `${pathname}?${searchParams.toString()}` : pathname
+            const itemPath = item.href.split('?')[0]
+            const isQueryItem = item.href.includes('?')
+            const isActive = isQueryItem
+              ? currentPath === item.href
+              : pathname === item.href || (item.href !== '/admin' && pathname.startsWith(`${itemPath}/`))
             const Icon = item.icon
             const external = 'external' in item && item.external
             return (
