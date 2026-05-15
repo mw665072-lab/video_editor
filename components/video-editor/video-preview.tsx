@@ -526,7 +526,7 @@ const TransportControls = memo<TransportProps>(({
       </div>
 
       <div className="bg-[#10082c] px-3 pb-2 pt-0.5">
-        <Slider value={[currentTime]} onValueChange={onSeek} max={totalDuration} step={0.001} className="w-full" />
+        <Slider value={[Math.min(currentTime, Math.max(totalDuration, 0))]} onValueChange={onSeek} max={Math.max(totalDuration, 0.001)} step={0.001} className="w-full" />
       </div>
     </>
   );
@@ -575,9 +575,8 @@ const VideoPreview: React.FC = () => {
   const media = useMemo(() => (activeClip ? getMediaFile(activeClip.mediaId) : null), [activeClip, getMediaFile]);
   const activeClipId = activeClip?.id ?? null;
 
-  // Derived: active audio clip (only when no video)
+  // Derived: active audio clip. It can play under video for music replacement.
   const activeAudioClip = useMemo(() => {
-    if (activeClip) return null;
     for (const track of tracks) {
       if (track.type !== 'audio' || track.muted || !track.visible) continue;
       for (let i = track.clips.length - 1; i >= 0; i--) {
@@ -586,12 +585,13 @@ const VideoPreview: React.FC = () => {
       }
     }
     return null;
-  }, [activeClip, tracks, currentTime]);
+  }, [tracks, currentTime]);
 
   const audioMedia = useMemo(
     () => (activeAudioClip ? getMediaFile(activeAudioClip.mediaId) : null),
     [activeAudioClip, getMediaFile],
   );
+  const activeAudioClipId = activeAudioClip?.id ?? null;
 
   // Text overlays
   const textOverlays = useMemo(() => getTextOverlaysAtTime(currentTime), [currentTime, getTextOverlaysAtTime]);
@@ -636,6 +636,9 @@ const VideoPreview: React.FC = () => {
   const clipVolume = clipEffects.volume;
   const clipFadeIn = clipEffects.fadeInDuration;
   const clipFadeOut = clipEffects.fadeOutDuration;
+  const audioClipVolume = activeAudioClip?.effects?.volume ?? 1;
+  const audioClipFadeIn = activeAudioClip?.effects?.fadeInDuration ?? 0;
+  const audioClipFadeOut = activeAudioClip?.effects?.fadeOutDuration ?? 0;
 
   // Total clip count
   const totalClips = useMemo(() => tracks.reduce((sum, t) => sum + t.clips.length, 0), [tracks]);
@@ -649,26 +652,39 @@ const VideoPreview: React.FC = () => {
     return false;
   }, [activeClip, tracks]);
 
+  const isAudioTrackMuted = useMemo(() => {
+    if (!activeAudioClip) return false;
+    for (const t of tracks) {
+      if (t.clips.some((c) => c.id === activeAudioClip.id)) return t.muted ?? false;
+    }
+    return false;
+  }, [activeAudioClip, tracks]);
+
   // ── Refs ──
   const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
   const timeRafRef = useRef<number>(0);
   const lastPublishedTimeRef = useRef({ time: 0, at: 0 });
   const lastClipKeyRef = useRef<string | null>(null);
+  const lastAudioClipKeyRef = useRef<string | null>(null);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Stable refs for rAF callbacks (avoid stale closures without triggering re-render)
   const activeClipRef = useRef(activeClip);
+  const activeMediaRef = useRef(media);
   const currentTimeRef = useRef(currentTime);
   const isPlayingRef = useRef(isPlaying);
   const playbackSpeedRef = useRef(playbackSpeed);
   const clipSpeedRef = useRef(clipSpeed);
   const clipFadeInRef = useRef(clipFadeIn);
   const clipFadeOutRef = useRef(clipFadeOut);
+  const imagePlaybackTickRef = useRef(0);
 
   // Keep stable refs in sync
   useEffect(() => { activeClipRef.current = activeClip; }, [activeClip]);
+  useEffect(() => { activeMediaRef.current = media; }, [media]);
   useEffect(() => { currentTimeRef.current = currentTime; }, [currentTime]);
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
   useEffect(() => { playbackSpeedRef.current = playbackSpeed; }, [playbackSpeed]);
@@ -787,6 +803,22 @@ const VideoPreview: React.FC = () => {
   }, [canvasSize, media]); // media identity change triggers a new stable callback
 
   useEffect(() => {
+    if (!media || media.type !== 'image' || !media.thumbnailUrl || media.thumbnailUrl === '/placeholder.png') return;
+    const img = imageCache.current.get(media.thumbnailUrl);
+    if (!img) return;
+
+    if (img.complete && img.naturalWidth > 0) {
+      renderCanvas();
+      return;
+    }
+
+    img.onload = () => renderCanvas();
+    return () => {
+      img.onload = null;
+    };
+  }, [media, renderCanvas]);
+
+  useEffect(() => {
     let running = true;
     const loop = () => {
       if (!running) return;
@@ -827,13 +859,35 @@ const VideoPreview: React.FC = () => {
     if (key === lastClipKeyRef.current) return;
     lastClipKeyRef.current = key;
     setVideoRetryCount(0);
-    if (media?.url) {
+    if (media?.type === 'video' && media.url) {
       loadVideoSource(video, media.url);
     } else {
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
       setVideoLoading(false);
       setVideoReady(false);
+      setVideoError(false);
     }
   }, [activeClipId, media, loadVideoSource]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const key = `${activeAudioClipId}:${audioMedia?.url ?? ''}`;
+    if (key === lastAudioClipKeyRef.current) return;
+    lastAudioClipKeyRef.current = key;
+
+    if (audioMedia?.url) {
+      audio.src = audioMedia.url;
+      audio.preload = 'auto';
+      audio.load();
+    } else {
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+    }
+  }, [activeAudioClipId, audioMedia]);
 
   // ── Video event handlers ──
   useEffect(() => {
@@ -903,7 +957,7 @@ const VideoPreview: React.FC = () => {
   // ── Seek sync when paused ──
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !activeClip || !media || videoError || !videoReady || isPlaying) return;
+    if (!video || !activeClip || media?.type !== 'video' || videoError || !videoReady || isPlaying) return;
     const clipTime = currentTime - activeClip.startTime + activeClip.trimStart;
     if (Math.abs(video.currentTime - clipTime) > 0.1) {
       video.currentTime = clipTime;
@@ -916,7 +970,7 @@ const VideoPreview: React.FC = () => {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    if (!activeClip || videoError || !videoReady) {
+    if (!activeClip || media?.type !== 'video' || videoError || !videoReady) {
       video.pause();
       return;
     }
@@ -930,7 +984,29 @@ const VideoPreview: React.FC = () => {
     } else {
       video.pause();
     }
-  }, [isPlaying, activeClip, videoError, videoReady, playbackSpeed, clipSpeed, setIsPlaying]); // intentionally excludes currentTime to avoid re-seeking during playback
+  }, [isPlaying, activeClip, media?.type, videoError, videoReady, playbackSpeed, clipSpeed, setIsPlaying]); // intentionally excludes currentTime to avoid re-seeking during playback
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (!activeAudioClip || !audioMedia?.url) {
+      audio.pause();
+      return;
+    }
+
+    const clipTime = currentTime - activeAudioClip.startTime + activeAudioClip.trimStart;
+    if (!isPlaying || Math.abs(audio.currentTime - clipTime) > 0.18) {
+      audio.currentTime = Math.max(0, clipTime);
+    }
+
+    audio.playbackRate = playbackSpeed * (activeAudioClip.effects.speed || 1);
+    if (isPlaying) {
+      audio.play().catch(() => undefined);
+    } else {
+      audio.pause();
+    }
+  }, [activeAudioClip, audioMedia, currentTime, isPlaying, playbackSpeed]);
 
   // Keep playback rate synced mid-play without seeking
   useEffect(() => {
@@ -950,22 +1026,64 @@ const VideoPreview: React.FC = () => {
     video.volume = Math.max(0, Math.min(1, volume * clipVolume * fadeAlpha));
   }, [isMuted, isTrackMuted, volume, clipVolume, clipFadeIn, clipFadeOut, activeClip, currentTime, isPlaying]);
 
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.muted = isMuted || isAudioTrackMuted;
+    const fadeAlpha = activeAudioClip && isPlaying
+      ? calculateFadeAlpha(currentTime, activeAudioClip.startTime, activeAudioClip.duration, audioClipFadeIn, audioClipFadeOut)
+      : 1;
+    audio.volume = Math.max(0, Math.min(1, volume * audioClipVolume * fadeAlpha));
+  }, [activeAudioClip, audioClipFadeIn, audioClipFadeOut, audioClipVolume, currentTime, isAudioTrackMuted, isMuted, isPlaying, volume]);
+
   // ── rAF-based time update during playback (smooth playhead) ──
   useEffect(() => {
     if (!isPlaying) return;
+    imagePlaybackTickRef.current = performance.now();
     const tick = () => {
       const video = videoRef.current;
+      const audio = audioRef.current;
       const clip = activeClipRef.current;
-      if (!video || !clip || video.paused) { timeRafRef.current = requestAnimationFrame(tick); return; }
+      const activeMedia = activeMediaRef.current;
 
-      const sourceTime = video.currentTime;
-      const trimEnd = clip.trimEnd ?? 0;
-      if (sourceTime >= clip.trimStart + clip.duration - trimEnd) {
-        setIsPlaying(false);
-        setCurrentTime(clip.startTime + clip.duration);
+      if (clip && activeMedia?.type === 'image') {
+        const now = performance.now();
+        const elapsed = Math.max(0, (now - imagePlaybackTickRef.current) / 1000);
+        imagePlaybackTickRef.current = now;
+
+        const endTime = clip.startTime + clip.duration;
+        const nextTime = Math.min(endTime, currentTimeRef.current + elapsed * playbackSpeedRef.current * clipSpeedRef.current);
+        currentTimeRef.current = nextTime;
+
+        const last = lastPublishedTimeRef.current;
+        if (now - last.at >= PLAYBACK_TIME_PUBLISH_INTERVAL_MS || Math.abs(nextTime - last.time) >= 0.25 || nextTime >= endTime) {
+          lastPublishedTimeRef.current = { time: nextTime, at: now };
+          setCurrentTime(nextTime);
+        }
+
+        if (nextTime >= endTime && endTime >= totalDuration - FRAME_DURATION) {
+          setIsPlaying(false);
+          return;
+        }
+
+        timeRafRef.current = requestAnimationFrame(tick);
         return;
       }
-      const timelineTime = clip.startTime + sourceTime - clip.trimStart;
+
+      imagePlaybackTickRef.current = performance.now();
+      const driver = clip ? video : activeAudioClip ? audio : null;
+      if (!driver || driver.paused) { timeRafRef.current = requestAnimationFrame(tick); return; }
+
+      const driverClip = clip ?? activeAudioClip;
+      if (!driverClip) { timeRafRef.current = requestAnimationFrame(tick); return; }
+      const sourceTime = driver.currentTime;
+      const trimEnd = driverClip.trimEnd ?? 0;
+      if (sourceTime >= driverClip.trimStart + driverClip.duration - trimEnd) {
+        setIsPlaying(false);
+        setCurrentTime(driverClip.startTime + driverClip.duration);
+        return;
+      }
+      const timelineTime = driverClip.startTime + sourceTime - driverClip.trimStart;
       const now = performance.now();
       const last = lastPublishedTimeRef.current;
       if (now - last.at >= PLAYBACK_TIME_PUBLISH_INTERVAL_MS || Math.abs(timelineTime - last.time) >= 0.25) {
@@ -978,7 +1096,7 @@ const VideoPreview: React.FC = () => {
     };
     timeRafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(timeRafRef.current);
-  }, [isPlaying, setCurrentTime, setIsPlaying]);
+  }, [activeAudioClip, isPlaying, setCurrentTime, setIsPlaying, totalDuration]);
 
   // ── Fullscreen ──
   const toggleFullscreen = useCallback(() => {
@@ -1054,9 +1172,11 @@ const VideoPreview: React.FC = () => {
 
   // ── Derived display flags ──
   const showVideo = !!(media?.type === 'video' && !videoError && media.url);
+  const showImage = !!(media?.type === 'image' && media.thumbnailUrl && media.thumbnailUrl !== '/placeholder.png');
   const showVideoFallback = !!(media?.type === 'video' && videoError);
   const showAudio = !activeClip && !!audioMedia && !!activeAudioClip;
-  const showEmpty = !showVideo && !showVideoFallback && !showAudio;
+  const showVisual = showVideo || showImage;
+  const showEmpty = !showVisual && !showVideoFallback && !showAudio;
 
   // ============================================================
   // Render
@@ -1082,14 +1202,16 @@ const VideoPreview: React.FC = () => {
           style={{ background: '#000' }}
         />
 
+        <audio ref={audioRef} className="hidden" preload="auto" />
+
         {/* Text overlay DOM layer */}
-        {textOverlays.length > 0 && showVideo && (
+        {textOverlays.length > 0 && showVisual && (
           <div className="absolute inset-0 z-10 overflow-hidden pointer-events-none">
             <TextOverlayRenderer overlays={textOverlays} currentTime={currentTime} />
           </div>
         )}
 
-        {brandKit.logoUrl && brandKit.watermarkEnabled && showVideo && (
+        {brandKit.logoUrl && brandKit.watermarkEnabled && showVisual && (
           <img
             src={brandKit.logoUrl}
             alt={`${brandKit.name || 'Brand'} watermark`}
@@ -1098,19 +1220,19 @@ const VideoPreview: React.FC = () => {
         )}
 
         {/* Buffering indicator */}
-        {videoLoading && activeClip && (
+        {videoLoading && activeClip && media?.type === 'video' && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/80">
             <Loader2 className="h-8 w-8 animate-spin text-[#ffb32c]" />
           </div>
         )}
 
         {/* Clip info HUD */}
-        {showVideo && activeClip && videoReady && (
+        {showVisual && activeClip && media && (media.type === 'image' || videoReady) && (
           <ClipInfoOverlay
             clipLabel={activeClip.label}
-            mediaName={media!.name}
-            mediaWidth={media!.width}
-            mediaHeight={media!.height}
+            mediaName={media.name}
+            mediaWidth={media.width}
+            mediaHeight={media.height}
             trimStart={activeClip.trimStart}
             trimEnd={activeClip.trimEnd}
             duration={activeClip.duration}

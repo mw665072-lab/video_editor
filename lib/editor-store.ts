@@ -788,40 +788,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   // ============================================================
 
   mediaFiles: [],
-  tracks: [
-    {
-      id: uuidv4(),
-      name: 'Video 1',
-      type: 'video',
-      clips: [],
-      height: 64,
-      muted: false,
-      locked: false,
-      visible: true,
-    },
-    {
-      id: uuidv4(),
-      name: 'Video 2',
-      type: 'video',
-      clips: [],
-      height: 64,
-      muted: false,
-      locked: false,
-      visible: true,
-    },
-    {
-      id: uuidv4(),
-      name: 'Audio 1',
-      type: 'audio',
-      clips: [],
-      height: 48,
-      muted: false,
-      locked: false,
-      visible: true,
-    },
-  ],
+  tracks: [],
   currentTime: 0,
-  totalDuration: 60,
+  totalDuration: 0,
   isPlaying: false,
   zoom: DEFAULT_ZOOM,
   scrollX: 0,
@@ -965,7 +934,27 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   removeTrack: (trackId: string) => {
-    set((state) => ({ tracks: state.tracks.filter((t) => t.id !== trackId) }));
+    const { tracks } = get();
+    const track = tracks.find((t) => t.id === trackId);
+    if (!track) return;
+
+    get().pushHistory('Remove track');
+    set((state) => {
+      const removedClipIds = new Set(track.clips.map((clip) => clip.id));
+      const nextTracks = state.tracks
+        .filter((t) => t.id !== trackId)
+        .map((timelineTrack, index) => ({
+          ...timelineTrack,
+          clips: timelineTrack.clips.map((clip) => ({ ...clip, trackIndex: index })),
+        }));
+
+      return {
+        tracks: nextTracks,
+        selectedClipIds: state.selectedClipIds.filter((id) => !removedClipIds.has(id)),
+        isPlaying: false,
+      };
+    });
+    get().recalculateDuration();
   },
 
   toggleTrackMute: (trackId: string) => {
@@ -1020,7 +1009,69 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const media = mediaFiles.find((f) => f.id === mediaId);
     if (!media) return;
 
-    const track = tracks[trackIndex];
+    const existingClip = tracks
+      .flatMap((timelineTrack) => timelineTrack.clips)
+      .find((clip) => clip.mediaId === mediaId);
+
+    if (existingClip) {
+      set({
+        selectedClipIds: [existingClip.id],
+        currentTime: existingClip.startTime,
+        isPlaying: false,
+      });
+      return;
+    }
+
+    const targetType: TimelineTrack['type'] = media.type === 'audio' ? 'audio' : 'video';
+    let workingTracks = tracks.map((timelineTrack, index) => ({
+      ...timelineTrack,
+      clips: timelineTrack.clips.map((clip) => ({ ...clip, trackIndex: index })),
+    }));
+    let resolvedTrackIndex = trackIndex;
+
+    const requestedTrack = workingTracks[resolvedTrackIndex];
+    if (!requestedTrack || requestedTrack.type !== targetType || requestedTrack.locked) {
+      resolvedTrackIndex = workingTracks.findIndex(
+        (timelineTrack) => timelineTrack.type === targetType && !timelineTrack.locked,
+      );
+    }
+
+    if (resolvedTrackIndex === -1) {
+      const count = workingTracks.filter((timelineTrack) => timelineTrack.type === targetType).length + 1;
+      const newTrack: TimelineTrack = {
+        id: uuidv4(),
+        name: `${targetType === 'video' ? 'Video' : 'Audio'} ${count}`,
+        type: targetType,
+        clips: [],
+        height: targetType === 'video' ? 64 : 48,
+        muted: false,
+        locked: false,
+        visible: true,
+      };
+
+      if (targetType === 'video') {
+        const firstAudioIndex = workingTracks.findIndex((timelineTrack) => timelineTrack.type === 'audio');
+        if (firstAudioIndex === -1) {
+          workingTracks = [...workingTracks, newTrack];
+          resolvedTrackIndex = workingTracks.length - 1;
+        } else {
+          workingTracks = [
+            ...workingTracks.slice(0, firstAudioIndex),
+            newTrack,
+            ...workingTracks.slice(firstAudioIndex),
+          ].map((timelineTrack, index) => ({
+            ...timelineTrack,
+            clips: timelineTrack.clips.map((clip) => ({ ...clip, trackIndex: index })),
+          }));
+          resolvedTrackIndex = firstAudioIndex;
+        }
+      } else {
+        workingTracks = [...workingTracks, newTrack];
+        resolvedTrackIndex = workingTracks.length - 1;
+      }
+    }
+
+    const track = workingTracks[resolvedTrackIndex];
     if (!track || track.locked) return;
 
     // Find a good start time (end of last clip on track or specified time)
@@ -1035,19 +1086,41 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     // Snap to other clips
     clipStartTime = get().snapTime(clipStartTime);
 
+    const clipDuration = media.duration === 0 ? 5 : media.duration;
+    const sortedTrackClips = [...track.clips].sort((a, b) => a.startTime - b.startTime);
+    const containingClip = sortedTrackClips.find(
+      (clip) => clipStartTime > clip.startTime && clipStartTime < clip.startTime + clip.duration,
+    );
+
+    if (containingClip) {
+      clipStartTime = containingClip.startTime + containingClip.duration;
+    }
+
     const newClip = createClip(
       mediaId,
-      trackIndex,
+      resolvedTrackIndex,
       clipStartTime,
-      media.duration === 0 ? 5 : media.duration,
+      clipDuration,
       media.name.replace(/\.[^.]+$/, ''),
     );
 
     get().pushHistory('Add clip');
 
     set((state) => ({
-      tracks: state.tracks.map((t, i) =>
-        i === trackIndex ? { ...t, clips: [...t.clips, newClip] } : t
+      tracks: workingTracks.map((t, i) =>
+        i === resolvedTrackIndex
+          ? {
+            ...t,
+            clips: [
+              ...t.clips.map((clip) =>
+                startTime !== undefined && clip.startTime >= clipStartTime
+                  ? { ...clip, startTime: clip.startTime + clipDuration }
+                  : clip,
+              ),
+              newClip,
+            ].sort((a, b) => a.startTime - b.startTime),
+          }
+          : t
       ),
       selectedClipIds: [newClip.id],
       currentTime: media.type === 'video' || media.type === 'image' ? clipStartTime : state.currentTime,
@@ -1228,12 +1301,18 @@ export const useEditorStore = create<EditorState>((set, get) => ({
           if (t.locked) return c;
 
           const media = mediaFiles.find((m) => m.id === c.mediaId);
-          const maxTrimEnd = media ? media.duration - (c.trimStart + c.duration) : 0;
-          const newTrimEnd = Math.max(0, Math.min(maxTrimEnd, c.trimEnd + deltaTime));
-          const actualDelta = newTrimEnd - c.trimEnd;
-          const newDuration = c.duration - actualDelta;
+          const sourceDuration = media?.duration ?? 0;
+          const isStillImage = media?.type === 'image' || sourceDuration <= 0;
+          const maxDuration = isStillImage
+            ? 3600
+            : Math.max(0.05, sourceDuration - c.trimStart);
+          const newDuration = Math.max(0.05, Math.min(maxDuration, c.duration + deltaTime));
 
           if (newDuration <= 0.05) return c;
+
+          const newTrimEnd = isStillImage
+            ? 0
+            : Math.max(0, sourceDuration - c.trimStart - newDuration);
 
           return { ...c, trimEnd: newTrimEnd, duration: newDuration };
         }),
@@ -1582,6 +1661,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   fitZoomToContent: () => {
     const { totalDuration } = get();
+    if (totalDuration <= 0) {
+      set({ zoom: DEFAULT_ZOOM, scrollX: 0 });
+      return;
+    }
+
     // Assume timeline width is about 1200px
     const timelineWidth = 1200;
     const newZoom = Math.max(5, Math.min(500, timelineWidth / totalDuration));
@@ -1651,8 +1735,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         if (clipEnd > maxEnd) maxEnd = clipEnd;
       }
     }
-    const buffer = Math.max(5, maxEnd * 0.05);
-    set({ totalDuration: Math.max(10, maxEnd + buffer) });
+    if (maxEnd <= 0) {
+      set({ totalDuration: 0 });
+      return;
+    }
+
+    const buffer = Math.max(1, maxEnd * 0.05);
+    set({ totalDuration: maxEnd + buffer });
   },
 
   snapTime: (time: number) => {

@@ -638,14 +638,13 @@ const MediaBrowser: React.FC = () => {
             if (media.type === 'audio') return t.type === 'audio';
             return t.type === 'video';
           });
-          if (trackIndex === -1) continue;
 
           // Find the end of the track to append after the last clip
-          const track = tracks[trackIndex];
-          const lastClip = track.clips[track.clips.length - 1];
+          const track = trackIndex >= 0 ? tracks[trackIndex] : undefined;
+          const lastClip = track?.clips[track.clips.length - 1];
           const startTime = lastClip ? lastClip.startTime + lastClip.duration : 0;
 
-          currentState.addClipToTrack(mediaId, trackIndex, startTime);
+          currentState.addClipToTrack(mediaId, trackIndex >= 0 ? trackIndex : 0, startTime);
 
           if (startTime < firstClipStartTime) {
             firstClipStartTime = startTime;
@@ -793,19 +792,18 @@ const MediaBrowser: React.FC = () => {
         if (media.type === 'audio') return t.type === 'audio';
         return t.type === 'video';
       });
-      if (trackIndex === -1) return;
 
       let startTime: number | undefined;
       if (position === 'start') {
         startTime = 0;
       } else if (position === 'end') {
-        const track = tracks[trackIndex];
-        const lastClip = track.clips[track.clips.length - 1];
+        const track = trackIndex >= 0 ? tracks[trackIndex] : undefined;
+        const lastClip = track?.clips[track.clips.length - 1];
         startTime = lastClip ? lastClip.startTime + lastClip.duration : 0;
       }
       // 'default' passes undefined, so addClipToTrack auto-appends
 
-      store.addClipToTrack(media.id, trackIndex, startTime);
+      store.addClipToTrack(media.id, trackIndex >= 0 ? trackIndex : 0, startTime);
     },
     [store]
   );

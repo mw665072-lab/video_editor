@@ -4,15 +4,22 @@ import React, { memo, useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Slider } from '@/components/ui/slider';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import {
   AudioLines,
   Captions,
   Check,
+  ChevronDown,
   Copy,
   Download,
   Film,
@@ -29,6 +36,7 @@ import {
   Split,
   Trash2,
   Upload,
+  Volume2,
   Wand2,
   X,
 } from 'lucide-react';
@@ -82,6 +90,18 @@ const ASPECT_PRESETS = [
 ];
 
 const CAPTION_STYLES: CaptionStylePreset[] = ['creator', 'podcast', 'minimal'];
+
+const STUDIO_TOOL_TABS = [
+  { value: 'build', label: 'Arrange', icon: Layers3 },
+  { value: 'edit', label: 'Edit', icon: Scissors },
+  { value: 'text', label: 'Text', icon: Captions },
+  { value: 'brand', label: 'Brand', icon: Sparkles },
+  { value: 'look', label: 'Look', icon: Palette },
+  { value: 'audio', label: 'Audio', icon: AudioLines },
+  { value: 'export', label: 'Export', icon: Download },
+] as const;
+
+type StudioToolTab = (typeof STUDIO_TOOL_TABS)[number]['value'];
 
 function formatTime(seconds: number) {
   const mins = Math.floor(seconds / 60);
@@ -148,9 +168,9 @@ function ActionButton({
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-      <div className="text-sm font-bold text-white">{value}</div>
-      <div className="text-[10px] uppercase tracking-widest text-[#c7b4ff]">{label}</div>
+    <div className="rounded-lg border border-white/10 bg-white/[0.045] px-2.5 py-1.5">
+      <div className="text-xs font-semibold leading-none text-white">{value}</div>
+      <div className="mt-1 text-[8px] font-medium uppercase tracking-[0.16em] text-white/45">{label}</div>
     </div>
   );
 }
@@ -159,6 +179,7 @@ const ProductionBlueprintPanel = () => {
   const [captionText, setCaptionText] = useState('Hook line\nMain idea\nCall to action');
   const [clipGap, setClipGap] = useState(0);
   const [projectTitle, setProjectTitle] = useState('Untitled edit');
+  const [activeTab, setActiveTab] = useState<StudioToolTab>('build');
 
   const tracks = useEditorStore((s) => s.tracks);
   const mediaFiles = useEditorStore((s) => s.mediaFiles);
@@ -453,6 +474,27 @@ const ProductionBlueprintPanel = () => {
     [selectedClips, updateClipEffects],
   );
 
+  const selectedVideoClips = useMemo(
+    () => selectedClips.filter((clip) => getTrackForClip(tracks, clip.id)?.type === 'video'),
+    [selectedClips, tracks],
+  );
+
+  const muteSelectedVideoSound = useCallback(() => {
+    if (!selectedVideoClips.length) return;
+    selectedVideoClips.forEach((clip) => {
+      updateClipEffects(clip.id, { volume: 0 });
+    });
+    toast.success('Muted selected video sound. Add an audio/music file to the audio track.');
+  }, [selectedVideoClips, updateClipEffects]);
+
+  const restoreSelectedVideoSound = useCallback(() => {
+    if (!selectedVideoClips.length) return;
+    selectedVideoClips.forEach((clip) => {
+      updateClipEffects(clip.id, { volume: 1 });
+    });
+    toast.success('Restored selected video sound');
+  }, [selectedVideoClips, updateClipEffects]);
+
   const resetSelected = useCallback(() => {
     if (!selectedClips.length) return;
     selectedClips.forEach((clip) => resetClipEffects(clip.id));
@@ -475,30 +517,24 @@ const ProductionBlueprintPanel = () => {
   }, []);
 
   const canEdit = selectedClips.length > 0;
+  const activeTabMeta = STUDIO_TOOL_TABS.find((tab) => tab.value === activeTab) ?? STUDIO_TOOL_TABS[0];
+  const ActiveTabIcon = activeTabMeta.icon;
 
   return (
     <section
       className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#100a2f]/80 text-white shadow-[0_20px_60px_rgba(12,2,32,0.35)]"
     >
       <div className="border-b border-white/10 bg-[#140932]/80 px-3 py-3 sm:px-4">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge className="rounded-full border-0 bg-[#ffb32c]/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[#ffd36b]">
-                Clip Tools
-              </Badge>
-              <Badge className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-[#c7b4ff]">
-                {selectedClips.length ? `${selectedClips.length} selected` : 'Select a clip to edit'}
-              </Badge>
-            </div>
             <Input
               value={projectTitle}
               onChange={(event) => setProjectTitle(event.target.value)}
-              className="mt-2 h-8 max-w-xl rounded-xl border-white/10 bg-white/5 text-sm font-bold text-white focus-visible:border-[#ffb32c]"
+              className="h-8 max-w-xl rounded-xl border-white/10 bg-white/5 text-sm font-semibold text-white focus-visible:border-[#ffb32c]"
               aria-label="Project title"
             />
           </div>
-          <div className="grid grid-cols-4 gap-2 sm:w-[440px]">
+          <div className="grid grid-cols-4 gap-1.5 sm:w-[320px]">
             <Stat label="Assets" value={mediaFiles.length} />
             <Stat label="Clips" value={clipCount} />
             <Stat label="Tracks" value={tracks.length} />
@@ -507,22 +543,47 @@ const ProductionBlueprintPanel = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="build" className="flex min-h-0 flex-1 flex-col">
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as StudioToolTab)} className="flex min-h-0 flex-1 flex-col">
         <div className="border-b border-white/10 px-2 py-2 sm:px-3">
-          <TabsList className="grid h-auto w-full grid-cols-3 gap-1 bg-white/5 p-1 lg:grid-cols-7">
-            <TabsTrigger value="build" className="h-8 text-[11px]"><Layers3 className="mr-1 h-3.5 w-3.5" />Arrange</TabsTrigger>
-            <TabsTrigger value="edit" className="h-8 text-[11px]"><Scissors className="mr-1 h-3.5 w-3.5" />Edit</TabsTrigger>
-            <TabsTrigger value="text" className="h-8 text-[11px]"><Captions className="mr-1 h-3.5 w-3.5" />Text</TabsTrigger>
-            <TabsTrigger value="brand" className="h-8 text-[11px]"><Sparkles className="mr-1 h-3.5 w-3.5" />Brand</TabsTrigger>
-            <TabsTrigger value="look" className="h-8 text-[11px]"><Palette className="mr-1 h-3.5 w-3.5" />Look</TabsTrigger>
-            <TabsTrigger value="audio" className="h-8 text-[11px]"><AudioLines className="mr-1 h-3.5 w-3.5" />Audio</TabsTrigger>
-            <TabsTrigger value="export" className="h-8 text-[11px]"><Download className="mr-1 h-3.5 w-3.5" />Export</TabsTrigger>
-          </TabsList>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-10 w-full justify-between rounded-2xl border-white/10 bg-white/5 px-3 text-sm font-bold text-white hover:bg-white/10 sm:w-56"
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  <ActiveTabIcon className="h-4 w-4 text-[#ffd36b]" />
+                  <span className="truncate">{activeTabMeta.label}</span>
+                </span>
+                <ChevronDown className="h-4 w-4 text-white/60" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56 border-white/10 bg-[#100a2f] text-white">
+              {STUDIO_TOOL_TABS.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = tab.value === activeTab;
+                return (
+                  <DropdownMenuItem
+                    key={tab.value}
+                    onClick={() => setActiveTab(tab.value)}
+                    className={`cursor-pointer gap-2 text-sm focus:bg-white/10 focus:text-white ${
+                      isActive ? 'bg-white/10 text-[#ffd36b]' : 'text-white/80'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {tab.label}
+                    {isActive && <Check className="ml-auto h-4 w-4" />}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <ScrollArea className="min-h-0 flex-1">
           <TabsContent value="build" className="m-0 space-y-4 p-3 sm:p-4">
-            <div className="grid gap-2 sm:grid-cols-3">
+            <div className="grid gap-1.5 sm:grid-cols-3">
               <Stat label="Video" value={videoCount} />
               <Stat label="Audio" value={audioCount} />
               <Stat label="Images" value={imageCount} />
@@ -781,6 +842,16 @@ const ProductionBlueprintPanel = () => {
           </TabsContent>
 
           <TabsContent value="audio" className="m-0 space-y-4 p-3 sm:p-4">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+              <div className="text-xs font-bold text-white">Replace video music</div>
+              <div className="mt-1 text-[11px] leading-5 text-[#c7b4ff]">
+                Select a video clip, mute its original sound, then upload or drag a music/audio file onto an audio track. Preview will play the audio track with the video.
+              </div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <ActionButton icon={<AudioLines className="h-4 w-4" />} label="Mute Video Sound" onClick={muteSelectedVideoSound} disabled={!selectedVideoClips.length} tone="primary" />
+                <ActionButton icon={<Volume2 className="h-4 w-4" />} label="Restore Video Sound" onClick={restoreSelectedVideoSound} disabled={!selectedVideoClips.length} />
+              </div>
+            </div>
             <div className="grid gap-2 sm:grid-cols-3">
               <ActionButton icon={<Mic2 className="h-4 w-4" />} label="Voice Enhance" onClick={() => applyAudioPreset('voice')} disabled={!canEdit} />
               <ActionButton icon={<Music className="h-4 w-4" />} label="Music Bed" onClick={() => applyAudioPreset('music')} disabled={!canEdit} />

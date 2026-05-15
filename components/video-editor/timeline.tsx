@@ -43,6 +43,7 @@ import {
   Plus,
   Film,
   Music,
+  Trash2,
   Upload,
 } from 'lucide-react';
 import {
@@ -509,7 +510,7 @@ const TimelineClipComponent = memo<ClipProps>(({
   const isVisible = left + width >= -RENDER_OVERSCAN && left <= viewportWidth + RENDER_OVERSCAN;
 
   const isAudioTrack = trackType === 'audio';
-  const isVideoMedia = media?.type === 'video';
+  const isVisualMedia = media?.type === 'video' || media?.type === 'image';
   const waveformData = waveformCache.get(clip.mediaId);
 
   const handleMouseDown = useCallback(
@@ -642,7 +643,7 @@ const TimelineClipComponent = memo<ClipProps>(({
         }}
         onMouseDown={handleMouseDown}
       >
-        {isVideoMedia && (
+        {isVisualMedia && (
           <ThumbnailStrip
             thumbnailUrl={media?.thumbnailUrl}
             trimStart={clip.trimStart}
@@ -696,9 +697,18 @@ const TrackHeader = memo<TrackHeaderProps>(({ trackId }) => {
   const muted = useEditorStore((s) => s.tracks.find((t) => t.id === trackId)?.muted ?? false);
   const visible = useEditorStore((s) => s.tracks.find((t) => t.id === trackId)?.visible ?? true);
   const locked = useEditorStore((s) => s.tracks.find((t) => t.id === trackId)?.locked ?? false);
+  const clipCount = useEditorStore((s) => s.tracks.find((t) => t.id === trackId)?.clips.length ?? 0);
   const toggleMute = useEditorStore((s) => s.toggleTrackMute);
   const toggleVisibility = useEditorStore((s) => s.toggleTrackVisibility);
   const toggleLock = useEditorStore((s) => s.toggleTrackLock);
+  const removeTrack = useEditorStore((s) => s.removeTrack);
+
+  const handleRemoveTrack = useCallback(() => {
+    if (clipCount > 0 && !window.confirm(`Delete ${name} and its ${clipCount} clip${clipCount === 1 ? '' : 's'}?`)) {
+      return;
+    }
+    removeTrack(trackId);
+  }, [clipCount, name, removeTrack, trackId]);
 
   return (
     <div
@@ -752,6 +762,24 @@ const TrackHeader = memo<TrackHeaderProps>(({ trackId }) => {
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="text-[10px]">{locked ? 'Unlock' : 'Lock'}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider delayDuration={500}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5 text-white/70 hover:text-red-300"
+                  onClick={handleRemoveTrack}
+                >
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-[10px]">
+                Delete track
+              </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
@@ -1061,7 +1089,7 @@ const Timeline: React.FC = () => {
           const idx = currentTracks.findIndex(
             (t) => (media.type === 'video' ? t.type === 'video' : t.type === 'audio') && !t.locked
           );
-          if (idx !== -1) addClipToTrack(parsed.mediaId, idx, Math.max(0, dropTime));
+          addClipToTrack(parsed.mediaId, idx >= 0 ? idx : targetTrackIndex, Math.max(0, dropTime));
         } catch { /* ignore */ }
         return;
       }
@@ -1083,7 +1111,7 @@ const Timeline: React.FC = () => {
         const idx = currentTracks.findIndex(
           (t) => (isAudio ? t.type === 'audio' : t.type === 'video') && !t.locked
         );
-        if (idx !== -1) addClipToTrack(added.id, idx, Math.max(0, dropTime));
+        addClipToTrack(added.id, idx >= 0 ? idx : targetTrackIndex, Math.max(0, dropTime));
       }
     },
     [getMediaFile, addMediaFiles, addClipToTrack]
@@ -1181,12 +1209,12 @@ const Timeline: React.FC = () => {
           <div
             ref={tracksAreaRef}
             className="relative min-w-full"
-            style={{ minHeight: totalTracksHeight }}
+            style={{ minHeight: Math.max(totalTracksHeight, 180) }}
           >
             {/* Canvas grid — zero SVG overhead */}
             <GridCanvas
               width={Math.max(timelineWidth, totalDuration * zoom)}
-              height={totalTracksHeight}
+              height={Math.max(totalTracksHeight, 180)}
               zoom={zoom}
               scrollX={scrollX}
             />
