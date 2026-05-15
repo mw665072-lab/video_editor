@@ -82,15 +82,15 @@ const ToolButton: React.FC<ToolButtonProps> = ({
           size="icon"
           className={`relative h-8 w-8 ${
             active
-              ? 'bg-[#fa6a00] text-white hover:bg-[#e84d00]'
-              : 'text-[#8a6a45] hover:text-[#fa6a00] hover:bg-[#fa6a00]/10'
+              ? 'bg-[#ffb32c] text-[#3b1769] hover:bg-[#ffd36b]'
+              : 'text-white/80 hover:text-[#ffd36b] hover:bg-white/10'
           }`}
           onClick={onClick}
           disabled={disabled}
         >
           {icon}
           {badge !== undefined && badge !== null && Number(badge) > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#fa6a00] text-[9px] font-bold leading-none text-white">
+            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#ffb32c] text-[9px] font-bold leading-none text-[#3b1769]">
               {badge}
             </span>
           )}
@@ -108,7 +108,7 @@ const ToolButton: React.FC<ToolButtonProps> = ({
 // ────────────────────────────────────────────────────────────────
 
 const ToolbarSep: React.FC = () => (
-  <Separator orientation="vertical" className="mx-1.5 h-6 bg-[#2a2118]" />
+  <Separator orientation="vertical" className="mx-1.5 h-6 bg-white/10" />
 );
 
 // ────────────────────────────────────────────────────────────────
@@ -130,8 +130,8 @@ const SpeedControl: React.FC = () => {
                 size="sm"
                 className={`h-7 gap-1 px-2 text-xs font-medium ${
                   store.playbackSpeed !== 1
-                    ? 'text-amber-400 hover:text-amber-300'
-                    : 'text-[#8a6a45] hover:text-white'
+                    ? 'text-[#ffb32c] hover:text-[#ffd36b]'
+                    : 'text-[#c7b4ff] hover:text-white'
                 }`}
               >
                 <Gauge className="h-3.5 w-3.5" />
@@ -147,7 +147,7 @@ const SpeedControl: React.FC = () => {
       </TooltipProvider>
       <DropdownMenuContent
         align="center"
-        className="w-32 bg-[#13100c] border-[#2a2118]"
+        className="w-32 border-white/10 bg-[#100a2f]"
       >
         {SPEED_OPTIONS.map((speed) => (
           <DropdownMenuItem
@@ -158,13 +158,13 @@ const SpeedControl: React.FC = () => {
             }}
             className={`text-xs cursor-pointer ${
               store.playbackSpeed === speed
-                ? 'text-[#ffb06a] bg-[#fa6a00]/15'
-                : 'text-[#c07040] focus:text-white focus:bg-[#1a100a]'
+                ? 'text-[#ffd36b] bg-white/10'
+                : 'text-[#c7b4ff] focus:text-white focus:bg-white/10'
             }`}
           >
             {formatSpeed(speed)}
             {store.playbackSpeed === speed && (
-              <span className="ml-auto text-[10px] text-[#fa6a00]">✓</span>
+              <span className="ml-auto text-[10px] text-[#ffd36b]">✓</span>
             )}
           </DropdownMenuItem>
         ))}
@@ -189,7 +189,7 @@ const AddTrackDropdown: React.FC = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 gap-1 rounded-xl px-2 text-xs text-[#8a6a45] hover:text-white hover:bg-[#1a100a]"
+                className="h-7 gap-1 rounded-xl px-2 text-xs text-[#c7b4ff] hover:text-white hover:bg-white/10"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <ChevronDown className="h-3 w-3" />
@@ -203,21 +203,21 @@ const AddTrackDropdown: React.FC = () => {
       </TooltipProvider>
       <DropdownMenuContent
         align="start"
-        className="w-40 bg-[#13100c] border-[#2a2118]"
+        className="w-40 border-white/10 bg-[#100a2f]"
       >
         <DropdownMenuItem
           onClick={() => store.addTrack('video')}
-          className="text-xs text-[#c07040] focus:text-white focus:bg-[#1a100a] cursor-pointer gap-2"
+          className="text-xs text-[#c7b4ff] focus:text-white focus:bg-white/10 cursor-pointer gap-2"
         >
-          <Film className="h-3.5 w-3.5 text-[#8a6a45]" />
+          <Film className="h-3.5 w-3.5 text-[#c7b4ff]" />
           Add Video Track
         </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-[#2a2118]" />
+        <DropdownMenuSeparator className="bg-white/10" />
         <DropdownMenuItem
           onClick={() => store.addTrack('audio')}
-          className="text-xs text-[#c07040] focus:text-white focus:bg-[#1a100a] cursor-pointer gap-2"
+          className="text-xs text-[#c7b4ff] focus:text-white focus:bg-white/10 cursor-pointer gap-2"
         >
-          <Waves className="h-3.5 w-3.5 text-[#8a6a45]" />
+          <Waves className="h-3.5 w-3.5 text-[#c7b4ff]" />
           Add Audio Track
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -235,7 +235,7 @@ const ExportButton: React.FC = () => (
       <TooltipTrigger asChild>
         <Button
           size="sm"
-          className="h-8 rounded-xl bg-[#fa6a00] hover:bg-[#e84d00] text-white gap-1.5 text-xs font-semibold shadow-sm shadow-[#fa6a00]/30"
+          className="h-8 gap-1.5 rounded-xl bg-gradient-to-br from-[#ffcf5a] to-[#ffb32c] text-xs font-bold text-[#3b1769] shadow-sm shadow-[#ffb32c]/30 hover:from-[#ffd36b] hover:to-[#ffb32c]"
           onClick={() => {
             window.dispatchEvent(new CustomEvent('editor:export'));
           }}
@@ -273,8 +273,8 @@ const ClipInfoDisplay: React.FC = () => {
   if (selectedClips.length === 0) return null;
   if (selectedClips.length > 1) {
     return (
-      <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-xl bg-[#1a100a]/80 border border-[#2a2118]">
-        <Badge variant="secondary" className="h-5 text-[10px] bg-[#2a2118] text-[#c07040] border-0 font-medium px-1.5">
+      <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-xl border border-white/10 bg-white/5">
+        <Badge variant="secondary" className="h-5 text-[10px] border-0 bg-white/10 text-[#c7b4ff] font-medium px-1.5">
           {selectedClips.length} clips
         </Badge>
       </div>
@@ -288,15 +288,15 @@ const ClipInfoDisplay: React.FC = () => {
     displayName.length > 20 ? displayName.slice(0, 18) + '…' : displayName;
 
   return (
-    <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-xl bg-[#1a100a]/80 border border-[#2a2118]">
+    <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-xl border border-white/10 bg-white/5">
       <div
         className="h-2.5 w-2.5 rounded-full flex-shrink-0"
         style={{ backgroundColor: clip.color }}
       />
-      <span className="text-[11px] text-[#c07040] font-medium truncate max-w-[120px]">
+      <span className="text-[11px] text-[#f2c5ff] font-medium truncate max-w-[120px]">
         {truncatedName}
       </span>
-      <span className="text-[10px] text-[#8a6a45] font-mono">
+      <span className="text-[10px] text-[#c7b4ff] font-mono">
         {formatDuration(clip.duration)}
       </span>
     </div>
@@ -344,11 +344,11 @@ const Toolbar: React.FC = () => {
   const redoSteps = store.history.length - 1 - store.historyIndex;
 
   return (
-    <div className="flex items-center gap-1 px-3 py-1.5 bg-[#13100c]/95 border-b border-[#2a2118] h-11 select-none">
+    <div className="flex h-11 items-center gap-1 overflow-x-auto border-b border-white/10 bg-[#10082c]/95 px-3 py-1.5 select-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {/* ── Logo ── */}
       <div className="flex items-center gap-2 mr-2">
-        <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)' }}>
-          <Play className="w-3.5 h-3.5 text-white fill-white" />
+        <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-[#ffcf5a] to-[#ffb32c] shadow-[0_8px_24px_rgba(255,179,44,0.22)]">
+          <Play className="h-3.5 w-3.5 fill-[#3b1769] text-[#3b1769]" />
         </div>
         <span className="text-sm font-semibold text-white hidden sm:inline tracking-tight">
           Studio Edit
@@ -417,7 +417,7 @@ const Toolbar: React.FC = () => {
             className={`ml-1 h-5 text-[10px] font-semibold tracking-wide uppercase border-0 px-1.5 ${
               store.activeTool === 'cut'
                 ? 'bg-red-500/20 text-red-400'
-                : 'bg-[#2a2118] text-[#c07040]'
+                : 'bg-white/10 text-[#c7b4ff]'
             }`}
           >
             {store.activeTool}
@@ -525,7 +525,7 @@ const Toolbar: React.FC = () => {
       </div>
 
       {/* ── Clip Info (pushes Export to the right) ── */}
-      <div className="flex-1" />
+      <div className="min-w-3 flex-1" />
 
       <ClipInfoDisplay />
 
