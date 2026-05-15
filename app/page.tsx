@@ -18,7 +18,7 @@ export default function ClipAIPage() {
       <FontLoader />
       <NoiseOverlay />
       <Nav />
-      <main style={{ paddingTop: 70 }}>
+      <main style={{ paddingTop: 78, position: "relative", zIndex: 1 }}>
         <Hero />
         <CreatorTools />
         <Stats />

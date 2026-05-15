@@ -27,14 +27,15 @@ export default function ProfilePage() {
       <div
         className="relative min-h-screen overflow-hidden"
         style={{
-          background: 'radial-gradient(ellipse 80% 60% at 50% -10%, #2d1800 0%, #0d0905 55%, #080604 100%)',
+          backgroundColor: '#12072f',
+          backgroundImage: 'radial-gradient(circle at 20% 10%, rgba(145,85,255,0.16) 0%, transparent 28%), radial-gradient(circle at 80% 20%, rgba(255,179,44,0.08) 0%, transparent 24%)',
         }}
       >
         <div
           className="pointer-events-none fixed inset-0 z-0 opacity-[0.03]"
           style={{
             backgroundImage:
-              'linear-gradient(#fa6a00 1px, transparent 1px), linear-gradient(90deg, #fa6a00 1px, transparent 1px)',
+              'linear-gradient(rgba(145,85,255,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,179,44,0.06) 1px, transparent 1px)',
             backgroundSize: '48px 48px',
           }}
         />
@@ -64,7 +65,8 @@ export default function ProfilePage() {
     <div
       className="relative min-h-screen overflow-hidden"
       style={{
-        background: 'radial-gradient(ellipse 80% 60% at 50% -10%, #2d1800 0%, #0d0905 55%, #080604 100%)',
+        backgroundColor: '#12072f',
+        backgroundImage: 'radial-gradient(circle at 20% 10%, rgba(145,85,255,0.16) 0%, transparent 28%), radial-gradient(circle at 80% 18%, rgba(255,179,44,0.08) 0%, transparent 24%)',
       }}
     >
       {/* Grid texture */}
@@ -72,7 +74,7 @@ export default function ProfilePage() {
         className="pointer-events-none fixed inset-0 z-0 opacity-[0.03]"
         style={{
           backgroundImage:
-            'linear-gradient(#fa6a00 1px, transparent 1px), linear-gradient(90deg, #fa6a00 1px, transparent 1px)',
+            'linear-gradient(rgba(145,85,255,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,179,44,0.06) 1px, transparent 1px)',
           backgroundSize: '48px 48px',
         }}
       />
@@ -80,11 +82,11 @@ export default function ProfilePage() {
       {/* Ambient glow blobs */}
       <div
         className="pointer-events-none absolute top-[-80px] left-[-80px] w-[300px] h-[300px] rounded-full blur-[120px] opacity-20"
-        style={{ background: '#fa6a00' }}
+        style={{ background: '#8b5cf6' }}
       />
       <div
         className="pointer-events-none absolute bottom-[-80px] right-[-80px] w-[260px] h-[260px] rounded-full blur-[120px] opacity-10"
-        style={{ background: '#e84d00' }}
+        style={{ background: '#7c3aed' }}
       />
 
       <div className="relative z-10">
@@ -95,13 +97,13 @@ export default function ProfilePage() {
             <div
               className="rounded-2xl p-6"
               style={{
-                background: '#13100c',
-                border: '1px solid #2a1a08',
-                boxShadow: '0 4px 32px rgba(0,0,0,0.5)',
+                background: 'rgba(20, 9, 50, 0.95)',
+                border: '1px solid rgba(145,85,255,0.16)',
+                boxShadow: '0 4px 32px rgba(23,11,67,0.42)',
               }}
             >
               {/* Card header */}
-              <div className="flex items-center gap-4 mb-6 pb-5" style={{ borderBottom: '1px solid #2a1a08' }}>
+              <div className="flex items-center gap-4 mb-6 pb-5" style={{ borderBottom: '1px solid rgba(145,85,255,0.12)' }}>
                 <div
                   className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 text-2xl font-black text-white"
                   style={{
@@ -126,11 +128,11 @@ export default function ProfilePage() {
                 {/* Email */}
                 <div
                   className="flex items-center gap-4 rounded-xl p-4"
-                  style={{ background: '#0d0905', border: '1px solid #2a1a08' }}
+                  style={{ background: 'rgba(16, 8, 43, 0.9)', border: '1px solid rgba(145,85,255,0.12)' }}
                 >
                   <div
                     className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ background: 'rgba(250,106,0,0.12)', border: '1px solid rgba(250,106,0,0.2)' }}
+                    style={{ background: 'rgba(145,85,255,0.16)', border: '1px solid rgba(145,85,255,0.24)' }}
                   >
                     <Mail className="w-4 h-4" style={{ color: '#fa6a00' }} />
                   </div>
@@ -146,7 +148,7 @@ export default function ProfilePage() {
                 {/* Verification */}
                 <div
                   className="flex items-center gap-4 rounded-xl p-4"
-                  style={{ background: '#0d0905', border: '1px solid #2a1a08' }}
+                  style={{ background: 'rgba(16, 8, 43, 0.9)', border: '1px solid rgba(145,85,255,0.12)' }}
                 >
                   <div
                     className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
@@ -184,16 +186,16 @@ export default function ProfilePage() {
               </div>
 
               {/* Divider */}
-              <div className="my-4" style={{ borderTop: '1px solid #2a1a08' }} />
+              <div className="my-4" style={{ borderTop: '1px solid rgba(145,85,255,0.12)' }} />
 
               {/* Plan */}
               <div
                 className="flex items-center gap-4 rounded-xl p-4"
-                style={{ background: '#0d0905', border: '1px solid #2a1a08' }}
+                style={{ background: 'rgba(16, 8, 43, 0.9)', border: '1px solid rgba(145,85,255,0.12)' }}
               >
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                  style={{ background: 'rgba(250,106,0,0.12)', border: '1px solid rgba(250,106,0,0.2)' }}
+                  style={{ background: 'rgba(145,85,255,0.16)', border: '1px solid rgba(145,85,255,0.24)' }}
                 >
                   <Calendar className="w-4 h-4" style={{ color: '#fa6a00' }} />
                 </div>
@@ -225,16 +227,16 @@ export default function ProfilePage() {
             <div
               className="rounded-2xl p-6"
               style={{
-                background: '#13100c',
-                border: '1px solid #2a1a08',
-                boxShadow: '0 4px 32px rgba(0,0,0,0.5)',
+                background: 'rgba(20, 9, 50, 0.95)',
+                border: '1px solid rgba(145,85,255,0.16)',
+                boxShadow: '0 4px 32px rgba(23,11,67,0.42)',
               }}
             >
               {/* Card header */}
-              <div className="flex items-center gap-2.5 mb-5 pb-5" style={{ borderBottom: '1px solid #2a1a08' }}>
+              <div className="flex items-center gap-2.5 mb-5 pb-5" style={{ borderBottom: '1px solid rgba(145,85,255,0.12)' }}>
                 <div
                   className="w-7 h-7 rounded-lg flex items-center justify-center"
-                  style={{ background: 'rgba(250,106,0,0.15)', border: '1px solid rgba(250,106,0,0.2)' }}
+                  style={{ background: 'rgba(145,85,255,0.14)', border: '1px solid rgba(145,85,255,0.18)' }}
                 >
                   <TrendingUp className="w-3.5 h-3.5" style={{ color: '#fa6a00' }} />
                 </div>
@@ -250,12 +252,12 @@ export default function ProfilePage() {
                 {/* Clips Created */}
                 <div
                   className="rounded-xl p-5 transition-all duration-200 group"
-                  style={{ background: '#0d0905', border: '1px solid #2a1a08' }}
+                  style={{ background: 'rgba(16, 8, 43, 0.9)', border: '1px solid rgba(145,85,255,0.12)' }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(250,106,0,0.35)'
+                    e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = '#2a1a08'
+                    e.currentTarget.style.borderColor = 'rgba(145,85,255,0.12)'
                   }}
                 >
                   <div className="flex justify-between items-start mb-4">
@@ -282,12 +284,12 @@ export default function ProfilePage() {
                 {/* Downloads */}
                 <div
                   className="rounded-xl p-5 transition-all duration-200"
-                  style={{ background: '#0d0905', border: '1px solid #2a1a08' }}
+                  style={{ background: 'rgba(16, 8, 43, 0.9)', border: '1px solid rgba(145,85,255,0.12)' }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(250,106,0,0.35)'
+                    e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = '#2a1a08'
+                    e.currentTarget.style.borderColor = 'rgba(145,85,255,0.12)'
                   }}
                 >
                   <div className="flex justify-between items-start mb-4">
@@ -298,8 +300,8 @@ export default function ProfilePage() {
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center"
                       style={{
-                        background: '#1a100a',
-                        border: '1px solid #3a2210',
+                        background: 'rgba(16, 8, 43, 0.9)',
+                        border: '1px solid rgba(145,85,255,0.12)',
                       }}
                     >
                       <Download className="w-4 h-4" style={{ color: '#fa6a00' }} />

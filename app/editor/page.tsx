@@ -11,7 +11,7 @@ import { getProfile, hlsCleanup, hlsHeartbeat } from '@/lib/api'
 
 const VideoEditor = dynamic(() => import('@/components/videoeditor/VideoEditor').then(mod => ({ default: mod.VideoEditor })), {
   loading: () => (
-    <div className="min-h-screen bg-[#020617] p-6 lg:p-8 flex items-center justify-center">
+    <div className="min-h-screen p-6 lg:p-8 flex items-center justify-center" style={{ backgroundColor: '#12072f', backgroundImage: 'radial-gradient(circle at top, rgba(145,85,255,0.18), transparent 42%), radial-gradient(circle at 10% 20%, rgba(255,179,44,0.08), transparent 28%)' }}>
       <Spinner />
     </div>
   ),
@@ -73,7 +73,7 @@ export default function EditorPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-background p-6 lg:p-8 flex items-center justify-center">
+      <main className="min-h-screen p-6 lg:p-8 flex items-center justify-center" style={{ backgroundColor: '#12072f', backgroundImage: 'radial-gradient(circle at top, rgba(145,85,255,0.18), transparent 42%), radial-gradient(circle at 10% 20%, rgba(255,179,44,0.08), transparent 28%)' }}>
         <Spinner />
       </main>
     )
@@ -86,7 +86,7 @@ export default function EditorPage() {
   return (
     <ErrorBoundary>
       <PageShell title="" subtitle="">
-        <div className="h-full overflow-hidden rounded-3xl border border-slate-800  shadow-[0_20px_45px_rgba(3,17,37,.55)] backdrop-blur-xl">
+        <div className="h-full overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-[0_20px_45px_rgba(70,55,160,0.24)] backdrop-blur-xl">
           <VideoEditor />
         </div>
         <Toaster position="top-right" />

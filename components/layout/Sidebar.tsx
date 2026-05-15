@@ -29,6 +29,12 @@ import {
   Video,
 } from 'lucide-react'
 
+type SidebarUser = {
+  name?: string
+  role?: string
+  isAdmin?: boolean
+}
+
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/editor', label: 'Clip Editor', icon: Scissors },
@@ -45,7 +51,7 @@ const adminNavItems = [
   { href: '/blogs', label: 'Public Blogs', icon: BookOpen },
 ]
 
-const iconMap: Record<string, any> = {
+const iconMap: Record<string, typeof LayoutDashboard> = {
   'layout-dashboard': LayoutDashboard,
   scissors: Scissors,
   layers: Layers,
@@ -92,7 +98,7 @@ const mergeMissingSidebarItems = (primary: typeof navItems, fallback: typeof nav
 
 export function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<SidebarUser | null>(null)
   const [cmsUserItems, setCmsUserItems] = useState(navItems)
   const [cmsAdminItems, setCmsAdminItems] = useState(adminNavItems)
   const pathname = usePathname()
@@ -123,9 +129,10 @@ export function Sidebar() {
       <div
         className="md:hidden mb-3 rounded-2xl p-3"
         style={{
-          background: '#13100c',
-          border: '1px solid #2a1a08',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+          background: 'rgba(255,255,255,0.09)',
+          border: '1px solid rgba(255,255,255,0.14)',
+          boxShadow: '0 18px 46px rgba(12,2,32,0.22)',
+          backdropFilter: 'blur(20px)',
         }}
       >
         <div className="flex items-center justify-between">
@@ -134,15 +141,16 @@ export function Sidebar() {
             <span
               className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-xs font-black text-white shrink-0"
               style={{
-                background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
-                boxShadow: '0 2px 10px rgba(250,106,0,0.35)',
+                background: 'linear-gradient(135deg, #ffd36b 0%, #ffb32c 100%)',
+                color: '#3b1769',
+                boxShadow: '0 6px 18px rgba(255,179,44,0.24)',
               }}
             >
               {user?.name?.charAt(0)?.toUpperCase() || (isAdmin ? 'A' : 'U')}
             </span>
             <div>
               <p className="text-sm font-bold text-white/90">{isAdmin ? 'Admin Panel' : 'Workspace'}</p>
-              <p className="text-[11px]" style={{ color: '#6b4e2e' }}>{isAdmin ? 'Platform control' : 'Tap menu'}</p>
+              <p className="text-[11px]" style={{ color: 'rgba(248,247,255,0.58)' }}>{isAdmin ? 'Platform control' : 'Tap menu'}</p>
             </div>
           </div>
           <button
@@ -150,9 +158,9 @@ export function Sidebar() {
             onClick={() => setMobileOpen((prev) => !prev)}
             className="rounded-lg p-2 transition-colors"
             style={{
-              background: '#1a100a',
-              border: '1px solid #2a1a08',
-              color: '#fa6a00',
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.14)',
+              color: '#ffd36b',
             }}
           >
             {mobileOpen ? <X size={18} /> : <Menu size={18} />}
@@ -164,37 +172,40 @@ export function Sidebar() {
       <aside
         className={`${mobileOpen ? 'block' : 'hidden'} md:block rounded-2xl p-5 shadow-xl`}
         style={{
-          background: '#13100c',
-          border: '1px solid #2a1a08',
-          boxShadow: '0 4px 40px rgba(0,0,0,0.6)',
+          background: 'rgba(255,255,255,0.08)',
+          border: '1px solid rgba(255,255,255,0.14)',
+          boxShadow: '0 24px 70px rgba(12,2,32,0.24)',
+          backdropFilter: 'blur(24px)',
         }}
       >
         {/* Workspace header */}
-        <div className="mb-6 flex items-center gap-3 pb-5" style={{ borderBottom: '1px solid #2a1a08' }}>
+        <div className="mb-6 flex items-center gap-3 pb-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
           {/* Logo mark */}
           <div
             className="inline-flex h-10 w-10 items-center justify-center rounded-xl shrink-0"
             style={{
-              background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
-              boxShadow: '0 2px 12px rgba(250,106,0,0.35)',
+              background: 'linear-gradient(135deg, #ffd36b 0%, #ffb32c 100%)',
+              boxShadow: '0 6px 18px rgba(255,179,44,0.24)',
             }}
           >
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-              <polygon points="5,2 18,10 5,18" fill="white" />
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#5A2BB8" strokeWidth="2">
+              <path d="M10 2v16" />
+              <path d="M4 4l12 12" />
+              <path d="M16 4L4 16" />
             </svg>
           </div>
           <div>
             <p
               className="text-sm font-black tracking-tight"
               style={{
-                background: 'linear-gradient(90deg, #ffffff 0%, #fa6a00 100%)',
+                background: 'linear-gradient(90deg, #ffffff 0%, #ffd36b 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
             >
               {isAdmin ? 'Admin Console' : 'Your Workspace'}
             </p>
-            <p className="text-xs font-medium" style={{ color: '#4a3020' }}>{isAdmin ? 'Stats, users, content' : 'Quick access'}</p>
+            <p className="text-xs font-medium" style={{ color: 'rgba(248,247,255,0.58)' }}>{isAdmin ? 'Stats, users, content' : 'Quick access'}</p>
           </div>
         </div>
 
@@ -219,25 +230,25 @@ export function Sidebar() {
                 style={
                   isActive
                     ? {
-                        background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
-                        color: 'white',
-                        boxShadow: '0 2px 14px rgba(250,106,0,0.35)',
+                        background: 'linear-gradient(135deg, #ffd36b 0%, #ffb32c 100%)',
+                        color: '#351765',
+                        boxShadow: '0 12px 28px rgba(255,179,44,0.2)',
                       }
                     : {
-                        color: '#6b4e2e',
+                        color: 'rgba(248,247,255,0.74)',
                         background: 'transparent',
                       }
                 }
                 onMouseEnter={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.background = '#1a100a'
-                    e.currentTarget.style.color = '#fa6a00'
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
+                    e.currentTarget.style.color = '#ffd36b'
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) {
                     e.currentTarget.style.background = 'transparent'
-                    e.currentTarget.style.color = '#6b4e2e'
+                    e.currentTarget.style.color = 'rgba(248,247,255,0.74)'
                   }
                 }}
               >
@@ -262,25 +273,25 @@ export function Sidebar() {
         <div
           className="mt-6 rounded-xl p-3.5"
           style={{
-            background: '#0d0905',
-            border: '1px solid #2a1a08',
+            background: 'rgba(16,8,44,0.44)',
+            border: '1px solid rgba(255,255,255,0.12)',
           }}
         >
           <div className="flex items-center gap-1.5 mb-1.5">
-            <Zap size={11} style={{ color: '#fa6a00' }} />
-            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: '#fa6a00' }}>
+            <Zap size={11} style={{ color: '#ffd36b' }} />
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: '#ffd36b' }}>
               {isAdmin ? 'Admin' : 'Tips'}
             </p>
           </div>
-          <p className="text-xs leading-relaxed" style={{ color: '#4a3020' }}>
+          <p className="text-xs leading-relaxed" style={{ color: 'rgba(248,247,255,0.62)' }}>
             {isAdmin ? (
               <>
                 Review platform usage, publish blog content, and track creator engagement from admin views.
               </>
             ) : (
               <>
-                Use <span className="font-semibold" style={{ color: '#7a5030' }}>Clip Editor</span> for trimming and exporting, or{' '}
-                <span className="font-semibold" style={{ color: '#7a5030' }}>Visual Editor</span> for filters, audio, and captions.
+                Use <span className="font-semibold" style={{ color: '#ffd36b' }}>Clip Editor</span> for trimming and exporting, or{' '}
+                <span className="font-semibold" style={{ color: '#ffd36b' }}>Visual Editor</span> for filters, audio, and captions.
               </>
             )}
           </p>
@@ -291,19 +302,19 @@ export function Sidebar() {
           onClick={handleLogout}
           className="mt-3 w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all duration-200"
           style={{
-            background: '#1a0808',
-            border: '1px solid #3a1010',
-            color: '#c05050',
+            background: 'rgba(240,101,125,0.12)',
+            border: '1px solid rgba(240,101,125,0.24)',
+            color: '#ffc2ce',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#2a0c0c'
-            e.currentTarget.style.color = '#e06060'
-            e.currentTarget.style.borderColor = '#5a1818'
+            e.currentTarget.style.background = 'rgba(240,101,125,0.18)'
+            e.currentTarget.style.color = '#ffe0e6'
+            e.currentTarget.style.borderColor = 'rgba(240,101,125,0.32)'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#1a0808'
-            e.currentTarget.style.color = '#c05050'
-            e.currentTarget.style.borderColor = '#3a1010'
+            e.currentTarget.style.background = 'rgba(240,101,125,0.12)'
+            e.currentTarget.style.color = '#ffc2ce'
+            e.currentTarget.style.borderColor = 'rgba(240,101,125,0.24)'
           }}
         >
           <LogOut size={14} />

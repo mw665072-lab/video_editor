@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
 
 export function FontLoader() {
-  useEffect(() => {
-    const link = document.createElement("link");
-    link.href = "https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap";
-    link.rel = "stylesheet";
-    document.head.appendChild(link);
-  }, []);
+  useEffect(() => undefined, []);
   return null;
 }
 

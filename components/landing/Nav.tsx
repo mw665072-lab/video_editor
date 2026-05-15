@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -50,14 +51,16 @@ export default function Nav() {
       initial={{ y: -32, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.35 }}
       style={S.nav(scrolled)}
     >
-      <a href="/" style={S.navLogo}>
+      <Link href="/" style={S.navLogo}>
         <div style={S.logoMark}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5">
-            <polygon points="5 3 19 12 5 21 5 3" />
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5A2BB8" strokeWidth="2.5">
+            <path d="M12 3v18" />
+            <path d="M6.2 6.2l11.6 11.6" />
+            <path d="M17.8 6.2L6.2 17.8" />
           </svg>
         </div>
         {siteName}
-      </a>
+      </Link>
 
       <ul style={S.navLinks} className="hidden md:flex">
         {links.map((item) => (
@@ -69,8 +72,8 @@ export default function Nav() {
                 e.preventDefault();
                 navigate(item);
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#FB923C")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#FFD36B")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.84)")}
             >{item.label}</a>
           </li>
         ))}
@@ -99,9 +102,10 @@ export default function Nav() {
       {mobileOpen && (
         <div className="md:hidden" style={{
           position: "absolute", left: 16, right: 16, top: "100%", marginTop: 8, zIndex: 50,
-          borderRadius: 16, background: "rgba(10,14,26,0.98)",
+          borderRadius: 20, background: "rgba(22, 12, 59, 0.92)",
           border: "1px solid rgba(255,255,255,0.12)", padding: 12,
-          boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+          boxShadow: "0 20px 60px rgba(12,2,32,0.46)",
+          backdropFilter: "blur(22px)", WebkitBackdropFilter: "blur(22px)",
         }}>
           {links.map((item) => (
             <a key={`${item.location}-${item.id}-${item.href}`} href={item.href}
@@ -110,7 +114,7 @@ export default function Nav() {
                 setMobileOpen(false);
                 navigate(item);
               }}
-              style={{ display: "block", padding: "10px 16px", fontSize: 14, color: "rgba(255,255,255,0.8)", borderRadius: 10, textDecoration: "none" }}
+              style={{ display: "block", padding: "10px 16px", fontSize: 14, color: "rgba(255,255,255,0.86)", borderRadius: 12, textDecoration: "none" }}
             >{item.label}</a>
           ))}
         </div>

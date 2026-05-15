@@ -229,13 +229,13 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
   const activeUploadMethod = showUrlUpload ? uploadMethod : 'file'
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-2xl mx-auto rounded-3xl border border-white/10 bg-[#12072f]/80 p-4">
       {showUrlUpload && (
-        <div className="flex flex-col sm:flex-row gap-2 mb-6 rounded-xl border border-slate-800/50 p-2">
+        <div className="flex flex-col sm:flex-row gap-2 mb-6 rounded-3xl border border-white/10 bg-[#150b40]/70 p-2">
           <Button
             variant={activeUploadMethod === 'file' ? 'default' : 'outline'}
             onClick={() => setUploadMethod('file')}
-            className="w-full sm:flex-1 rounded-lg px-4 py-2 text-white text-sm hover:bg-slate-800/60 hover:text-white bg-slate-900/60 font-semibold"
+            className="w-full sm:flex-1 rounded-lg px-4 py-2 text-white text-sm bg-[#150b40]/80 hover:bg-[#1f0f4e] font-semibold"
           >
             <Upload className="w-4 h-4 mr-2" />
             Upload File
@@ -243,7 +243,7 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
           <Button
             variant={activeUploadMethod === 'url' ? 'default' : 'outline'}
             onClick={() => setUploadMethod('url')}
-            className="flex-1 rounded-lg px-4 py-2 text-white text-sm hover:bg-slate-800/60 hover:text-white bg-slate-900/60 font-semibold"
+            className="flex-1 rounded-lg px-4 py-2 text-white text-sm bg-[#150b40]/80 hover:bg-[#1f0f4e] font-semibold"
           >
             <LinkIcon className="w-4 h-4 mr-2" />
             Load from URL
@@ -255,7 +255,7 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
         <div
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
-          className="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-cyan-300 transition-colors duration-200 cursor-pointer bg-slate-900/40"
+          className="border-2 border-dashed border-white/20 rounded-3xl p-6 text-center transition-colors duration-200 cursor-pointer bg-[#150b40]/60 hover:border-purple-400"
           onClick={() => fileInputRef.current?.click()}
         >
           <input
@@ -267,16 +267,16 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
             className="hidden"
             disabled={isLoading || fileLoading}
           />
-          <Upload className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
-          <h3 className="text-lg font-semibold mb-2">Upload a video file</h3>
-          <p className="text-sm text-muted-foreground mb-3">
+          <Upload className="w-10 h-10 mx-auto mb-3 text-purple-200" />
+          <h3 className="text-lg font-semibold mb-2 text-white">Upload a video file</h3>
+          <p className="text-sm text-purple-200/70 mb-3">
             Drag and drop your video here or click to browse
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-purple-200/60">
             Supported formats: MP4, MOV, AVI, WebM (Max 500MB)
           </p>
           {(isLoading || fileLoading) && (
-            <p className="text-sm text-primary mt-4">Loading video...</p>
+            <p className="text-sm text-purple-200 mt-4">Loading video...</p>
           )}
         </div>
       ) : (
@@ -297,12 +297,12 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
             <Button
               onClick={handleLoadFromURL}
               disabled={urlLoading || !urlInput.trim()}
-              className="flex-1 rounded-lg px-4 py-2 text-white text-sm hover:bg-slate-800/60 hover:text-white bg-slate-900/60 font-semibold"
+              className="flex-1 rounded-lg px-4 py-2 text-white text-sm bg-purple-600 hover:bg-purple-500 font-semibold"
             >
               {urlLoading ? 'Loading...' : 'Load'}
             </Button>
           </div>
-          <div className="rounded-lg border border-cyan-900/50 bg-cyan-950/20 px-3 py-2 text-xs text-cyan-100/80">
+          <div className="rounded-lg border border-white/10 bg-[#150b40]/80 px-3 py-2 text-xs text-purple-200/80">
             Supported URL sources for the MVP: YouTube, Facebook, Instagram, TikTok, X/Twitter, Vimeo, and direct MP4/WebM/M3U8 links.
           </div>
         </div>

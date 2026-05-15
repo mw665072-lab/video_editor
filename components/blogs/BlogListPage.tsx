@@ -37,7 +37,7 @@ export function BlogListPage() {
   return (
     <PageShell title="Creator Blogs" subtitle="Editing playbooks, product updates, and creator growth guides.">
       <div className="mx-auto max-w-7xl text-white">
-        <div className="mb-8 rounded-[2rem] border border-[#2a2118] bg-[#13100c]/90 p-6 shadow-[0_20px_80px_rgba(0,0,0,0.45)] lg:p-8">
+        <div className="mb-8 rounded-[2rem] border border-white/10 bg-[#100a2f]/90 p-6 shadow-[0_20px_80px_rgba(38,24,103,0.55)] lg:p-8">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#fa6a00]/20 bg-[#fa6a00]/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.24em] text-[#fa6a00]">
             <BookOpen className="h-4 w-4" />
             Creator Blogs
@@ -47,8 +47,8 @@ export function BlogListPage() {
               <h1 className="max-w-3xl text-4xl font-black tracking-tight sm:text-5xl">Editing playbooks, product updates, and creator growth guides.</h1>
               <p className="mt-4 max-w-2xl text-sm leading-6 text-[#c07040]">Learn how to cut faster, repurpose content, build branded workflows, and get more from the visual editor.</p>
             </div>
-            <div className="rounded-2xl border border-[#2a1a08] bg-[#0d0905] p-3">
-              <div className="flex items-center gap-2 rounded-xl border border-[#2a1a08] bg-[#1a100a] px-3">
+            <div className="rounded-2xl border border-white/10 bg-[#0f0a2b] p-3">
+              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#1a0d33] px-3">
                 <Search className="h-4 w-4 text-[#8a6a45]" />
                 <input
                   value={search}
@@ -67,11 +67,11 @@ export function BlogListPage() {
           </div>
         </div>
 
-        {error && <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">{error}</div>}
-        {loading && <div className="rounded-2xl border border-[#2a2118] bg-[#13100c] p-8 text-center text-[#c07040]">Loading blogs...</div>}
+        {error && <div className="rounded-2xl border border-[#7c3aed]/30 bg-[#7c3aed]/10 p-4 text-sm text-[#d9b8ff]">{error}</div>}
+        {loading && <div className="rounded-2xl border border-white/10 bg-[#100a2f] p-8 text-center text-[#c7b4ff]">Loading blogs...</div>}
 
         {!loading && featured && (
-          <Link href={`/blogs/${featured.slug}`} className="group mb-6 grid overflow-hidden rounded-[2rem] border border-[#2a2118] bg-[#13100c] shadow-[0_16px_60px_rgba(0,0,0,0.35)] lg:grid-cols-[1.05fr_0.95fr]">
+          <Link href={`/blogs/${featured.slug}`} className="group mb-6 grid overflow-hidden rounded-[2rem] border border-white/10 bg-[#100a2f] shadow-[0_16px_60px_rgba(38,24,103,0.35)] lg:grid-cols-[1.05fr_0.95fr]">
             <div className="min-h-[280px] bg-[#1a100a]">
               {featured.coverImageUrl ? <img src={featured.coverImageUrl} alt={featured.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" /> : <div className="flex h-full items-center justify-center text-[#8a6a45]">No cover image</div>}
             </div>
@@ -96,7 +96,7 @@ export function BlogListPage() {
           </div>
         )}
 
-        {!loading && posts.length === 0 && <div className="rounded-2xl border border-[#2a2118] bg-[#13100c] p-8 text-center text-[#c07040]">No blogs found.</div>}
+        {!loading && posts.length === 0 && <div className="rounded-2xl border border-white/10 bg-[#100a2f] p-8 text-center text-[#c7b4ff]">No blogs found.</div>}
       </div>
     </PageShell>
   )
@@ -104,8 +104,8 @@ export function BlogListPage() {
 
 function BlogCard({ post }: { post: BlogPost }) {
   return (
-    <Link href={`/blogs/${post.slug}`} className="group overflow-hidden rounded-3xl border border-[#2a2118] bg-[#13100c] transition hover:border-[#fa6a00]/50">
-      <div className="aspect-video bg-[#1a100a]">
+    <Link href={`/blogs/${post.slug}`} className="group overflow-hidden rounded-3xl border border-white/10 bg-[#100a2f] transition hover:border-[#7c3aed]/50">
+      <div className="aspect-video bg-[#1a0d33]">
         {post.coverImageUrl ? <img src={post.coverImageUrl} alt={post.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" /> : <div className="flex h-full items-center justify-center text-[#8a6a45]">Blog</div>}
       </div>
       <div className="p-5">

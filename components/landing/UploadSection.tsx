@@ -7,14 +7,14 @@ export default function UploadSection() {
   const [activePublish, setActivePublish] = useState<"YouTube" | "Facebook">("YouTube");
 
   return (
-    <section style={{ ...S.section, padding: "120px 0", borderTop: "1px solid rgba(255,255,255,0.07)", background: "linear-gradient(to bottom,transparent,rgba(249,115,22,0.04),transparent)" }}>
+    <section style={{ ...S.section, padding: "120px 0", borderTop: "1px solid rgba(255,255,255,0.07)", background: "linear-gradient(to bottom,transparent,rgba(255,255,255,0.05),transparent)" }}>
       <div style={{ ...S.container, position: "relative", zIndex: 1 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "center" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 60, alignItems: "center" }}>
           <div>
             <span style={{ ...S.sectionTagCenter, display: "block", width: "fit-content", marginBottom: 16 }}>Direct Publishing</span>
             <h2 style={{ ...S.sectionTitle, marginTop: 16 }}>Clip It. Then<br /><span style={S.gradientText}>Publish It.</span></h2>
             <p style={{ ...S.sectionSub, marginBottom: 36 }}>
-              After you create your perfect clip, push it directly to YouTube or Facebook from inside the app. No downloading, no re-uploading manually — one click and it's live.
+              After you create your perfect clip, push it directly to YouTube or Facebook from inside the app. No downloading, no re-uploading manually — one click and it&apos;s live.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {[
@@ -27,10 +27,10 @@ export default function UploadSection() {
                 }}>
                   <div style={{ width: 42, height: 42, borderRadius: 12, background: item.bg, display: "flex", alignItems: "center", justifyContent: "center", color: item.color, flexShrink: 0, border: `1px solid ${item.border}` }}>{item.icon}</div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: 15, marginBottom: 3 }}>{item.platform}</div>
-                    <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)" }}>{item.desc}</div>
+                    <div style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 15, marginBottom: 3 }}>{item.platform}</div>
+                    <div style={{ fontSize: 13, color: "rgba(255,255,255,0.68)" }}>{item.desc}</div>
                   </div>
-                  <div style={{ padding: "5px 14px", borderRadius: 100, background: "rgba(249,115,22,0.12)", border: "1px solid rgba(249,115,22,0.28)", fontSize: 11, color: "#FB923C", fontFamily: "'DM Mono',monospace", whiteSpace: "nowrap" }}>
+                  <div style={{ padding: "5px 14px", borderRadius: 100, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", fontSize: 11, color: "#FFD36B", fontFamily: "'IBM Plex Mono',monospace", whiteSpace: "nowrap" }}>
                     One-click →
                   </div>
                 </div>
@@ -39,22 +39,22 @@ export default function UploadSection() {
           </div>
 
           <div style={{ ...S.glass, padding: 28 }}>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 20 }}>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 20 }}>
               Upload Your Clip
             </div>
 
             <div style={{
-              borderRadius: 14, border: "2px dashed rgba(249,115,22,0.3)",
-              background: "rgba(249,115,22,0.04)",
+              borderRadius: 20, border: "2px dashed rgba(255,255,255,0.24)",
+              background: "rgba(255,255,255,0.06)",
               padding: "28px 20px", textAlign: "center", marginBottom: 16, cursor: "pointer",
               transition: "border-color 0.2s",
             }}>
               <div style={{ fontSize: 30, marginBottom: 8 }}>🎬</div>
-              <div style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", marginBottom: 4 }}>Drag & drop your clip here</div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>MP4, MOV, WebM — up to 2GB</div>
+              <div style={{ fontSize: 14, color: "rgba(255,255,255,0.78)", marginBottom: 4 }}>Drag and drop your clip here</div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>MP4, MOV, WebM - up to 2GB</div>
             </div>
 
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontFamily: "'DM Mono',monospace", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Publish to</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontFamily: "'IBM Plex Mono',monospace", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Publish to</div>
             <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
               {([
                 { label: "YouTube", color: "#FF5555" },
@@ -65,10 +65,10 @@ export default function UploadSection() {
                   onClick={() => setActivePublish(btn.label)}
                   style={{
                     flex: 1, padding: "10px", borderRadius: 10, fontSize: 13,
-                    fontFamily: "'DM Mono',monospace", cursor: "pointer",
-                    background: activePublish === btn.label ? `${btn.color}22` : "rgba(255,255,255,0.04)",
-                    border: activePublish === btn.label ? `1px solid ${btn.color}55` : "1px solid rgba(255,255,255,0.10)",
-                    color: activePublish === btn.label ? btn.color : "rgba(255,255,255,0.35)",
+                    fontFamily: "'IBM Plex Mono',monospace", cursor: "pointer",
+                    background: activePublish === btn.label ? `${btn.color}22` : "rgba(255,255,255,0.06)",
+                    border: activePublish === btn.label ? `1px solid ${btn.color}55` : "1px solid rgba(255,255,255,0.14)",
+                    color: activePublish === btn.label ? btn.color : "rgba(255,255,255,0.6)",
                     transition: "all 0.2s",
                   }}
                 >{btn.label}</button>

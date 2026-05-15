@@ -28,7 +28,7 @@ const plans = [
 const CheckIcon = () => (
   <span
     className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full"
-    style={{ background: 'rgba(250,106,0,0.15)', border: '1px solid rgba(250,106,0,0.3)' }}
+    style={{ background: 'rgba(145,85,255,0.16)', border: '1px solid rgba(145,85,255,0.28)' }}
   >
     <svg className="h-2.5 w-2.5" viewBox="0 0 10 8" fill="none">
       <path d="M1 4l3 3 5-6" stroke="#fa6a00" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -70,7 +70,8 @@ export default function BillingPage() {
     <div
       className="relative min-h-screen overflow-hidden"
       style={{
-        background: 'radial-gradient(ellipse 80% 60% at 50% -10%, #2d1800 0%, #0d0905 55%, #080604 100%)',
+        backgroundColor: '#12072f',
+        backgroundImage: 'radial-gradient(circle at 20% 10%, rgba(145,85,255,0.16) 0%, transparent 28%), radial-gradient(circle at 80% 18%, rgba(255,179,44,0.08) 0%, transparent 24%)',
       }}
     >
       {/* Grid texture */}
@@ -78,7 +79,7 @@ export default function BillingPage() {
         className="pointer-events-none fixed inset-0 z-0 opacity-[0.03]"
         style={{
           backgroundImage:
-            'linear-gradient(#fa6a00 1px, transparent 1px), linear-gradient(90deg, #fa6a00 1px, transparent 1px)',
+            'linear-gradient(rgba(145,85,255,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,179,44,0.06) 1px, transparent 1px)',
           backgroundSize: '48px 48px',
         }}
       />
@@ -86,11 +87,11 @@ export default function BillingPage() {
       {/* Ambient glow blobs */}
       <div
         className="pointer-events-none absolute top-[-80px] left-[-80px] w-[300px] h-[300px] rounded-full blur-[120px] opacity-20"
-        style={{ background: '#fa6a00' }}
+        style={{ background: '#8b5cf6' }}
       />
       <div
         className="pointer-events-none absolute bottom-[-80px] right-[-80px] w-[260px] h-[260px] rounded-full blur-[120px] opacity-10"
-        style={{ background: '#e84d00' }}
+        style={{ background: '#7c3aed' }}
       />
 
       <div className="relative z-10">
@@ -101,9 +102,9 @@ export default function BillingPage() {
             <div
               className="mt-4 rounded-xl px-4 py-3 text-sm"
               style={{
-                background: '#1a0808',
-                border: '1px solid #3a1010',
-                color: '#e07070',
+                background: 'rgba(58,20,120,0.92)',
+                border: '1px solid rgba(145,85,255,0.18)',
+                color: '#f2c5ff',
               }}
             >
               {error}
@@ -114,9 +115,9 @@ export default function BillingPage() {
           <section
             className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl px-5 py-4"
             style={{
-              background: '#13100c',
-              border: '1px solid #2a1a08',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+              background: 'rgba(20, 9, 50, 0.92)',
+              border: '1px solid rgba(145,85,255,0.16)',
+              boxShadow: '0 4px 24px rgba(23,11,67,0.4)',
             }}
           >
             <div>
@@ -135,16 +136,16 @@ export default function BillingPage() {
                   </span>
                 )}
               </div>
-              <p className="mt-1 text-xs font-medium" style={{ color: '#4a3020' }}>
+              <p className="mt-1 text-xs font-medium" style={{ color: '#c7b4ff' }}>
                 {user ? 'Renews monthly · billed automatically' : 'Loading…'}
               </p>
             </div>
 
             {user && (
               <div className="min-w-[180px] flex-1 max-w-[260px]">
-                <div className="mb-1.5 flex justify-between text-xs font-semibold" style={{ color: '#6b4e2e' }}>
+                <div className="mb-1.5 flex justify-between text-xs font-semibold" style={{ color: '#c7b4ff' }}>
                   <span>Clips used</span>
-                  <span style={{ color: '#fa6a00' }}>{clipsUsed} / {clipsLimit}</span>
+                  <span style={{ color: '#f9d8ff' }}>{clipsUsed} / {clipsLimit}</span>
                 </div>
                 <div
                   className="h-1.5 overflow-hidden rounded-full"
@@ -177,14 +178,14 @@ export default function BillingPage() {
                   style={
                     plan.popular
                       ? {
-                          background: '#13100c',
-                          border: '2px solid rgba(250,106,0,0.5)',
-                          boxShadow: '0 0 0 1px rgba(250,106,0,0.08), 0 8px 32px rgba(0,0,0,0.5)',
+                          background: 'rgba(20, 9, 50, 0.96)',
+                          border: '2px solid rgba(123,97,255,0.4)',
+                          boxShadow: '0 0 0 1px rgba(123,97,255,0.08), 0 8px 32px rgba(15,8,52,0.45)',
                         }
                       : {
-                          background: '#13100c',
-                          border: '1px solid #2a1a08',
-                          boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+                          background: 'rgba(20, 9, 50, 0.92)',
+                          border: '1px solid rgba(145,85,255,0.14)',
+                          boxShadow: '0 4px 24px rgba(15,8,52,0.4)',
                         }
                   }
                 >
@@ -204,7 +205,7 @@ export default function BillingPage() {
 
                   {/* Plan name + price */}
                   <div className={plan.popular ? 'mt-4' : ''}>
-                    <h3 className="text-xs font-bold uppercase tracking-widest" style={{ color: '#6b4e2e' }}>
+                    <h3 className="text-xs font-bold uppercase tracking-widest" style={{ color: '#c7b4ff' }}>
                       {plan.label}
                     </h3>
                     <div className="mt-2 flex items-baseline gap-1">
@@ -213,7 +214,7 @@ export default function BillingPage() {
                     </div>
                   </div>
 
-                  <div className="my-4" style={{ borderTop: '1px solid #2a1a08' }} />
+                  <div className="my-4" style={{ borderTop: '1px solid rgba(145,85,255,0.14)' }} />
 
                   {/* Features */}
                   <ul className="flex flex-1 flex-col gap-2.5">
@@ -241,9 +242,9 @@ export default function BillingPage() {
                     <div
                       className="mt-5 w-full rounded-xl py-2.5 text-center text-xs font-bold uppercase tracking-wider"
                       style={{
-                        background: '#1a100a',
-                        border: '1px solid #2a1a08',
-                        color: '#4a3020',
+                        background: 'rgba(16, 8, 43, 0.95)',
+                        border: '1px solid rgba(145,85,255,0.16)',
+                        color: '#c7b4ff',
                       }}
                     >
                       Current plan
@@ -261,21 +262,21 @@ export default function BillingPage() {
                               boxShadow: '0 2px 14px rgba(250,106,0,0.35)',
                             }
                           : {
-                              background: '#1a100a',
-                              border: '1px solid #3a2210',
-                              color: '#fa6a00',
+                              background: 'rgba(16, 8, 43, 0.95)',
+                              border: '1px solid rgba(145,85,255,0.14)',
+                              color: '#c7b4ff',
                             }
                       }
                       onMouseEnter={(e) => {
                         if (!isDisabled && !plan.popular) {
-                          e.currentTarget.style.background = '#2a1a0a'
-                          e.currentTarget.style.borderColor = 'rgba(250,106,0,0.5)'
+                        e.currentTarget.style.background = 'rgba(20, 9, 50, 0.96)'
+                        e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)'
                         }
                       }}
                       onMouseLeave={(e) => {
                         if (!plan.popular) {
-                          e.currentTarget.style.background = '#1a100a'
-                          e.currentTarget.style.borderColor = '#3a2210'
+                        e.currentTarget.style.background = 'rgba(16, 8, 43, 0.95)'
+                        e.currentTarget.style.borderColor = 'rgba(145,85,255,0.14)'
                         }
                       }}
                     >

@@ -1,10 +1,6 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
-
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: 'Multi-Clip Video Editor',
@@ -38,13 +34,13 @@ export default function RootLayout({
     <html
       lang="en"
       className="h-full"
-      style={{ backgroundColor: '#020617', color: '#e2e8f0' }}
+      style={{ backgroundColor: '#12072f', color: '#f8f7ff' }}
     >
       <body
-        className="h-full font-sans antialiased selection:bg-cyan-400 selection:text-slate-950"
-        style={{ backgroundColor: '#020617', color: '#e2e8f0' }}
+        className="h-full font-sans antialiased"
+        style={{ backgroundColor: '#12072f', color: '#f8f7ff' }}
       >
-        <div className="min-h-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+        <div className="min-h-full">
           {children}
         </div>
         <Analytics />

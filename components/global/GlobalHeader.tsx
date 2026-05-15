@@ -10,15 +10,18 @@ interface GlobalHeaderProps {
 
 export function GlobalHeader({ title, subtitle, actions }: GlobalHeaderProps) {
   return (
-    <header className="rounded-2xl border border-slate-800  p-5 shadow-xl"
+    <header className="rounded-[2rem] border p-5 shadow-xl"
      style={{
-            background: 'linear-gradient(135deg, #1a0e05 0%, #0d0905 100%)',
-            boxShadow: '0 0 0 1px rgba(250,106,0,0.08), 0 8px 40px rgba(0,0,0,0.6)',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)',
+            borderColor: 'rgba(255,255,255,0.14)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            boxShadow: '0 24px 70px rgba(12,2,32,0.24)',
           }}>
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">{title}</h1>
-          {subtitle && <p className="mt-1 text-sm text-slate-300">{subtitle}</p>}
+          <h1 className="text-2xl font-bold text-white" style={{ fontFamily: 'Sora, sans-serif' }}>{title}</h1>
+          {subtitle && <p className="mt-1 text-sm" style={{ color: 'rgba(248,247,255,0.72)' }}>{subtitle}</p>}
         </div>
         {actions && <div className="flex items-center gap-2">{actions}</div>}
       </div>

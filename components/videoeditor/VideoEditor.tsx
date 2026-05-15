@@ -679,13 +679,14 @@ export function VideoEditor() {
 
   // ─── Shared panel style ───────────────────────────────────────────────────
   const panel =
-    'rounded-2xl border border-[#2a2118] bg-[#13100c]/80 backdrop-blur-sm shadow-[0_4px_32px_rgba(0,0,0,0.5)]'
+    'rounded-2xl border border-white/10 bg-[#100a2f]/85 backdrop-blur-sm shadow-[0_4px_32px_rgba(38,24,103,0.35)]'
 
   return (
     <div
       className="min-h-screen text-white overflow-x-hidden"
       style={{
-        background: 'radial-gradient(ellipse 80% 60% at 50% -10%, #2d1800 0%, #0d0905 55%, #080604 100%)',
+        backgroundColor: '#12072f',
+        backgroundImage: 'radial-gradient(circle at 20% 10%, rgba(145,85,255,0.16) 0%, transparent 28%), radial-gradient(circle at 80% 18%, rgba(255,179,44,0.08) 0%, transparent 24%)',
       }}
     >
       {/* Subtle grid texture overlay */}
@@ -693,7 +694,7 @@ export function VideoEditor() {
         className="pointer-events-none fixed inset-0 z-0 opacity-[0.03]"
         style={{
           backgroundImage:
-            'linear-gradient(#fa6a00 1px, transparent 1px), linear-gradient(90deg, #fa6a00 1px, transparent 1px)',
+            'linear-gradient(rgba(145,85,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,179,44,0.05) 1px, transparent 1px)',
           backgroundSize: '48px 48px',
         }}
       />
@@ -704,7 +705,7 @@ export function VideoEditor() {
           <div className="mb-4 flex justify-end">
             <button
               onClick={clearVideo}
-              className="px-4 py-2 rounded-lg text-sm font-semibold border border-[#3a2210] text-[#c07040] hover:border-[#fa6a00]/50 hover:text-[#fa6a00] hover:bg-[#fa6a00]/5 transition-all duration-200 whitespace-nowrap"
+              className="px-4 py-2 rounded-lg text-sm font-semibold border border-white/10 text-purple-100 hover:border-purple-400/50 hover:text-white hover:bg-purple-500/10 transition-all duration-200 whitespace-nowrap"
             >
               Clear Video
             </button>
@@ -715,15 +716,12 @@ export function VideoEditor() {
           // ── Upload Step ───────────────────────────────────────────────────
           <div
             className="flex-1 flex flex-col items-center justify-center gap-6 rounded-3xl border-2 border-dashed p-5 text-center sm:p-8"
-            style={{
-              borderColor: '#2e1a06',
-              background: 'radial-gradient(ellipse at center, #1a0e05 0%, #0d0905 100%)',
-            }}
+            
           >
             {/* Upload glow accent */}
             <div
-              className="absolute w-64 h-64 rounded-full pointer-events-none opacity-20 blur-3xl"
-              style={{ background: '#fa6a00' }}
+              className="absolute w-64 h-64 rounded-full pointer-events-none opacity-15 blur-3xl"
+              style={{ background: 'rgba(123,97,255,0.35)' }}
             />
             <EditorAiTools
               onVideoLoaded={(source, duration, fileName, sourceType, originalSource) => {
@@ -766,7 +764,7 @@ export function VideoEditor() {
                   <div className="flex items-center gap-2">
                     <span
                       className="w-2 h-2 rounded-full animate-pulse"
-                      style={{ background: '#fa6a00', boxShadow: '0 0 8px #fa6a00' }}
+                      style={{ background: '#8b5cf6', boxShadow: '0 0 8px rgba(139,92,246,0.7)' }}
                     />
                     <h2 className="text-base sm:text-lg font-bold tracking-wide text-white/90">
                       Preview
@@ -774,7 +772,7 @@ export function VideoEditor() {
                     {isBuffering && (
                       <span
                         className="text-xs px-2 py-0.5 rounded-full font-semibold animate-pulse"
-                        style={{ background: '#2d1b00', color: '#fa6a00', border: '1px solid #fa6a00/30' }}
+                        style={{ background: 'rgba(123,97,255,0.14)', color: '#d8c4ff', border: '1px solid rgba(123,97,255,0.25)' }}
                       >
                         Buffering…
                       </span>
@@ -788,8 +786,8 @@ export function VideoEditor() {
                       disabled={!sortedClips.length || isSequencePlaying || isYouTubePlatform}
                       className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
                       style={{
-                        background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
-                        boxShadow: '0 2px 12px rgba(250,106,0,0.35)',
+                        background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+                        boxShadow: '0 2px 12px rgba(124,58,237,0.35)',
                         color: 'white',
                       }}
                     >
@@ -798,11 +796,11 @@ export function VideoEditor() {
                     </button>
                     <button
                       onClick={handleStopSequence}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold border transition-all duration-200 hover:border-[#fa6a00]/40 hover:text-[#fa6a00]"
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold border transition-all duration-200 hover:border-purple-400/40 hover:text-purple-200"
                       style={{
-                        border: '1px solid #2e1a06',
-                        background: '#1a100600',
-                        color: '#8a6040',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        background: '#150b40',
+                        color: '#d8c4ff',
                       }}
                     >
                       <Square className="w-3.5 h-3.5" />
@@ -828,7 +826,7 @@ export function VideoEditor() {
                             onClick={() => setShowExternalPreview(true)}
                             className="px-5 py-2 rounded-lg text-sm font-bold transition-all"
                             style={{
-                              background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
+                              background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
                               color: 'white',
                             }}
                           >
@@ -870,17 +868,17 @@ export function VideoEditor() {
                           {!isYouTubeReady && (
                             <div
                               className="p-3 text-sm"
-                              style={{ background: '#1a0e05', borderTop: '1px solid #2a1a08', color: '#fa6a00' }}
+                              style={{ background: '#150b40', borderTop: '1px solid rgba(255,255,255,0.08)', color: '#d8c4ff' }}
                             >
                               <p className="font-semibold">Loading YouTube preview…</p>
-                              <p className="text-xs opacity-60 mt-0.5">Check your URL and network if loading fails.</p>
+                              <p className="text-xs opacity-60 mt-0.5 text-purple-200/70">Check your URL and network if loading fails.</p>
                             </div>
                           )}
                           <div
                             className="p-3"
-                            style={{ background: '#1a0e05', borderTop: '1px solid #2a1a08' }}
+                            style={{ background: '#150b40', borderTop: '1px solid rgba(255,255,255,0.08)' }}
                           >
-                            <p className="text-xs font-semibold text-[#fa6a00]">● YouTube — clip preview enabled</p>
+                            <p className="text-xs font-semibold text-purple-200">● YouTube — clip preview enabled</p>
                             <p className="text-xs text-white/40 mt-0.5">Export stays disabled for embedded sources.</p>
                           </div>
                           {state.videoDuration <= 0 && (
@@ -927,9 +925,9 @@ export function VideoEditor() {
                             <div className="px-4 py-2.5 flex items-center gap-2" style={{ borderTop: '1px solid #2a1a08' }}>
                               <span
                                 className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold"
-                                style={{ background: '#1a0e05', border: '1px solid #fa6a00/30', color: '#fa6a00' }}
+                                style={{ background: '#150b40', border: '1px solid rgba(139,92,246,0.25)', color: '#d8c4ff' }}
                               >
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#fa6a00] animate-pulse" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-purple-300 animate-pulse" />
                                 HLS Stream — live playback
                               </span>
                             </div>
@@ -944,10 +942,10 @@ export function VideoEditor() {
                             >
                               <div
                                 className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin shrink-0"
-                                style={{ borderColor: '#fa6a00', borderTopColor: 'transparent' }}
+                                style={{ borderColor: '#8b5cf6', borderTopColor: 'transparent' }}
                               />
                               <div>
-                                <p className="text-sm font-semibold" style={{ color: '#fa6a00' }}>Loading via proxy…</p>
+                                <p className="text-sm font-semibold text-purple-200">Loading via proxy…</p>
                                 <p className="text-xs opacity-60 mt-0.5">yt-dlp extracting stream URL (~5–10s)</p>
                               </div>
                             </div>
@@ -1001,7 +999,7 @@ export function VideoEditor() {
               <div className={panel + ' p-4 sm:p-5 space-y-3'}>
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 pb-2" style={{ borderBottom: '1px solid #2a1a08' }}>
                   <h2 className="text-base sm:text-lg font-bold tracking-wide text-white/90">Timeline</h2>
-                  <p className="text-xs text-[#4a3020]">Scroll · Drag · Click to jump · Ctrl+wheel to zoom</p>
+                  <p className="text-xs text-purple-200/60">Scroll · Drag · Click to jump · Ctrl+wheel to zoom</p>
                 </div>
 
                 <div className="flex flex-col xs:flex-row xs:flex-wrap items-stretch xs:items-center justify-between gap-2 xs:gap-3">
@@ -1010,9 +1008,9 @@ export function VideoEditor() {
                       onClick={handleAddClip}
                       className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
                       style={{
-                        background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
+                        background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
                         color: 'white',
-                        boxShadow: '0 2px 12px rgba(250,106,0,0.3)',
+                        boxShadow: '0 2px 12px rgba(124,58,237,0.3)',
                       }}
                     >
                       + Add Clip
@@ -1053,16 +1051,16 @@ export function VideoEditor() {
                         onClick={() => setClipDurationSeconds(sec)}
                         className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all duration-200 ${
                           isActive
-                            ? 'text-white shadow-[0_2px_8px_rgba(250,106,0,0.4)]'
-                            : 'text-[#6b4e2e] border border-[#2a1a08] hover:bg-[#1f140b] hover:text-[#e0a060]'
+                            ? 'text-white shadow-[0_2px_8px_rgba(124,58,237,0.4)]'
+                            : 'text-purple-200 border border-white/10 hover:bg-[#150b40] hover:text-white'
                         }`}
                         style={
                           isActive
                             ? {
-                                background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
+                                background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
                               }
                             : {
-                                background: '#1a100a',
+                                background: '#150b40',
                               }
                         }
                       >
@@ -1083,11 +1081,11 @@ export function VideoEditor() {
                         setClipDurationSeconds(value)
                       }
                     }}
-                    className="w-20 rounded-lg border border-[#2a1a08] bg-[#1a100a] px-3 py-1.5 text-sm font-semibold text-white outline-none transition-colors duration-200 focus:border-[#fa6a00] focus:ring-1 focus:ring-[#fa6a00]/20"
+                    className="w-20 rounded-lg border border-white/10 bg-[#150b40] px-3 py-1.5 text-sm font-semibold text-white outline-none transition-colors duration-200 focus:border-purple-400 focus:ring-1 focus:ring-purple-500/20"
                   />
-                  <span className="text-xs text-[#3a2810]">seconds</span>
+                  <span className="text-xs text-purple-200/70">seconds</span>
                 </div>
-                <p className="text-xs text-[#3a2810] sm:ml-auto">Default for new clips</p>
+                <p className="text-xs text-purple-200/70 sm:ml-auto">Default for new clips</p>
               </div>
 
               {/* Quick Actions */}
@@ -1097,9 +1095,9 @@ export function VideoEditor() {
                     onClick={() => handleAddClip()}
                     className="py-2.5 rounded-xl text-sm font-bold transition-all duration-200"
                     style={{
-                      background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
+                      background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
                       color: 'white',
-                      boxShadow: '0 2px 16px rgba(250,106,0,0.3)',
+                      boxShadow: '0 2px 16px rgba(124,58,237,0.3)',
                     }}
                   >
                     + Add Clip at Current Time
@@ -1110,11 +1108,11 @@ export function VideoEditor() {
                       selectClip(null)
                       toast.success('All clips cleared')
                     }}
-                    className="py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200 hover:border-red-500/40 hover:text-red-400"
+                    className="py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200 hover:border-purple-400/40 hover:text-purple-200"
                     style={{
-                      background: '#13100c',
-                      border: '1px solid #2a1a08',
-                      color: '#7a4030',
+                      background: '#150b40',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      color: '#d8c4ff',
                     }}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -1134,11 +1132,11 @@ export function VideoEditor() {
                   className="w-full py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200"
                   style={{
                     background: showAISuggestions
-                      ? 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)'
-                      : '#13100c',
-                    border: showAISuggestions ? 'none' : '1px solid #2a1a08',
-                    color: showAISuggestions ? 'white' : '#7a5030',
-                    boxShadow: showAISuggestions ? '0 2px 16px rgba(250,106,0,0.3)' : 'none',
+                      ? 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)'
+                      : '#150b40',
+                    border: showAISuggestions ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                    color: showAISuggestions ? 'white' : '#d8c4ff',
+                    boxShadow: showAISuggestions ? '0 2px 16px rgba(124,58,237,0.3)' : 'none',
                   }}
                 >
                   <Wand2 className="w-4 h-4" />
@@ -1151,9 +1149,9 @@ export function VideoEditor() {
                 <div
                   className="rounded-2xl p-4 sm:p-5"
                   style={{
-                    background: '#13100c',
-                    border: '1px solid rgba(250,106,0,0.2)',
-                    boxShadow: '0 0 0 1px rgba(250,106,0,0.05), 0 8px 32px rgba(0,0,0,0.4)',
+                    background: '#150b40',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: '0 0 0 1px rgba(123,97,255,0.08), 0 8px 32px rgba(15,8,52,0.45)',
                   }}
                 >
                   <ClipSuggestionPanel
@@ -1168,21 +1166,21 @@ export function VideoEditor() {
               <div
                 className="rounded-2xl p-4 sm:p-5 min-h-[300px] sm:min-h-[380px]"
                 style={{
-                  background: '#13100c',
-                  border: '1px solid #2a1a08',
-                  boxShadow: '0 4px 32px rgba(0,0,0,0.5)',
+                  background: '#150b40',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  boxShadow: '0 4px 32px rgba(15,8,52,0.45)',
                 }}
               >
                 <div className="flex items-center gap-2 mb-4 pb-3" style={{ borderBottom: '1px solid #2a1a08' }}>
                   <span
                     className="w-2 h-2 rounded-full"
-                    style={{ background: '#fa6a00' }}
+                    style={{ background: '#8b5cf6' }}
                   />
                   <h2 className="text-base sm:text-lg font-bold text-white/90">Clips</h2>
                   {sortedClips.length > 0 && (
                     <span
                       className="ml-auto px-2 py-0.5 rounded-full text-xs font-bold"
-                      style={{ background: '#2a1a08', color: '#fa6a00' }}
+                      style={{ background: 'rgba(123,97,255,0.12)', color: '#d8c4ff' }}
                     >
                       {sortedClips.length}
                     </span>
@@ -1206,9 +1204,9 @@ export function VideoEditor() {
                       onClick={() => setExportDialogOpen(true)}
                       className="w-full py-3.5 rounded-xl text-base font-black flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                       style={{
-                        background: 'linear-gradient(135deg, #fa6a00 0%, #e84d00 100%)',
+                        background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
                         color: 'white',
-                        boxShadow: '0 4px 24px rgba(250,106,0,0.45)',
+                        boxShadow: '0 4px 24px rgba(124,58,237,0.45)',
                         letterSpacing: '0.04em',
                       }}
                     >
@@ -1221,9 +1219,9 @@ export function VideoEditor() {
                     <div
                       className="rounded-lg p-3 text-xs text-center"
                       style={{
-                        background: '#1a0808',
-                        border: '1px solid #3a1010',
-                        color: '#c05050',
+                        background: '#150b40',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        color: '#d8c4ff',
                       }}
                     >
                       {exportDisabledReason}
@@ -1234,9 +1232,9 @@ export function VideoEditor() {
                     <div
                       className="rounded-lg p-3 text-xs text-center"
                       style={{
-                        background: '#1a1206',
-                        border: '1px solid #3a2a10',
-                        color: '#c09050',
+                        background: '#150b40',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        color: '#d8c4ff',
                       }}
                     >
                       Local uploads are best for preview. Use a supported URL for AI suggestions and export.
@@ -1254,14 +1252,14 @@ export function VideoEditor() {
                         href={previewUrl}
                         download="clip-export.mp4"
                         className="inline-block text-sm font-bold transition-all"
-                        style={{ color: '#fa6a00' }}
+                        style={{ color: '#d8c4ff' }}
                       >
                         ↓ Download Video
                       </a>
                     </div>
                   )}
 
-                  <p className="text-xs text-center" style={{ color: '#3a2810' }}>
+                  <p className="text-xs text-center text-purple-200/70">
                     Backend processing · streamed to browser
                   </p>
                 </div>
