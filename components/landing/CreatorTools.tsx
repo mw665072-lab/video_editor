@@ -1,9 +1,52 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, useAnimationControls } from "framer-motion";
 import { Captions, FileText, ImagePlus, Scissors, Search, Sparkles, Video, Wand2 } from "lucide-react";
 import { S } from "./landingStyles";
+import { useEffect, useState } from "react";
+
+const TOOL_CSS = `
+@keyframes tool-bg-pan {
+  0%,100% { background-position: 0% 40%; }
+  50% { background-position: 100% 60%; }
+}
+.creator-tools-section {
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+}
+.creator-tools-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(circle at 16% 18%, rgba(167,139,250,0.16), transparent 20%),
+              radial-gradient(circle at 85% 20%, rgba(139,92,246,0.12), transparent 18%),
+              radial-gradient(circle at 70% 80%, rgba(124,58,237,0.08), transparent 24%),
+              linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  background-size: 240% 240%;
+  animation: tool-bg-pan 25s ease infinite;
+}
+.creator-tools-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.7rem;
+  border: 1px solid rgba(124,58,237,0.18);
+  background: linear-gradient(180deg, rgba(124,58,237,0.15), rgba(167,139,250,0.12));
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 24px 80px rgba(124, 58, 237, 0.12);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 280px;
+}
+.creator-tools-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(124,58,237,0.45);
+  box-shadow: 0 32px 100px rgba(124,58,237,0.22);
+}
+`;
 
 const creatorTools = [
   {
@@ -70,66 +113,121 @@ const creatorTools = [
 
 export default function CreatorTools() {
   const router = useRouter();
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Split tools into two rows
+  const topRow = creatorTools.slice(0, 5);
+  const bottomRow = creatorTools.slice(5);
 
   return (
-    <section id="aitools" style={{ ...S.section, padding: "38px 0 100px" }}>
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          pointerEvents: "none",
-          background:
-            "radial-gradient(circle at 15% 20%, rgba(249,115,22,0.10), transparent 36%), radial-gradient(circle at 90% 65%, rgba(251,146,60,0.08), transparent 32%)",
-        }}
-      />
+    <>
+      <style>{TOOL_CSS}</style>
+      <section id="aitools" className="creator-tools-section" style={{ ...S.section, padding: "38px 0 100px" }}>
+        <div className="creator-tools-bg" />
 
-      <div style={{ ...S.container, position: "relative", zIndex: 1 }}>
-        <div style={{ textAlign: "center", marginBottom: 34 }}>
-          <span style={S.sectionTagCenter}>Creator AI Toolkit</span>
-          <h2 style={{ ...S.sectionTitle, marginTop: 16, marginBottom: 12 }}>
-            More Than Clipping.
-            <br />
-            A Full Creator Workflow.
-          </h2>
-          <p style={{ ...S.sectionSub, margin: "0 auto" }}>
-            Subtitles, transcripts, thumbnails, reframing, summaries, and timeline editing are surfaced from the homepage so users can jump straight into the job they need.
-          </p>
+        <div style={{ ...S.container, position: "relative", zIndex: 1 }}>
+          {/* Header */}
+          <div style={{ textAlign: "center", marginBottom: 34 }}>
+            <span style={{ ...S.sectionTagCenter, color: "#7c3aed", background: "rgba(124,58,237,0.1)", borderColor: "rgba(124,58,237,0.18)" }}>
+              Creator AI Toolkit
+            </span>
+            <h2 style={{ ...S.sectionTitle, marginTop: 16, marginBottom: 12, color: "#2e1065" }}>
+              More Than Clipping.
+              <br />
+              A Full Creator Workflow.
+            </h2>
+            <p style={{ ...S.sectionSub, margin: "0 auto", color: "#4b2cbf" }}>
+              Subtitles, transcripts, thumbnails, reframing, summaries, and timeline editing are surfaced from the homepage so users can jump straight into the job they need.
+            </p>
+          </div>
+
+          {/* Top Row - Moving Left to Right */}
+          <div className="mb-10">
+            <InfiniteSlider 
+              tools={topRow} 
+              direction="left" 
+              router={router}
+              setIsDragging={setIsDragging}
+            />
+          </div>
+
+          {/* Bottom Row - Moving Right to Left */}
+          <div>
+            <InfiniteSlider 
+              tools={bottomRow} 
+              direction="right" 
+              router={router}
+              setIsDragging={setIsDragging}
+            />
+          </div>
         </div>
+      </section>
+    </>
+  );
+}
 
-        <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          {creatorTools.map((tool, index) => {
-            const Icon = tool.icon;
+// Infinite Slider Component
+function InfiniteSlider({ tools, direction, router, setIsDragging }: any) {
+  const controls = useAnimationControls();
+  const duplicatedTools = [...tools, ...tools, ...tools]; // Triple for smooth infinite loop
 
-            return (
-              <motion.button
-                key={tool.title}
-                type="button"
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: index * 0.035 }}
-                viewport={{ once: true }}
-                onClick={() => router.push(tool.href)}
-                className="group relative min-h-[148px] overflow-hidden rounded-[1.7rem] border border-white/10 bg-white/[0.055] p-5 text-left shadow-[0_20px_70px_rgba(0,0,0,0.24)] transition duration-300 hover:-translate-y-1 hover:border-orange-400/45 hover:bg-orange-500/[0.08]"
-              >
-                <div className="absolute inset-0 opacity-0 transition duration-300 group-hover:opacity-100" style={{ background: "radial-gradient(circle at 50% 0%, rgba(249,115,22,0.18), transparent 58%)" }} />
-                {tool.badge && (
-                  <span className="absolute right-4 top-4 rounded-full border border-orange-300/20 bg-orange-400/15 px-2.5 py-1 text-[11px] font-black text-orange-300">
-                    {tool.badge}
-                  </span>
-                )}
+  useEffect(() => {
+    const duration = direction === "left" ? 32 : 38; // Slightly different speed
 
-                <div className="relative z-10 flex h-full flex-col">
-                  <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/25 bg-orange-500/10 text-orange-300 transition group-hover:scale-105 group-hover:bg-orange-500/20">
-                    <Icon size={24} strokeWidth={2.4} />
-                  </div>
-                  <h3 className="text-base font-black text-white">{tool.title}</h3>
-                  <p className="mt-2 line-clamp-3 text-sm leading-6 text-white/48">{tool.description}</p>
-                </div>
-              </motion.button>
-            );
-          })}
-        </div>
-      </div>
-    </section>
+    controls.start({
+      x: direction === "left" ? ["0%", "-33.33%"] : ["-33.33%", "0%"],
+      transition: {
+        duration: duration,
+        repeat: Infinity,
+        ease: "linear",
+      },
+    });
+  }, [direction, controls]);
+
+  return (
+    <div className="overflow-hidden py-4 relative">
+      <motion.div
+        className="flex gap-6"
+        animate={controls}
+        drag="x"
+        dragConstraints={{ left: -200, right: 200 }}
+        onDragStart={() => setIsDragging(true)}
+        onDragEnd={() => setIsDragging(false)}
+        whileDrag={{ scale: 0.985 }}
+      >
+        {duplicatedTools.map((tool: any, index: number) => {
+          const Icon = tool.icon;
+          return (
+            <motion.button
+              key={index}
+              type="button"
+              onClick={() => router.push(tool.href)}
+              className="creator-tools-card p-6 text-left group min-h-[172px]"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              {tool.badge && (
+                <span className="absolute right-5 top-5 rounded-full border border-violet-300/30 bg-white/90 px-3 py-1 text-xs font-bold text-violet-700 shadow-sm">
+                  {tool.badge}
+                </span>
+              )}
+
+              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-purple-300/40 bg-white text-purple-700 transition-all group-hover:scale-110 group-hover:rotate-6">
+                <Icon size={30} strokeWidth={2.3} />
+              </div>
+
+              <h3 className="text-xl font-bold text-slate-900 mb-3 leading-tight">{tool.title}</h3>
+              <p className="text-sm leading-relaxed text-slate-600 line-clamp-3">
+                {tool.description}
+              </p>
+            </motion.button>
+          );
+        })}
+      </motion.div>
+
+      {/* Left & Right Fade Gradients */}
+      <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-white via-white to-transparent pointer-events-none z-10" />
+      <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-white via-white to-transparent pointer-events-none z-10" />
+    </div>
   );
 }

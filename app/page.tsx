@@ -6,6 +6,7 @@ import CreatorTools from "../components/landing/CreatorTools";
 import Stats from "../components/landing/Stats";
 import Features from "../components/landing/Features";
 import HowItWorks from "../components/landing/HowItWorks";
+import VideoBlushLibrary from "../components/landing/VideoBlushLibrary";
 import UploadSection from "../components/landing/UploadSection";
 import CTA from "../components/landing/CTA";
 import Footer from "../components/landing/Footer";
@@ -23,6 +24,7 @@ export default function ClipAIPage() {
         <CreatorTools />
         <Stats />
         <Features />
+        <VideoBlushLibrary />
         <HowItWorks />
         <UploadSection />
         <CTA />

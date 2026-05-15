@@ -5,7 +5,31 @@ import { HoverCard } from "./landingHelpers";
 
 export default function HowItWorks() {
   return (
-    <section id="howitworks" style={{ ...S.section, padding: "120px 0", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+    <section id="howitworks" style={{ ...S.section, padding: "120px 0", borderTop: "1px solid rgba(255,255,255,0.07)", position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", inset: 0, zIndex: 0, overflow: "hidden" }}>
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          poster="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=80"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            opacity: 0.24,
+            filter: "brightness(0.42) saturate(1.1)",
+          }}
+          crossOrigin="anonymous"
+        >
+          <source src="https://assets.mixkit.co/videos/preview/mixkit-person-editing-video-on-a-laptop-516-large.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(15,12,44,0.52), rgba(15,12,44,0.82))" }} />
+      </div>
       <div style={{ ...S.container, position: "relative", zIndex: 1 }}>
         <div style={{ textAlign: "center", marginBottom: 64 }}>
           <span style={S.sectionTagCenter}>How It Works</span>
