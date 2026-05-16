@@ -59,7 +59,7 @@ export default function VisualEditorPage() {
   return (
     <ErrorBoundary>
       <PageShell title="" subtitle="">
-        <div className="h-full overflow-hidden rounded-3xl border border-slate-800 shadow-[0_20px_45px_rgba(3,17,37,.55)] backdrop-blur-xl">
+        <div className="h-[calc(100svh-10rem)] min-h-[640px] overflow-hidden rounded-2xl border border-slate-800 shadow-[0_20px_45px_rgba(3,17,37,.55)] backdrop-blur-xl sm:min-h-[680px] sm:rounded-3xl lg:h-[calc(100svh-8rem)] xl:h-[calc(100svh-7rem)]">
           <VisualEditor />
         </div>
         <Toaster position="top-right" />

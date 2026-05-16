@@ -48,16 +48,16 @@ const useVisualEditor = (): UseVisualEditorReturn => {
   const [exportOpen,       setExportOpen]       = useState(false);
   const [showProperties,   setShowProperties]   = useState(false);
   const [showMediaBrowser, setShowMediaBrowser] = useState(true);
-  const [showBlueprint,    setShowBlueprint]    = useState(true);
+  const [showBlueprint,    setShowBlueprint]    = useState(false);
   const [isMobile,         setIsMobile]         = useState(false);
 
   // ── 1. Responsive breakpoint detection ───────────────────────────────────
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 1023px)');
+    const mq = window.matchMedia('(max-width: 1279px)');
 
     const apply = (matches: boolean) => {
       setIsMobile(matches);
-      // On mobile, hide both panels by default to maximise canvas space
+      // Below the full workstation layout, panels become overlays to maximise canvas space.
       if (matches) {
         setShowProperties(false);
         setShowMediaBrowser(false);

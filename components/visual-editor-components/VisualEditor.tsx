@@ -37,16 +37,16 @@ const ProductionBlueprintPanel = lazy(() => import('./ProductionBlueprintPanel')
 
 // ─── Static class strings (outside component — avoids string recreation per render) ─
 const ROOT_CLS =
-  'h-full w-full min-h-0 flex flex-col text-[#f8f7ff] overflow-hidden relative editor-root';
+  'relative flex h-full min-h-[640px] w-full min-w-0 flex-col overflow-hidden text-[#f8f7ff] editor-root sm:min-h-[680px] xl:min-h-[560px]';
 
 const SIDEBAR_CLS =
-  'hidden lg:flex lg:w-64 xl:w-72 2xl:w-80 flex-col flex-shrink-0 border-r border-white/10 bg-[#100a2f]/90 shadow-[inset_-1px_0_0_rgba(255,255,255,0.05)]';
+  'hidden xl:flex xl:w-64 2xl:w-72 flex-col flex-shrink-0 border-r border-white/10 bg-[#100a2f]/90 shadow-[inset_-1px_0_0_rgba(255,255,255,0.05)]';
 
 const PANEL_LABEL_CLS =
   'px-4 py-3 border-b border-white/10 bg-[#140932]/85 text-[10px] font-bold uppercase tracking-[0.2em] text-[#c7b4ff] select-none';
 
 const STATUS_BAR_CLS =
-  'flex flex-col gap-2 px-4 py-2.5 bg-[#10082c]/95 border-t border-white/10 text-[11px] text-[#c7b4ff] backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between';
+  'flex flex-col gap-2 border-t border-white/10 bg-[#10082c]/95 px-3 pb-[calc(env(safe-area-inset-bottom)+14px)] pt-2.5 text-[11px] text-[#c7b4ff] backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:pb-2.5';
 
 // ─── Tiny skeleton shown while lazy chunks load ──────────────────────────────
 const PanelSkeleton = memo(({ className }: { className?: string }) => (
@@ -102,10 +102,11 @@ const PropertiesPanelWrapper = memo(({ onClose }: PropertiesPanelWrapperProps) =
   <aside
     aria-label="Properties panel"
     className="
-      w-full lg:w-[300px] flex-shrink-0 flex flex-col
-      border-t border-white/10 lg:border-t-0 lg:border-l
-      bg-[#100a2f]/95 relative
+      absolute inset-x-2 bottom-14 top-14 z-40 flex flex-col overflow-hidden rounded-2xl
+      border border-white/10 bg-[#100a2f]/95 shadow-2xl backdrop-blur-xl
       animate-in slide-in-from-right-4 duration-200
+      md:left-auto md:w-[340px]
+      xl:static xl:z-auto xl:w-[300px] xl:flex-shrink-0 xl:rounded-none xl:border-y-0 xl:border-r-0 xl:border-l xl:shadow-none
     "
   >
     <div className="absolute top-3 right-3 z-10 lg:left-3 lg:right-auto">
@@ -136,7 +137,7 @@ const MobileMediaOverlay = memo(({ onClose }: MobileMediaOverlayProps) => (
     aria-modal="true"
     aria-label="Media Browser"
     className="
-      absolute inset-0 z-30 bg-[#12072f]/96 backdrop-blur-xl p-4
+      absolute inset-0 z-30 bg-[#12072f]/96 p-2 backdrop-blur-xl sm:p-4
       animate-in fade-in duration-150
     "
   >
@@ -155,7 +156,7 @@ const MobileMediaOverlay = memo(({ onClose }: MobileMediaOverlayProps) => (
         <X className="w-4 h-4" />
       </Button>
     </div>
-    <div className="h-[calc(100%-3.5rem)] overflow-hidden rounded-3xl border border-white/10 bg-[#100a2f]/90 shadow-2xl">
+    <div className="h-[calc(100%-3.5rem)] overflow-hidden rounded-2xl border border-white/10 bg-[#100a2f]/90 shadow-2xl sm:rounded-3xl">
       <Suspense fallback={<PanelSkeleton />}>
         <MediaBrowser />
       </Suspense>
@@ -276,7 +277,7 @@ const VisualEditor: React.FC = () => {
       </Suspense>
 
       {/* ── Main workspace ── */}
-      <div className="flex flex-1 min-h-0 overflow-hidden lg:flex-row flex-col">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden xl:flex-row">
 
         {/* ── Desktop sidebar: Media Browser ── */}
         <aside aria-label="Media Browser" className={SIDEBAR_CLS}>
@@ -287,15 +288,15 @@ const VisualEditor: React.FC = () => {
         </aside>
 
         {/* ── Centre: Preview + Timeline ── */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
 
-          {/* Mobile top-bar */}
-          <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/10 bg-[#10082c]/85 lg:hidden">
+          {/* Compact top-bar for mobile, tablet, and laptop widths */}
+          <div className="flex items-center justify-between gap-2 border-b border-white/10 bg-[#10082c]/85 px-2 py-2 sm:px-4 sm:py-3 xl:hidden">
             <div>
-              <p className="text-sm font-semibold text-[#f8f7ff]">Visual Editor</p>
-              <p className="text-[11px] text-[#c7b4ff]">Responsive editing for every screen.</p>
+              <p className="text-xs font-semibold text-[#f8f7ff] sm:text-sm">Visual Editor</p>
+              <p className="hidden text-[11px] text-[#c7b4ff] sm:block">Responsive editing for every screen.</p>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex shrink-0 items-center gap-1">
               <IconBtn
                 label="Open Media Browser"
                 shortcut="Ctrl+M"
@@ -324,7 +325,7 @@ const VisualEditor: React.FC = () => {
             </div>
           </div>
 
-          <div className="hidden items-center justify-between border-b border-white/10 bg-[#10082c]/80 px-4 py-2 lg:flex">
+          <div className="hidden items-center justify-between border-b border-white/10 bg-[#10082c]/80 px-4 py-2 xl:flex">
             <div className="flex min-w-0 items-center gap-2 text-[11px] text-[#c7b4ff]">
               <Sparkles className="h-3.5 w-3.5 text-[#ffd36b]" />
               <span className="truncate">Clip-style tools for importing, cutting, captions, effects, and export</span>
@@ -346,33 +347,33 @@ const VisualEditor: React.FC = () => {
 
           {/* Preview + Timeline canvases */}
           <div
-            className={`min-h-0 flex-1 overflow-hidden px-2 py-2 sm:px-3 sm:py-3 ${
+            className={`min-h-0 flex-1 overflow-hidden p-2 pb-4 sm:p-3 ${
               showBlueprint
-                ? 'grid grid-rows-[minmax(230px,32vh)_minmax(0,1fr)] gap-3 min-[1800px]:grid-cols-[minmax(320px,400px)_minmax(560px,1fr)] min-[1800px]:grid-rows-none'
-                : 'space-y-3'
+                ? 'grid grid-rows-[minmax(150px,0.55fr)_minmax(260px,1.45fr)] gap-2 sm:grid-rows-[minmax(180px,0.7fr)_minmax(320px,1.3fr)] sm:gap-3 min-[1500px]:grid-cols-[minmax(280px,360px)_minmax(520px,1fr)] min-[1500px]:grid-rows-none'
+                : 'flex flex-col gap-2 sm:gap-3'
             }`}
             role="main"
             aria-label="Editor workspace"
           >
             {showBlueprint && (
-              <div className="min-h-0 overflow-hidden">
+              <div className="min-h-0 overflow-hidden rounded-2xl">
                 <Suspense fallback={<PanelSkeleton className="h-full w-full rounded-2xl border border-white/10" />}>
                   <ProductionBlueprintPanel />
                 </Suspense>
               </div>
             )}
 
-            <div className={`min-h-0 ${showBlueprint ? 'flex flex-col gap-3 overflow-hidden' : 'space-y-3'}`}>
-              <div className={`rounded-2xl border border-white/10 bg-black shadow-[0_20px_60px_rgba(12,2,32,0.35)] overflow-hidden min-h-[180px] ${
-                showBlueprint ? 'h-[30vh] min-[1800px]:h-[38vh]' : 'h-[36vh] sm:h-[42vh] lg:h-[48vh]'
+            <div className={`min-h-0 ${showBlueprint ? 'flex flex-col gap-2 overflow-hidden sm:gap-3' : 'flex flex-1 flex-col gap-2 sm:gap-3'}`}>
+              <div className={`overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_20px_60px_rgba(12,2,32,0.35)] ${
+                showBlueprint ? 'h-[min(30svh,290px)] min-h-[160px] sm:h-[min(34svh,320px)] sm:min-h-[170px] min-[1500px]:h-[42vh]' : 'h-[min(42svh,460px)] min-h-[200px] flex-none sm:h-[min(48svh,520px)] sm:min-h-[220px] lg:h-[52vh]'
               }`}>
                 <Suspense fallback={<PanelSkeleton className="h-full w-full" />}>
                   <VideoPreview />
                 </Suspense>
               </div>
 
-              <div className={`rounded-2xl border border-white/10 bg-[#100a2f]/80 shadow-inner overflow-hidden min-h-[180px] ${
-                showBlueprint ? 'flex-1' : 'h-[25vh] sm:h-[28vh] lg:h-[30vh]'
+              <div className={`overflow-hidden rounded-2xl border border-white/10 bg-[#100a2f]/80 shadow-inner ${
+                showBlueprint ? 'min-h-[250px] flex-1 sm:min-h-[220px]' : 'min-h-[260px] flex-1 sm:min-h-[220px]'
               }`}>
               <Suspense fallback={<PanelSkeleton className="h-full w-full" />}>
                 <Timeline />
@@ -389,7 +390,7 @@ const VisualEditor: React.FC = () => {
 
         {/* ── "Open properties" toggle button when panel is hidden (desktop) ── */}
         {!showProperties && !isMobile && (
-          <div className="flex-shrink-0 flex items-start pt-1 px-2">
+          <div className="hidden flex-shrink-0 items-start px-2 pt-1 xl:flex">
             <IconBtn
               label="Show Properties Panel"
               shortcut="Ctrl+P"

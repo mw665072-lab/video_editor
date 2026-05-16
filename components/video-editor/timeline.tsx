@@ -981,6 +981,7 @@ const Timeline: React.FC = () => {
   const zoom = useEditorStore((s) => s.zoom);
   const scrollX = useEditorStore((s) => s.scrollX);
   const currentTime = useEditorStore((s) => s.currentTime);
+  const isPlaying = useEditorStore((s) => s.isPlaying);
   const totalDuration = useEditorStore((s) => s.totalDuration);
   const activeTool = useEditorStore((s) => s.activeTool);
   const selectedClipIds = useEditorStore((s) => s.selectedClipIds) ?? EMPTY_IDS;
@@ -995,6 +996,7 @@ const Timeline: React.FC = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const headerScrollRef = useRef<HTMLDivElement>(null);
   const tracksAreaRef = useRef<HTMLDivElement>(null);
+  const programmaticScrollRef = useRef(false);
   const [timelineWidth, setTimelineWidth] = useState(800);
   const [showTrackHeaders, setShowTrackHeaders] = useState(true);
   const [totalTracksHeight, setTotalTracksHeight] = useState(0);
@@ -1027,13 +1029,50 @@ const Timeline: React.FC = () => {
   const handleScroll = useCallback(
     (e: React.UIEvent<HTMLDivElement>) => {
       const target = e.currentTarget;
-      setScrollX(target.scrollLeft);
+      if (Math.abs(target.scrollLeft - useEditorStore.getState().scrollX) > 0.5) {
+        setScrollX(target.scrollLeft);
+      }
       if (headerScrollRef.current) {
         headerScrollRef.current.scrollTop = target.scrollTop;
       }
+      programmaticScrollRef.current = false;
     },
     [setScrollX]
   );
+
+  // Keep this timeline instance aligned when another control updates scrollX.
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    if (Math.abs(el.scrollLeft - scrollX) <= 1) return;
+
+    programmaticScrollRef.current = true;
+    el.scrollLeft = scrollX;
+  }, [scrollX]);
+
+  // Keep the playhead visible when playback or external seek controls move time.
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el || timelineWidth <= 0) return;
+
+    const playheadX = currentTime * zoom;
+    const viewportLeft = el.scrollLeft;
+    const viewportRight = viewportLeft + el.clientWidth;
+    const edgePadding = Math.min(140, Math.max(48, el.clientWidth * 0.18));
+
+    let nextScrollLeft: number | null = null;
+    if (playheadX < viewportLeft + edgePadding) {
+      nextScrollLeft = Math.max(0, playheadX - edgePadding);
+    } else if (playheadX > viewportRight - edgePadding) {
+      nextScrollLeft = Math.max(0, playheadX - el.clientWidth + edgePadding);
+    }
+
+    if (nextScrollLeft === null || Math.abs(nextScrollLeft - el.scrollLeft) <= 1) return;
+
+    programmaticScrollRef.current = true;
+    el.scrollLeft = nextScrollLeft;
+    setScrollX(nextScrollLeft);
+  }, [currentTime, isPlaying, setScrollX, timelineWidth, zoom]);
 
   // ---- Ctrl+wheel zoom, RAF-throttled ----
   const handleWheel = useCallback(
@@ -1209,7 +1248,10 @@ const Timeline: React.FC = () => {
           <div
             ref={tracksAreaRef}
             className="relative min-w-full"
-            style={{ minHeight: Math.max(totalTracksHeight, 180) }}
+            style={{
+              minHeight: Math.max(totalTracksHeight, 180),
+              width: Math.max(timelineWidth, totalDuration * zoom + 240),
+            }}
           >
             {/* Canvas grid — zero SVG overhead */}
             <GridCanvas
