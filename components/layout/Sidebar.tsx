@@ -91,6 +91,7 @@ const editorToolHrefs = new Set([
 ])
 
 const cleanSidebarItems = (items: typeof navItems) => items.filter((item) => !editorToolHrefs.has(item.href))
+const guestHiddenHrefs = new Set(['/auth/profile', '/billing'])
 
 const mergeMissingSidebarItems = (primary: typeof navItems, fallback: typeof navItems) => {
   const cleanedPrimary = cleanSidebarItems(primary)
@@ -112,7 +113,10 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const isAdmin = user?.role === 'ADMIN' || user?.isAdmin
-  const items = isAdmin ? cmsAdminItems : cmsUserItems
+  const isLoggedIn = Boolean(user)
+  const items = isAdmin
+    ? cmsAdminItems
+    : cmsUserItems.filter((item) => isLoggedIn || !guestHiddenHrefs.has(item.href))
 
   useEffect(() => {
     getProfile().then((data) => setUser(data.user)).catch(() => setUser(null))
@@ -145,16 +149,18 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             {/* Avatar */}
-            <span
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-xs font-black text-white shrink-0"
-              style={{
-                background: 'linear-gradient(135deg, #ffd36b 0%, #ffb32c 100%)',
-                color: '#3b1769',
-                boxShadow: '0 6px 18px rgba(255,179,44,0.24)',
-              }}
-            >
-              {user?.name?.charAt(0)?.toUpperCase() || (isAdmin ? 'A' : 'U')}
-            </span>
+            {isLoggedIn && (
+              <span
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-xs font-black text-white shrink-0"
+                style={{
+                  background: 'linear-gradient(135deg, #ffd36b 0%, #ffb32c 100%)',
+                  color: '#3b1769',
+                  boxShadow: '0 6px 18px rgba(255,179,44,0.24)',
+                }}
+              >
+                {user?.name?.charAt(0)?.toUpperCase() || (isAdmin ? 'A' : 'U')}
+              </span>
+            )}
             <div>
               <p className="text-sm font-bold text-white/90">{isAdmin ? 'Admin Panel' : 'Workspace'}</p>
               <p className="text-[11px]" style={{ color: 'rgba(248,247,255,0.58)' }}>{isAdmin ? 'Platform control' : 'Tap menu'}</p>
@@ -329,33 +335,34 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
               </p>
             </div>
 
-            {/* Logout */}
-            <button
-              onClick={handleLogout}
-              className="mt-3 w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all duration-200"
-              style={{
-                background: 'rgba(240,101,125,0.12)',
-                border: '1px solid rgba(240,101,125,0.24)',
-                color: '#ffc2ce',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(240,101,125,0.18)'
-                e.currentTarget.style.color = '#ffe0e6'
-                e.currentTarget.style.borderColor = 'rgba(240,101,125,0.32)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(240,101,125,0.12)'
-                e.currentTarget.style.color = '#ffc2ce'
-                e.currentTarget.style.borderColor = 'rgba(240,101,125,0.24)'
-              }}
-            >
-              <LogOut size={14} />
-              Logout
-            </button>
+            {isLoggedIn && (
+              <button
+                onClick={handleLogout}
+                className="mt-3 w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all duration-200"
+                style={{
+                  background: 'rgba(240,101,125,0.12)',
+                  border: '1px solid rgba(240,101,125,0.24)',
+                  color: '#ffc2ce',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(240,101,125,0.18)'
+                  e.currentTarget.style.color = '#ffe0e6'
+                  e.currentTarget.style.borderColor = 'rgba(240,101,125,0.32)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(240,101,125,0.12)'
+                  e.currentTarget.style.color = '#ffc2ce'
+                  e.currentTarget.style.borderColor = 'rgba(240,101,125,0.24)'
+                }}
+              >
+                <LogOut size={14} />
+                Logout
+              </button>
+            )}
           </>
         )}
 
-        {collapsed && (
+        {collapsed && isLoggedIn && (
           <button
             onClick={handleLogout}
             aria-label="Logout"

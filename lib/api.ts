@@ -225,9 +225,10 @@ const clearAccessToken = () => {
 }
 
 const redirectToLogin = () => {
-  if (typeof window !== 'undefined') {
-    window.location.href = '/auth/login'
-  }
+  // Login redirect is temporarily disabled for public MVP access.
+  // if (typeof window !== 'undefined') {
+  //   window.location.href = '/auth/login'
+  // }
 }
 
 async function refreshToken() {
@@ -254,8 +255,8 @@ async function refreshToken() {
 const ensureAuthResponse = (response: Response): Response => {
   if (response.status === 401) {
     clearAccessToken()
-    redirectToLogin()
-    throw new Error('Unauthorized. Redirecting to login.')
+    // Public MVP mode: do not force guests to the login page.
+    return response
   }
   return response
 }
@@ -277,14 +278,19 @@ export async function requestWithAuth(input: RequestInfo, init: RequestInit = {}
   })
 
   if (response.status === 401) {
-    const newToken = await refreshToken()
-    headers.set('Authorization', `Bearer ${newToken}`)
-    const retry = await fetch(url, {
-      ...init,
-      headers,
-      credentials: 'include',
-    })
-    return ensureAuthResponse(retry)
+    try {
+      const newToken = await refreshToken()
+      headers.set('Authorization', `Bearer ${newToken}`)
+      const retry = await fetch(url, {
+        ...init,
+        headers,
+        credentials: 'include',
+      })
+      return ensureAuthResponse(retry)
+    } catch {
+      clearAccessToken()
+      return response
+    }
   }
 
   return ensureAuthResponse(response)

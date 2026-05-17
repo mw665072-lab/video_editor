@@ -2,13 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { ArrowLeft, Calendar, MessageCircle, Send, ThumbsDown, ThumbsUp, User } from 'lucide-react'
 import { addBlogComment, BlogPost, getBlog, reactToBlog } from '@/lib/api'
 import { PageShell } from '@/components/layout/PageShell'
 
 export function BlogDetailPage({ slug }: { slug: string }) {
-  const router = useRouter()
   const [post, setPost] = useState<BlogPost | null>(null)
   const [comment, setComment] = useState('')
   const [loading, setLoading] = useState(true)
@@ -30,7 +28,7 @@ export function BlogDetailPage({ slug }: { slug: string }) {
       const data = await reactToBlog(post.id, next)
       setPost(data.post)
     } catch {
-      router.push('/auth/login')
+      setError('Please sign in later to react. Public login is currently disabled.')
     } finally {
       setBusy(false)
     }
@@ -44,7 +42,7 @@ export function BlogDetailPage({ slug }: { slug: string }) {
       setPost(data.post)
       setComment('')
     } catch {
-      router.push('/auth/login')
+      setError('Please sign in later to comment. Public login is currently disabled.')
     } finally {
       setBusy(false)
     }
