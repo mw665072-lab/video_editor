@@ -29,7 +29,16 @@ export default function DashboardPage() {
         }
         setUser(data.user)
       })
-      .catch((err) => setError(err.message))
+      .catch(() => {
+        // Public MVP mode: let anonymous visitors explore the platform dashboard.
+        setUser({
+          name: 'Guest',
+          email: 'guest@clipai.local',
+          subscriptionPlan: 'FREE',
+          clipsThisMonth: 0,
+          downloadsThisMonth: 0,
+        })
+      })
   }, [])
 
   const onLogout = async () => {
@@ -37,7 +46,7 @@ export default function DashboardPage() {
     window.location.href = '/'
   }
 
-  const clipsLimit = user ? (user.subscriptionPlan === 'FREE' ? 5 : user.subscriptionPlan === 'BASIC' ? 500 : 700) : 5
+  const clipsLimit = user ? (user.subscriptionPlan === 'FREE' ? 150 : user.subscriptionPlan === 'BASIC' ? 500 : 700) : 150
   const downloadsLimit = clipsLimit
 
   const clipsProgress = user ? Math.min((user.clipsThisMonth / clipsLimit) * 100, 100) : 0

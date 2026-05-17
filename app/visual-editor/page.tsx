@@ -1,13 +1,11 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { ErrorBoundary } from '@/components/error/ErrorBoundary'
 import { Toaster } from 'sonner'
 import { Spinner } from '@/components/ui/spinner'
 import { PageShell } from '@/components/layout/PageShell'
-import { getProfile } from '@/lib/api'
 
 const VisualEditor = dynamic(() => import('@/components/VisualEditor'), {
   loading: () => (
@@ -26,16 +24,17 @@ const VisualEditor = dynamic(() => import('@/components/VisualEditor'), {
 })
 
 export default function VisualEditorPage() {
-  const router = useRouter()
-  const [isAuthorized, setIsAuthorized] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [isAuthorized] = useState(true)
+  const [loading] = useState(false)
 
-  useEffect(() => {
-    getProfile()
-      .then(() => setIsAuthorized(true))
-      .catch(() => router.replace('/auth/login'))
-      .finally(() => setLoading(false))
-  }, [router])
+  // Login requirement is temporarily disabled for public MVP access.
+  // Restore this block later when auth gating is needed again.
+  // useEffect(() => {
+  //   getProfile()
+  //     .then(() => setIsAuthorized(true))
+  //     .catch(() => router.replace('/auth/login'))
+  //     .finally(() => setLoading(false))
+  // }, [router])
 
   if (loading) {
     return (

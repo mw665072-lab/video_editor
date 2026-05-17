@@ -5,7 +5,7 @@ import { getProfile, createSubscriptionCheckout } from '@/lib/api'
 import { PageShell } from '@/components/layout/PageShell'
 
 const plans = [
-  { key: 'FREE', label: 'Free', priceLabel: '$0', subLabel: '/ month', features: ['5 clips / month', '5 downloads / month'] },
+  { key: 'FREE', label: 'Free', priceLabel: '$0', subLabel: '/ month', features: ['150 clips / month', '150 downloads / month'] },
   {
     key: 'BASIC',
     label: 'Basic',
@@ -42,7 +42,8 @@ export default function BillingPage() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    getProfile().then((data) => setUser(data.user)).catch((err) => setError(err.message))
+    // Anonymous users can view plans during the public MVP period.
+    getProfile().then((data) => setUser(data.user)).catch(() => setUser(null))
   }, [])
 
   const handleCheckout = async (priceId: string | undefined) => {
@@ -63,7 +64,7 @@ export default function BillingPage() {
 
   const clipsUsed = user?.clipsThisMonth ?? 0
   const clipsLimit =
-    user?.subscriptionPlan === 'FREE' ? 5 : user?.subscriptionPlan === 'BASIC' ? 500 : 700
+    user?.subscriptionPlan === 'FREE' ? 150 : user?.subscriptionPlan === 'BASIC' ? 500 : 700
   const usagePct = clipsLimit > 0 ? Math.min((clipsUsed / clipsLimit) * 100, 100) : 0
 
   return (

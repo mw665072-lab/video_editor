@@ -200,7 +200,7 @@ export default function RegisterPage() {
               Welcome to ClipAI
             </h1>
             <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6 }}>
-              Sign up to unlock the first 5 clips every month.
+              Sign up to unlock the first 150 clips every month.
             </p>
           </div>
 

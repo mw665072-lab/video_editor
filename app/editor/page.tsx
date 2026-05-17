@@ -2,12 +2,11 @@
 
 import dynamic from 'next/dynamic'
 import { useEffect, useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
 import { ErrorBoundary } from '@/components/error/ErrorBoundary'
 import { Toaster } from 'sonner'
 import { Spinner } from '@/components/ui/spinner'
 import { PageShell } from '@/components/layout/PageShell'
-import { getProfile, hlsCleanup, hlsHeartbeat } from '@/lib/api'
+import { hlsCleanup, hlsHeartbeat } from '@/lib/api'
 
 const VideoEditor = dynamic(() => import('@/components/videoeditor/VideoEditor').then(mod => ({ default: mod.VideoEditor })), {
   loading: () => (
@@ -19,21 +18,22 @@ const VideoEditor = dynamic(() => import('@/components/videoeditor/VideoEditor')
 })
 
 export default function EditorPage() {
-  const router = useRouter()
-  const [isAuthorized, setIsAuthorized] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [isAuthorized] = useState(true)
+  const [loading] = useState(false)
 
   // Cleanup HLS temp storage on unmount / page leave
   const cleanup = useCallback(() => {
     hlsCleanup().catch(() => {})
   }, [])
 
-  useEffect(() => {
-    getProfile()
-      .then(() => setIsAuthorized(true))
-      .catch(() => router.replace('/auth/login'))
-      .finally(() => setLoading(false))
-  }, [router])
+  // Login requirement is temporarily disabled for public MVP access.
+  // Restore this block later when auth gating is needed again.
+  // useEffect(() => {
+  //   getProfile()
+  //     .then(() => setIsAuthorized(true))
+  //     .catch(() => router.replace('/auth/login'))
+  //     .finally(() => setLoading(false))
+  // }, [router])
 
   // Heartbeat to keep user's HLS session alive + cleanup on leave
   useEffect(() => {

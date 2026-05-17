@@ -71,27 +71,33 @@ export function BlogListPage() {
         {loading && <div className="rounded-2xl border border-white/10 bg-[#100a2f] p-8 text-center text-[#c7b4ff]">Loading blogs...</div>}
 
         {!loading && featured && (
-          <Link href={`/blogs/${featured.slug}`} className="group mb-6 grid overflow-hidden rounded-[2rem] border border-white/10 bg-[#100a2f] shadow-[0_16px_60px_rgba(38,24,103,0.35)] lg:grid-cols-[1.05fr_0.95fr]">
-            <div className="min-h-[280px] bg-[#1a100a]">
-              {featured.coverImageUrl ? <img src={featured.coverImageUrl} alt={featured.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" /> : <div className="flex h-full items-center justify-center text-[#8a6a45]">No cover image</div>}
+          <Link href={`/blogs/${featured.slug}`} className="group mb-6 grid overflow-hidden rounded-2xl border border-white/10 bg-[#100a2f] shadow-[0_16px_60px_rgba(38,24,103,0.35)] transition hover:border-[#7c3aed]/50 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="relative h-[260px] overflow-hidden bg-[#1a100a] lg:h-[320px]">
+              {featured.coverImageUrl
+                ? <img src={featured.coverImageUrl} alt={featured.title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
+                : <div className="flex h-full items-center justify-center text-[#8a6a45] text-sm">No cover image</div>}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#100a2f]/60 via-transparent to-transparent" />
             </div>
-            <div className="flex flex-col justify-center p-6 lg:p-8">
-              <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-[#8a6a45]">
+            <div className="flex flex-col justify-center gap-4 p-6 lg:p-8">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-[#8a6a45]">
                 <span className="rounded-full bg-[#fa6a00]/10 px-3 py-1 font-bold capitalize text-[#fa6a00]">{featured.category}</span>
                 <span>{new Date(featured.publishedAt || featured.createdAt).toLocaleDateString()}</span>
               </div>
-              <h2 className="text-3xl font-black leading-tight text-white">{featured.title}</h2>
-              <p className="mt-4 text-sm leading-6 text-[#c07040]">{featured.excerpt}</p>
-              <div className="mt-6 flex items-center justify-between text-xs text-[#8a6a45]">
-                <span className="flex items-center gap-4"><span className="flex items-center gap-1"><ThumbsUp className="h-4 w-4" />{featured.likeCount}</span><span className="flex items-center gap-1"><MessageCircle className="h-4 w-4" />{featured.commentCount}</span></span>
-                <span className="flex items-center gap-1 font-bold text-[#fa6a00]">Read article <ArrowRight className="h-4 w-4" /></span>
+              <h2 className="text-2xl font-black leading-snug text-white lg:text-3xl">{featured.title}</h2>
+              <p className="line-clamp-3 text-sm leading-6 text-[#c07040]">{featured.excerpt}</p>
+              <div className="flex items-center justify-between text-xs text-[#8a6a45]">
+                <span className="flex items-center gap-4">
+                  <span className="flex items-center gap-1"><ThumbsUp className="h-3.5 w-3.5" />{featured.likeCount}</span>
+                  <span className="flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" />{featured.commentCount}</span>
+                </span>
+                <span className="flex items-center gap-1 font-bold text-[#fa6a00]">Read article <ArrowRight className="h-3.5 w-3.5" /></span>
               </div>
             </div>
           </Link>
         )}
 
         {!loading && (
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {rest.map((post) => <BlogCard key={post.id} post={post} />)}
           </div>
         )}
@@ -104,20 +110,26 @@ export function BlogListPage() {
 
 function BlogCard({ post }: { post: BlogPost }) {
   return (
-    <Link href={`/blogs/${post.slug}`} className="group overflow-hidden rounded-3xl border border-white/10 bg-[#100a2f] transition hover:border-[#7c3aed]/50">
-      <div className="aspect-video bg-[#1a0d33]">
-        {post.coverImageUrl ? <img src={post.coverImageUrl} alt={post.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" /> : <div className="flex h-full items-center justify-center text-[#8a6a45]">Blog</div>}
+    <Link href={`/blogs/${post.slug}`} className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#100a2f] transition duration-200 hover:border-[#7c3aed]/50 hover:shadow-[0_8px_32px_rgba(124,58,237,0.18)]">
+      <div className="relative h-48 shrink-0 overflow-hidden bg-[#1a0d33]">
+        {post.coverImageUrl
+          ? <img src={post.coverImageUrl} alt={post.title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]" />
+          : <div className="flex h-full items-center justify-center text-xs text-[#8a6a45]">No image</div>}
       </div>
-      <div className="p-5">
-        <div className="mb-3 flex items-center gap-2 text-[11px] text-[#8a6a45]">
-          <Tag className="h-3.5 w-3.5" />
-          <span className="capitalize">{post.category}</span>
+      <div className="flex flex-1 flex-col gap-3 p-4">
+        <div className="flex items-center gap-2 text-[11px] text-[#8a6a45]">
+          <Tag className="h-3 w-3 shrink-0" />
+          <span className="capitalize font-medium text-[#fa6a00]">{post.category}</span>
+          <span className="ml-auto">{new Date(post.publishedAt || post.createdAt).toLocaleDateString()}</span>
         </div>
-        <h3 className="line-clamp-2 text-lg font-black leading-tight text-white">{post.title}</h3>
-        <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#c07040]">{post.excerpt}</p>
-        <div className="mt-4 flex items-center justify-between text-xs text-[#8a6a45]">
-          <span>{post.likeCount} likes</span>
-          <span>{post.commentCount} comments</span>
+        <h3 className="line-clamp-2 text-base font-bold leading-snug text-white">{post.title}</h3>
+        <p className="line-clamp-2 text-xs leading-5 text-[#a07858]">{post.excerpt}</p>
+        <div className="mt-auto flex items-center justify-between border-t border-white/5 pt-3 text-[11px] text-[#6b4e2e]">
+          <span className="flex items-center gap-3">
+            <span className="flex items-center gap-1"><ThumbsUp className="h-3 w-3" />{post.likeCount}</span>
+            <span className="flex items-center gap-1"><MessageCircle className="h-3 w-3" />{post.commentCount}</span>
+          </span>
+          <span className="flex items-center gap-1 font-semibold text-[#fa6a00]">Read <ArrowRight className="h-3 w-3" /></span>
         </div>
       </div>
     </Link>
