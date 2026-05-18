@@ -22,14 +22,57 @@ export interface ClipSuggestionResponse {
     videoDuration: number
     platform: string
     suggestions: SuggestedClip[]
+    fullTranscript?: string
     processingTimeMs: number
   }
 }
 
+export interface VideoSummaryChapter {
+  title: string
+  startTime: number
+  endTime: number
+  summary: string
+}
+
+export interface VideoSummaryResponse {
+  sourceUrl: string
+  platform: string
+  duration: number
+  overview: string
+  keyPoints: string[]
+  chapters: VideoSummaryChapter[]
+  transcript?: string
+  transcriptPreview?: string
+}
+
+export interface VideoSubtitleSegment {
+  id: string
+  start: number
+  end: number
+  text: string
+}
+
+export interface VideoSubtitlesResponse {
+  sourceUrl: string
+  platform: string
+  duration: number
+  transcript: string
+  segments: VideoSubtitleSegment[]
+}
+
 export interface AIProvider {
-  id: 'openai' | 'gemini'
+  id: 'openai' | 'gemini' | 'anthropic'
   name: string
   available: boolean
+}
+
+export interface AiThumbnailResponse {
+  success: boolean
+  image: {
+    dataUrl: string
+    mimeType: string
+    model: string
+  }
 }
 
 export async function clipVideo(payload: ClipPayload): Promise<Blob> {
@@ -57,6 +100,7 @@ export async function clipVideo(payload: ClipPayload): Promise<Blob> {
 
 export interface ExportVideoRequest {
   videoSource: string
+  originalSource?: string
   clips?: Array<{ startTime: number; endTime: number; order?: number }>
   startTime?: number
   duration?: number
@@ -138,6 +182,73 @@ export async function recordDownload(): Promise<void> {
   }
 }
 
+// Visual Export API functions
+export interface VisualExportRequest {
+  videoSource: string
+  originalSource?: string
+  filters?: {
+    brightness: number
+    contrast: number
+    saturation: number
+  }
+  audio?: {
+    volume: number
+    muted: boolean
+  }
+  captions?: Array<{
+    text: string
+    start: number
+    end: number
+    position: 'top' | 'center' | 'bottom'
+  }>
+}
+
+export async function exportVisualVideo(options: VisualExportRequest): Promise<{ jobId: string }> {
+  const response = await requestWithAuth('/api/visual-export', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(options),
+  })
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`Visual export request failed: ${response.status} ${response.statusText} ${text}`)
+  }
+
+  return response.json()
+}
+
+export async function getVisualExportStatus(jobId: string): Promise<{
+  status: 'pending' | 'running' | 'done' | 'failed'
+  progress: number
+  step?: string
+  error?: string
+  downloadUrl?: string
+}> {
+  const response = await requestWithAuth(`/api/visual-export?jobId=${encodeURIComponent(jobId)}`, {
+    method: 'GET',
+  })
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`Visual export status request failed: ${response.status} ${response.statusText} ${text}`)
+  }
+
+  return response.json()
+}
+
+export async function downloadVisualExportedVideo(downloadUrl: string): Promise<Blob> {
+  const normalizedUrl = downloadUrl.startsWith('/') ? downloadUrl : downloadUrl
+  const response = await requestWithAuth(normalizedUrl, { method: 'GET' })
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`Visual export download failed: ${response.status} ${response.statusText} ${text}`)
+  }
+
+  return response.blob()
+}
+
 export async function health(): Promise<{ status: string }> {
   const response = await requestWithAuth('/api/health', { method: 'GET' })
   if (!response.ok) {
@@ -157,9 +268,10 @@ const clearAccessToken = () => {
 }
 
 const redirectToLogin = () => {
-  if (typeof window !== 'undefined') {
-    window.location.href = '/auth/login'
-  }
+  // Login redirect is temporarily disabled for public MVP access.
+  // if (typeof window !== 'undefined') {
+  //   window.location.href = '/auth/login'
+  // }
 }
 
 async function refreshToken() {
@@ -186,8 +298,8 @@ async function refreshToken() {
 const ensureAuthResponse = (response: Response): Response => {
   if (response.status === 401) {
     clearAccessToken()
-    redirectToLogin()
-    throw new Error('Unauthorized. Redirecting to login.')
+    // Public MVP mode: do not force guests to the login page.
+    return response
   }
   return response
 }
@@ -198,7 +310,10 @@ export async function requestWithAuth(input: RequestInfo, init: RequestInit = {}
 
   if (token) headers.set('Authorization', `Bearer ${token}`)
 
-  const url = typeof input === 'string' ? `${BASE_URL}${input}` : ''
+  const url =
+    typeof input === 'string'
+      ? (/^https?:\/\//i.test(input) ? input : `${BASE_URL}${input}`)
+      : input
   const response = await fetch(url, {
     ...init,
     headers,
@@ -206,14 +321,19 @@ export async function requestWithAuth(input: RequestInfo, init: RequestInit = {}
   })
 
   if (response.status === 401) {
-    const newToken = await refreshToken()
-    headers.set('Authorization', `Bearer ${newToken}`)
-    const retry = await fetch(url, {
-      ...init,
-      headers,
-      credentials: 'include',
-    })
-    return ensureAuthResponse(retry)
+    try {
+      const newToken = await refreshToken()
+      headers.set('Authorization', `Bearer ${newToken}`)
+      const retry = await fetch(url, {
+        ...init,
+        headers,
+        credentials: 'include',
+      })
+      return ensureAuthResponse(retry)
+    } catch {
+      clearAccessToken()
+      return response
+    }
   }
 
   return ensureAuthResponse(response)
@@ -310,6 +430,279 @@ export async function verifyEmail(token: string) {
   return response.json()
 }
 
+export interface BlogPost {
+  id: string
+  title: string
+  slug: string
+  excerpt: string
+  contentHtml: string
+  coverImageUrl: string
+  category: string
+  tags: string[]
+  status: 'draft' | 'published' | 'archived'
+  authorName: string
+  likeCount: number
+  dislikeCount: number
+  commentCount: number
+  userReaction: 'like' | 'dislike' | null
+  comments: Array<{ id: string; userName: string; body: string; createdAt: string }>
+  publishedAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface BlogPayload {
+  title: string
+  slug?: string
+  excerpt: string
+  contentHtml: string
+  coverImageUrl?: string
+  coverImagePublicId?: string
+  category: string
+  tags: string[]
+  status: 'draft' | 'published' | 'archived'
+}
+
+async function parseApiResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(text || `Request failed with ${response.status}`)
+  }
+  return response.json()
+}
+
+export async function listBlogs(params: { category?: string; search?: string; page?: number; limit?: number } = {}) {
+  const query = new URLSearchParams()
+  if (params.category) query.set('category', params.category)
+  if (params.search) query.set('search', params.search)
+  if (params.page) query.set('page', String(params.page))
+  if (params.limit) query.set('limit', String(params.limit))
+  const response = await fetch(`${BASE_URL}/api/blogs?${query.toString()}`, { cache: 'no-store' })
+  return parseApiResponse<{ posts: BlogPost[]; total: number; page: number; pages: number }>(response)
+}
+
+export async function listBlogCategories() {
+  const response = await fetch(`${BASE_URL}/api/blogs/categories`, { cache: 'no-store' })
+  return parseApiResponse<{ categories: string[] }>(response)
+}
+
+export async function getBlog(slug: string) {
+  const response = await requestWithAuth(`/api/blogs/${encodeURIComponent(slug)}`, { method: 'GET' })
+  return parseApiResponse<{ post: BlogPost }>(response)
+}
+
+export async function reactToBlog(id: string, reaction: 'like' | 'dislike' | 'none') {
+  const response = await requestWithAuth(`/api/blogs/${encodeURIComponent(id)}/reaction`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reaction }),
+  })
+  return parseApiResponse<{ post: BlogPost }>(response)
+}
+
+export async function addBlogComment(id: string, body: string) {
+  const response = await requestWithAuth(`/api/blogs/${encodeURIComponent(id)}/comments`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ body }),
+  })
+  return parseApiResponse<{ post: BlogPost }>(response)
+}
+
+export async function listAdminBlogs() {
+  const response = await requestWithAuth('/api/admin/blogs', { method: 'GET' })
+  return parseApiResponse<{ posts: BlogPost[] }>(response)
+}
+
+export async function createAdminBlog(payload: BlogPayload) {
+  const response = await requestWithAuth('/api/admin/blogs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return parseApiResponse<{ post: BlogPost }>(response)
+}
+
+export async function updateAdminBlog(id: string, payload: BlogPayload) {
+  const response = await requestWithAuth(`/api/admin/blogs/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return parseApiResponse<{ post: BlogPost }>(response)
+}
+
+export async function deleteAdminBlog(id: string) {
+  const response = await requestWithAuth(`/api/admin/blogs/${encodeURIComponent(id)}`, { method: 'DELETE' })
+  return parseApiResponse<{ success: boolean }>(response)
+}
+
+export async function uploadBlogImage(dataUrl: string) {
+  const response = await requestWithAuth('/api/admin/blogs/upload-image', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dataUrl }),
+  })
+  return parseApiResponse<{ image: { secureUrl: string; publicId: string; width?: number; height?: number } }>(response)
+}
+
+export interface AdminStats {
+  totalUsers: number
+  adminUsers: number
+  totalExports: number
+  clipsThisMonth: number
+  downloadsThisMonth: number
+  comments: number
+  likes: number
+  dislikes: number
+  planBreakdown: Record<string, number>
+  exportsByStatus: Record<string, number>
+  blogStatus: Record<string, number>
+  recentUsers: Array<{ id: string; name: string; email: string; role: string; subscriptionPlan: string; createdAt: string }>
+  recentBlogs: Array<{ id: string; title: string; slug: string; status: string; category: string; updatedAt: string }>
+}
+
+export async function getAdminStats() {
+  const response = await requestWithAuth('/api/admin/stats', { method: 'GET' })
+  return parseApiResponse<{ stats: AdminStats }>(response)
+}
+
+export type CmsNavLocation = 'navbar' | 'footer' | 'sidebar_user' | 'sidebar_admin'
+export type CmsAudience = 'public' | 'user' | 'admin' | 'all'
+export type CmsPageStatus = 'draft' | 'published' | 'archived'
+
+export interface CmsSettings {
+  siteName: string
+  logoText: string
+  tagline: string
+  headerTitle: string
+  headerSubtitle: string
+  footerDescription: string
+  footerCopyright: string
+  socialLinks: Array<{ label: string; href: string; icon?: string }>
+}
+
+export interface CmsNavItem {
+  id: string
+  label: string
+  href: string
+  location: CmsNavLocation
+  audience: CmsAudience
+  icon: string
+  order: number
+  isActive: boolean
+  external: boolean
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface CmsPage {
+  id: string
+  title: string
+  slug: string
+  excerpt: string
+  contentHtml: string
+  status: CmsPageStatus
+  metaTitle: string
+  metaDescription: string
+  showInNavbar: boolean
+  showInFooter: boolean
+  authorName: string
+  publishedAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface PublicCms {
+  settings: CmsSettings
+  nav: {
+    navbar: CmsNavItem[]
+    footer: CmsNavItem[]
+    sidebarUser: CmsNavItem[]
+    sidebarAdmin: CmsNavItem[]
+  }
+  pages: CmsPage[]
+}
+
+export interface AdminCms {
+  settings: CmsSettings
+  navItems: CmsNavItem[]
+  pages: CmsPage[]
+}
+
+export type CmsNavPayload = Omit<CmsNavItem, 'id' | 'createdAt' | 'updatedAt'>
+export type CmsPagePayload = Omit<CmsPage, 'id' | 'authorName' | 'publishedAt' | 'createdAt' | 'updatedAt'>
+
+export async function getPublicCms() {
+  const response = await fetch(`${BASE_URL}/api/cms/public`, { cache: 'no-store' })
+  return parseApiResponse<PublicCms>(response)
+}
+
+export async function getCmsPage(slug: string) {
+  const response = await fetch(`${BASE_URL}/api/cms/pages/${encodeURIComponent(slug)}`, { cache: 'no-store' })
+  return parseApiResponse<{ page: CmsPage }>(response)
+}
+
+export async function getAdminCms() {
+  const response = await requestWithAuth('/api/admin/cms', { method: 'GET' })
+  return parseApiResponse<AdminCms>(response)
+}
+
+export async function updateCmsSettings(payload: CmsSettings) {
+  const response = await requestWithAuth('/api/admin/cms/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return parseApiResponse<{ settings: CmsSettings }>(response)
+}
+
+export async function createCmsNavItem(payload: CmsNavPayload) {
+  const response = await requestWithAuth('/api/admin/cms/nav', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return parseApiResponse<{ item: CmsNavItem }>(response)
+}
+
+export async function updateCmsNavItem(id: string, payload: CmsNavPayload) {
+  const response = await requestWithAuth(`/api/admin/cms/nav/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return parseApiResponse<{ item: CmsNavItem }>(response)
+}
+
+export async function deleteCmsNavItem(id: string) {
+  const response = await requestWithAuth(`/api/admin/cms/nav/${encodeURIComponent(id)}`, { method: 'DELETE' })
+  return parseApiResponse<{ success: boolean }>(response)
+}
+
+export async function createCmsPage(payload: CmsPagePayload) {
+  const response = await requestWithAuth('/api/admin/cms/pages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return parseApiResponse<{ page: CmsPage }>(response)
+}
+
+export async function updateCmsPage(id: string, payload: CmsPagePayload) {
+  const response = await requestWithAuth(`/api/admin/cms/pages/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return parseApiResponse<{ page: CmsPage }>(response)
+}
+
+export async function deleteCmsPage(id: string) {
+  const response = await requestWithAuth(`/api/admin/cms/pages/${encodeURIComponent(id)}`, { method: 'DELETE' })
+  return parseApiResponse<{ success: boolean }>(response)
+}
+
 export async function createSubscriptionCheckout(priceId: string) {
   const response = await requestWithAuth('/api/subscription/checkout', {
     method: 'POST',
@@ -325,7 +718,7 @@ export async function createSubscriptionCheckout(priceId: string) {
 
 export async function suggestClips(
   url: string,
-  aiProvider: 'openai' | 'gemini' | 'auto' = 'auto'
+  aiProvider: 'openai' | 'gemini' | 'anthropic' | 'auto' = 'auto'
 ): Promise<ClipSuggestionResponse> {
   const response = await requestWithAuth('/api/suggest-clips', {
     method: 'POST',
@@ -352,6 +745,171 @@ export async function suggestClips(
   return response.json()
 }
 
+function cleanSummaryText(value: string | undefined, fallback: string) {
+  const text = (value || '').replace(/\s+/g, ' ').trim()
+  return text.length > 0 ? text : fallback
+}
+
+function sentencePreview(text: string, maxLength = 420) {
+  const cleaned = cleanSummaryText(text, '')
+  if (cleaned.length <= maxLength) return cleaned
+  const clipped = cleaned.slice(0, maxLength)
+  const lastStop = Math.max(clipped.lastIndexOf('. '), clipped.lastIndexOf('? '), clipped.lastIndexOf('! '))
+  return `${(lastStop > 120 ? clipped.slice(0, lastStop + 1) : clipped).trim()}...`
+}
+
+function formatChapterTitle(index: number, reason: string | undefined) {
+  const cleaned = cleanSummaryText(reason, '')
+  if (!cleaned) return `Key moment ${index + 1}`
+  const firstSentence = cleaned.split(/[.!?]/)[0]?.trim()
+  return firstSentence ? firstSentence.slice(0, 72) : `Key moment ${index + 1}`
+}
+
+export async function generateVideoSummary(url: string): Promise<VideoSummaryResponse> {
+  const response = await suggestClips(url, 'anthropic')
+  return buildVideoSummary(response)
+}
+
+export async function generateUploadedVideoSummary(file: Blob, fileName?: string): Promise<VideoSummaryResponse> {
+  const response = await requestWithAuth('/api/video-summary-upload', {
+    method: 'POST',
+    headers: {
+      'Content-Type': file.type || 'application/octet-stream',
+      'X-File-Name': encodeURIComponent(fileName || 'uploaded-video.mp4'),
+      'X-AI-Provider': 'anthropic',
+    },
+    body: file,
+  })
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    let errorMessage = `Video summary failed: ${response.status} ${response.statusText}`
+
+    try {
+      const errorData = JSON.parse(text)
+      if (errorData.message) {
+        errorMessage = errorData.message
+      }
+    } catch {
+      // Use default error message
+    }
+
+    throw new Error(errorMessage)
+  }
+
+  return buildVideoSummary(await response.json())
+}
+
+function buildVideoSubtitles(response: {
+  data: {
+    url: string
+    videoDuration: number
+    platform: string
+    fullTranscript?: string
+    segments?: Array<{ start: number; end: number; text: string }>
+  }
+}): VideoSubtitlesResponse {
+  const segments = (response.data.segments || []).map((segment, index) => ({
+    id: `${Math.round(segment.start * 1000)}-${index}`,
+    start: segment.start,
+    end: segment.end,
+    text: segment.text,
+  }))
+
+  return {
+    sourceUrl: response.data.url,
+    platform: response.data.platform,
+    duration: response.data.videoDuration,
+    transcript: response.data.fullTranscript || segments.map((segment) => segment.text).join(' '),
+    segments,
+  }
+}
+
+export async function generateVideoSubtitles(url: string): Promise<VideoSubtitlesResponse> {
+  const response = await requestWithAuth('/api/video-subtitles', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url, aiProvider: 'anthropic' }),
+  })
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    let errorMessage = `Subtitle generation failed: ${response.status} ${response.statusText}`
+
+    try {
+      const errorData = JSON.parse(text)
+      if (errorData.message) errorMessage = errorData.message
+    } catch {
+      // Keep default error message
+    }
+
+    throw new Error(errorMessage)
+  }
+
+  return buildVideoSubtitles(await response.json())
+}
+
+export async function generateUploadedVideoSubtitles(file: Blob, fileName?: string): Promise<VideoSubtitlesResponse> {
+  const response = await requestWithAuth('/api/video-subtitles-upload', {
+    method: 'POST',
+    headers: {
+      'Content-Type': file.type || 'application/octet-stream',
+      'X-File-Name': encodeURIComponent(fileName || 'uploaded-video.mp4'),
+      'X-AI-Provider': 'anthropic',
+    },
+    body: file,
+  })
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    let errorMessage = `Subtitle generation failed: ${response.status} ${response.statusText}`
+
+    try {
+      const errorData = JSON.parse(text)
+      if (errorData.message) errorMessage = errorData.message
+    } catch {
+      // Keep default error message
+    }
+
+    throw new Error(errorMessage)
+  }
+
+  return buildVideoSubtitles(await response.json())
+}
+
+function buildVideoSummary(response: ClipSuggestionResponse): VideoSummaryResponse {
+  const { data } = response
+  const suggestions = [...data.suggestions].sort((a, b) => a.startTime - b.startTime)
+  const transcript = cleanSummaryText(data.fullTranscript, '')
+  const transcriptPreview = sentencePreview(transcript, 700)
+  const bestMoments = suggestions
+    .slice(0, 4)
+    .map((clip, index) => cleanSummaryText(clip.reason, `Important moment ${index + 1}`))
+
+  const overviewFromTranscript = transcriptPreview
+  const overviewFromClips = bestMoments.length
+    ? `This video centers on ${bestMoments.map((point) => point.toLowerCase()).join(', ')}.`
+    : ''
+
+  return {
+    sourceUrl: data.url,
+    platform: data.platform,
+    duration: data.videoDuration,
+    overview: overviewFromTranscript || overviewFromClips || 'Summary generated from the detected video moments.',
+    keyPoints: bestMoments.length
+      ? bestMoments
+      : suggestions.map((clip) => cleanSummaryText(clip.transcriptSegment, 'Relevant video segment')).slice(0, 4),
+    chapters: suggestions.map((clip, index) => ({
+      title: formatChapterTitle(index, clip.reason),
+      startTime: clip.startTime,
+      endTime: clip.endTime,
+      summary: cleanSummaryText(clip.transcriptSegment, clip.reason || `Highlighted section ${index + 1}`),
+    })),
+    transcript: transcript || undefined,
+    transcriptPreview: transcriptPreview || undefined,
+  }
+}
+
 export async function getAIProviders(): Promise<{ providers: AIProvider[]; default: string }> {
   const response = await requestWithAuth('/api/ai-providers', { method: 'GET' })
   
@@ -363,18 +921,58 @@ export async function getAIProviders(): Promise<{ providers: AIProvider[]; defau
   return response.json()
 }
 
+export async function generateAiThumbnail(prompt: string): Promise<AiThumbnailResponse> {
+  const response = await requestWithAuth('/api/ai-thumbnail', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt }),
+  })
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    let errorMessage = `AI thumbnail failed: ${response.status} ${response.statusText}`
+
+    try {
+      const errorData = JSON.parse(text)
+      if (errorData.message) errorMessage = errorData.message
+    } catch {
+      // Keep default error message
+    }
+
+    throw new Error(errorMessage)
+  }
+
+  return response.json()
+}
+
 /**
  * DELETE /api/hls-clean
  * Triggers backend to remove any stale HLS jobs for the current user.
  */
 export async function hlsCleanup(): Promise<{ success: boolean; cleanedCount: number }> {
   try {
+    if (!getAccessToken()) return { success: false, cleanedCount: 0 }
     const response = await requestWithAuth('/api/hls-clean', { method: 'DELETE' })
     if (!response.ok) return { success: false, cleanedCount: 0 }
     return response.json()
-  } catch (err) {
-    console.error('[api] hls-clean failed:', err)
+  } catch {
     return { success: false, cleanedCount: 0 }
+  }
+}
+
+/**
+ * POST /api/hls-heartbeat
+ * Keeps the user's HLS session alive while the editor is open.
+ * Call periodically (e.g. every 2 minutes) to prevent inactivity cleanup.
+ */
+export async function hlsHeartbeat(): Promise<{ success: boolean }> {
+  try {
+    if (!getAccessToken()) return { success: false }
+    const response = await requestWithAuth('/api/hls-heartbeat', { method: 'POST' })
+    if (!response.ok) return { success: false }
+    return response.json()
+  } catch {
+    return { success: false }
   }
 }
 
@@ -386,7 +984,14 @@ export async function hlsPrepare(url: string, platform: string): Promise<{
 }> {
   const response = await requestWithAuth(
     `/api/hls-prepare?url=${encodeURIComponent(url)}&platform=${encodeURIComponent(platform)}`,
-    { method: 'GET' }
+    {
+      method: 'GET',
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
+      },
+    }
   )
   if (!response.ok) {
     const err = await response.json().catch(() => ({}))
@@ -400,7 +1005,14 @@ export async function hlsStatus(jobId: string): Promise<{
   playlistReady: boolean
   errorMessage?: string
 }> {
-  const response = await requestWithAuth(`/api/hls-status/${jobId}`, { method: 'GET' })
+  const response = await requestWithAuth(`/api/hls-status/${jobId}`, {
+    method: 'GET',
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache',
+      Pragma: 'no-cache',
+    },
+  })
   if (!response.ok) {
     throw new Error(`Failed to get HLS status (${response.status})`)
   }

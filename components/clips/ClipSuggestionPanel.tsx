@@ -36,7 +36,7 @@ export function ClipSuggestionPanel({
   const [isLoading, setIsLoading] = useState(false)
   const [suggestions, setSuggestions] = useState<SuggestedClip[]>([])
   const [aiProviders, setAiProviders] = useState<AIProvider[]>([])
-  const [selectedProvider, setSelectedProvider] = useState<'openai' | 'gemini' | 'auto'>('auto')
+  const [selectedProvider, setSelectedProvider] = useState<'openai' | 'gemini' | 'anthropic' | 'auto'>('auto')
   const [error, setError] = useState<string | null>(null)
   const [hasAnalyzed, setHasAnalyzed] = useState(false)
   const [processingTime, setProcessingTime] = useState<number>(0)
@@ -100,14 +100,14 @@ export function ClipSuggestionPanel({
 
   if (availableProviders.length === 0) {
     return (
-      <Card className="border-amber-500/30 bg-amber-500/5">
+      <Card className="border-purple-500/30 bg-purple-500/10">
         <CardContent className="pt-6">
           <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-purple-300 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-amber-200">AI Service Not Configured</p>
-              <p className="text-xs text-amber-200/70 mt-1">
-                Clip suggestions require OpenAI or Gemini API key to be configured on the backend.
+              <p className="text-sm font-medium text-purple-100">AI Service Not Configured</p>
+              <p className="text-xs text-purple-100/70 mt-1">
+                Clip suggestions require OpenAI, Anthropic, or Gemini API key to be configured on the backend.
               </p>
             </div>
           </div>
@@ -117,7 +117,7 @@ export function ClipSuggestionPanel({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 rounded-3xl border border-white/10 bg-[#100a2f]/90 p-4 text-white shadow-[0_16px_60px_rgba(38,24,103,0.45)]">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -166,7 +166,7 @@ export function ClipSuggestionPanel({
       <Button
         onClick={handleSuggestClips}
         disabled={isLoading}
-        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white"
+        className="w-full bg-gradient-to-r from-purple-600 to-violet-500 hover:from-purple-500 hover:to-violet-400 text-white"
       >
         {isLoading ? (
           <>
@@ -193,11 +193,11 @@ export function ClipSuggestionPanel({
 
       {/* Error Message */}
       {error && (
-        <Card className="border-red-500/30 bg-red-500/5">
+        <Card className="border-purple-500/30 bg-purple-500/10">
           <CardContent className="pt-4">
             <div className="flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-red-400 mt-0.5" />
-              <p className="text-sm text-red-200">{error}</p>
+              <AlertCircle className="w-4 h-4 text-purple-300 mt-0.5" />
+              <p className="text-sm text-purple-100">{error}</p>
             </div>
           </CardContent>
         </Card>
@@ -219,7 +219,7 @@ export function ClipSuggestionPanel({
           {suggestions.map((clip, index) => (
             <Card 
               key={index} 
-              className="border-slate-700 bg-slate-900/50 hover:border-purple-500/50 transition-colors"
+              className="border-white/10 bg-[#12072f]/80 hover:border-purple-500/50 transition-colors"
             >
               <CardContent className="p-3">
                 <div className="space-y-2">
@@ -254,13 +254,13 @@ export function ClipSuggestionPanel({
                   </div>
 
                   {/* Reason */}
-                  <p className="text-xs text-slate-400 line-clamp-2">
+                  <p className="text-xs text-purple-100/70 line-clamp-2">
                     {clip.reason}
                   </p>
 
                   {/* Transcript preview */}
                   {clip.transcriptSegment && (
-                    <p className="text-xs text-slate-500 italic line-clamp-2 border-l-2 border-slate-700 pl-2">
+                    <p className="text-xs text-purple-100/70 italic line-clamp-2 border-l-2 border-purple-500/20 pl-2">
                       &ldquo;{clip.transcriptSegment}&rdquo;
                     </p>
                   )}
@@ -296,7 +296,7 @@ export function ClipSuggestionPanel({
       )}
 
       {/* Info footer */}
-      <p className="text-xs text-slate-500 text-center">
+      <p className="text-xs text-purple-200/70 text-center">
         AI analyzes speech, identifies hooks, emotional peaks, and viral moments
       </p>
     </div>

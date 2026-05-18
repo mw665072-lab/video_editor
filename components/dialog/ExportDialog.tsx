@@ -61,7 +61,7 @@ export function ExportDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-slate-950 border border-slate-700 shadow-2xl">
+      <DialogContent className="sm:max-w-md bg-[#12072f] border border-white/10 shadow-[0_30px_120px_rgba(70,55,160,0.35)]">
         <DialogHeader>
           <DialogTitle className="text-slate-50">Export Video</DialogTitle>
           <DialogDescription className="text-slate-300">
@@ -71,8 +71,8 @@ export function ExportDialog({
 
         <div className="space-y-6">
           {/* Summary */}
-          <div className="p-3 bg-slate-900 rounded-lg border border-slate-700">
-            <div className="grid grid-cols-2 gap-4 text-sm text-slate-200">
+          <div className="p-3 bg-[#150b40] rounded-lg border border-white/10">
+            <div className="grid grid-cols-2 gap-4 text-sm text-purple-100">
               <div>
                 <p className="  mb-1">Clips</p>
                 <p className="font-semibold">{clips.length}</p>
@@ -95,7 +95,7 @@ export function ExportDialog({
                 placeholder="exported-video"
                 // disabled={progress.isExporting}
                 // placeholder color should be white
-                className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 bg-slate-900/60 hover:text-white text-white font-semibold placeholder:text-white"
+                className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-[#110A05]/60 bg-[#110A05]/60 hover:text-white text-white font-semibold placeholder:text-white"
               />
               <span className="  py-2">.mp4</span>
             </div>
@@ -126,13 +126,13 @@ export function ExportDialog({
                 </SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs  ">
+            <p className="text-xs text-purple-200/70">
               Higher quality takes longer to process
             </p>
           </div>
 
           {/* Platform + Resize Mode */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {/* <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="platform">Social Platform</Label>
               <Select value={selectedPlatform} onValueChange={(value) => setSelectedPlatform(value as 'tiktok' | 'shorts' | 'reels')} disabled={progress.isExporting}>
@@ -164,24 +164,22 @@ export function ExportDialog({
                   <SelectItem value="crop">Center crop</SelectItem>
                 </SelectContent>
               </Select>
-              {/* <p className="text-xs  ">
-                Blur keeps original video intact with smart vertical background; crop fills frame.
-              </p> */}
+              
             </div>
-          </div>
+          </div> */}
 
           {/* Progress */}
           {progress.isExporting && (
-            <div className="space-y-3 p-3 bg-slate-900 rounded-lg border border-cyan-500/20">
+            <div className="space-y-3 p-3 bg-[#150b40] rounded-lg border border-purple-500/20">
               <div className="flex justify-between text-sm">
-                <span className="text-cyan-200 font-medium">
+                <span className="text-purple-100 font-medium">
                   {progress.currentStep || 'Processing...'}
                 </span>
                 <span className="text-cyan-200 font-medium">
                   {Math.round(progress.progress)}%
                 </span>
               </div>
-              <Progress value={progress.progress} className="h-2 bg-slate-700" />
+              <Progress value={progress.progress} className="h-2 bg-[#150b40]" />
               <p className="text-xs text-cyan-100/80">
                 Please keep this window open while processing
               </p>
@@ -190,23 +188,23 @@ export function ExportDialog({
 
           {/* Error */}
           {progress.error && (
-            <div className="p-3 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-900 flex gap-2">
-              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700 dark:text-red-300">{progress.error}</p>
+            <div className="p-3 bg-purple-500/10 rounded-lg border border-purple-500/20 flex gap-2">
+              <AlertCircle className="w-4 h-4 text-purple-300 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-purple-100">{progress.error}</p>
             </div>
           )}
 
           {/* Browser Support Warning */}
-          <div className="p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-900 flex gap-2">
-            <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-amber-700 dark:text-amber-300">
+          <div className="p-3 bg-[#150b40] rounded-lg border border-purple-500/20 flex gap-2">
+            <AlertCircle className="w-4 h-4 text-purple-300 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-purple-100">
               Export requires a modern browser with WebAssembly support. Large files may take several minutes.
             </p>
           </div>
 
           {/* Export availability */}
           {!isExportAllowed && (
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-900 text-sm text-amber-800 dark:text-amber-200">
+            <div className="p-3 bg-[#150b40] rounded-lg border border-purple-500/20 text-sm text-purple-100">
               {exportDisabledReason || 'This source is not exportable. Use a local file or direct video URL (MP4/WebM).'}
             </div>
           )}
@@ -217,14 +215,14 @@ export function ExportDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={progress.isExporting}
-              className="flex-1 border-slate-600 hover:bg-slate-800/60 bg-slate-800/60 text-white hover:text-white"
+              className="flex-1 border-white/10 hover:bg-[#150b40]/70 bg-[#150b40]/70 text-purple-100 hover:text-white"
             >
               Cancel
             </Button>
             <Button
               onClick={handleExport}
               disabled={progress.isExporting || clips.length === 0 || !isExportAllowed}
-              className="flex-1"
+              className="flex-1 bg-purple-600 hover:bg-purple-500 text-white"
             >
               <Download className="w-4 h-4 mr-2" />
               {progress.isExporting ? 'Exporting...' : 'Export'}

@@ -19,7 +19,7 @@ import { Loader2, AlertCircle, RefreshCw } from 'lucide-react'
 import { hlsStatus } from '@/lib/api'
 
 const POLL_INTERVAL_MS = 2000
-const POLL_TIMEOUT_MS = 90000 // 90 seconds timeout
+const POLL_TIMEOUT_MS = 30000 // Fail fast and let the editor fall back to compatibility streaming
 
 const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/+$/, '')
 
@@ -60,6 +60,7 @@ export function SocialVideoPlayer({
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const videoRef = (externalVideoRef ?? localVideoRef) as RefObject<HTMLVideoElement>
   const hlsRef = useRef<Hls | null>(null)
+  const lastReportedTimeRef = useRef(0)
 
   const [isInitializing, setIsInitializing] = useState(true)
   const [isPollReady, setIsPollReady] = useState(false)
@@ -105,8 +106,10 @@ export function SocialVideoPlayer({
       try {
         const data = await hlsStatus(jobId)
         if (data.status === 'error') {
-          setErrorMessage(data.errorMessage || 'Transcode failed')
+          const message = data.errorMessage || 'Transcode failed'
+          setErrorMessage(message)
           setPollStatus('error')
+          onErrorRef.current?.(new Error(message))
           return false
         }
 
@@ -122,8 +125,10 @@ export function SocialVideoPlayer({
       await new Promise(r => setTimeout(r, POLL_INTERVAL_MS))
     }
 
-    setErrorMessage('Timed out waiting for stream preparation (90s)')
+    const timeoutMessage = 'Timed out waiting for stream preparation (30s)'
+    setErrorMessage(timeoutMessage)
     setPollStatus('error')
+    onErrorRef.current?.(new Error(timeoutMessage))
     return false
   }, [])
 
@@ -265,6 +270,7 @@ export function SocialVideoPlayer({
         return
       }
       onTimeUpdateRef.current?.(video.currentTime)
+      lastReportedTimeRef.current = video.currentTime
     }
 
     const handleDurationChange = () => {
@@ -333,8 +339,20 @@ export function SocialVideoPlayer({
   // ── Sync currentTime prop (e.g. from timeline scrub) ──────────────────────
   useEffect(() => {
     const video = videoRef.current
-    if (video && Math.abs(video.currentTime - currentTime) > 0.3) {
+    if (!video) return
+
+    const driftFromLastReported = Math.abs(lastReportedTimeRef.current - currentTime)
+    const seekThreshold = video.paused ? 0.1 : 2
+
+    // Avoid fighting hls.js during active playback; only seek on real
+    // external jumps like timeline scrubs or clip boundary jumps.
+    if (driftFromLastReported < 0.35) {
+      return
+    }
+
+    if (Math.abs(video.currentTime - currentTime) > seekThreshold) {
       video.currentTime = currentTime
+      lastReportedTimeRef.current = currentTime
     }
   }, [currentTime])
 
