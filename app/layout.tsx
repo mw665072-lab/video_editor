@@ -5,7 +5,15 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Multi-Clip Video Editor',
   description: 'Professional video editor for creating multi-clip videos with instant export',
-  generator: 'v0.app',
+  generator: 'muhammad waqas',
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
   icons: {
     icon: [
       {
