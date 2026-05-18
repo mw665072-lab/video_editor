@@ -22,14 +22,57 @@ export interface ClipSuggestionResponse {
     videoDuration: number
     platform: string
     suggestions: SuggestedClip[]
+    fullTranscript?: string
     processingTimeMs: number
   }
+}
+
+export interface VideoSummaryChapter {
+  title: string
+  startTime: number
+  endTime: number
+  summary: string
+}
+
+export interface VideoSummaryResponse {
+  sourceUrl: string
+  platform: string
+  duration: number
+  overview: string
+  keyPoints: string[]
+  chapters: VideoSummaryChapter[]
+  transcript?: string
+  transcriptPreview?: string
+}
+
+export interface VideoSubtitleSegment {
+  id: string
+  start: number
+  end: number
+  text: string
+}
+
+export interface VideoSubtitlesResponse {
+  sourceUrl: string
+  platform: string
+  duration: number
+  transcript: string
+  segments: VideoSubtitleSegment[]
 }
 
 export interface AIProvider {
   id: 'openai' | 'gemini' | 'anthropic'
   name: string
   available: boolean
+}
+
+export interface AiThumbnailResponse {
+  success: boolean
+  image: {
+    dataUrl: string
+    mimeType: string
+    model: string
+  }
 }
 
 export async function clipVideo(payload: ClipPayload): Promise<Blob> {
@@ -702,6 +745,171 @@ export async function suggestClips(
   return response.json()
 }
 
+function cleanSummaryText(value: string | undefined, fallback: string) {
+  const text = (value || '').replace(/\s+/g, ' ').trim()
+  return text.length > 0 ? text : fallback
+}
+
+function sentencePreview(text: string, maxLength = 420) {
+  const cleaned = cleanSummaryText(text, '')
+  if (cleaned.length <= maxLength) return cleaned
+  const clipped = cleaned.slice(0, maxLength)
+  const lastStop = Math.max(clipped.lastIndexOf('. '), clipped.lastIndexOf('? '), clipped.lastIndexOf('! '))
+  return `${(lastStop > 120 ? clipped.slice(0, lastStop + 1) : clipped).trim()}...`
+}
+
+function formatChapterTitle(index: number, reason: string | undefined) {
+  const cleaned = cleanSummaryText(reason, '')
+  if (!cleaned) return `Key moment ${index + 1}`
+  const firstSentence = cleaned.split(/[.!?]/)[0]?.trim()
+  return firstSentence ? firstSentence.slice(0, 72) : `Key moment ${index + 1}`
+}
+
+export async function generateVideoSummary(url: string): Promise<VideoSummaryResponse> {
+  const response = await suggestClips(url, 'anthropic')
+  return buildVideoSummary(response)
+}
+
+export async function generateUploadedVideoSummary(file: Blob, fileName?: string): Promise<VideoSummaryResponse> {
+  const response = await requestWithAuth('/api/video-summary-upload', {
+    method: 'POST',
+    headers: {
+      'Content-Type': file.type || 'application/octet-stream',
+      'X-File-Name': encodeURIComponent(fileName || 'uploaded-video.mp4'),
+      'X-AI-Provider': 'anthropic',
+    },
+    body: file,
+  })
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    let errorMessage = `Video summary failed: ${response.status} ${response.statusText}`
+
+    try {
+      const errorData = JSON.parse(text)
+      if (errorData.message) {
+        errorMessage = errorData.message
+      }
+    } catch {
+      // Use default error message
+    }
+
+    throw new Error(errorMessage)
+  }
+
+  return buildVideoSummary(await response.json())
+}
+
+function buildVideoSubtitles(response: {
+  data: {
+    url: string
+    videoDuration: number
+    platform: string
+    fullTranscript?: string
+    segments?: Array<{ start: number; end: number; text: string }>
+  }
+}): VideoSubtitlesResponse {
+  const segments = (response.data.segments || []).map((segment, index) => ({
+    id: `${Math.round(segment.start * 1000)}-${index}`,
+    start: segment.start,
+    end: segment.end,
+    text: segment.text,
+  }))
+
+  return {
+    sourceUrl: response.data.url,
+    platform: response.data.platform,
+    duration: response.data.videoDuration,
+    transcript: response.data.fullTranscript || segments.map((segment) => segment.text).join(' '),
+    segments,
+  }
+}
+
+export async function generateVideoSubtitles(url: string): Promise<VideoSubtitlesResponse> {
+  const response = await requestWithAuth('/api/video-subtitles', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url, aiProvider: 'anthropic' }),
+  })
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    let errorMessage = `Subtitle generation failed: ${response.status} ${response.statusText}`
+
+    try {
+      const errorData = JSON.parse(text)
+      if (errorData.message) errorMessage = errorData.message
+    } catch {
+      // Keep default error message
+    }
+
+    throw new Error(errorMessage)
+  }
+
+  return buildVideoSubtitles(await response.json())
+}
+
+export async function generateUploadedVideoSubtitles(file: Blob, fileName?: string): Promise<VideoSubtitlesResponse> {
+  const response = await requestWithAuth('/api/video-subtitles-upload', {
+    method: 'POST',
+    headers: {
+      'Content-Type': file.type || 'application/octet-stream',
+      'X-File-Name': encodeURIComponent(fileName || 'uploaded-video.mp4'),
+      'X-AI-Provider': 'anthropic',
+    },
+    body: file,
+  })
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    let errorMessage = `Subtitle generation failed: ${response.status} ${response.statusText}`
+
+    try {
+      const errorData = JSON.parse(text)
+      if (errorData.message) errorMessage = errorData.message
+    } catch {
+      // Keep default error message
+    }
+
+    throw new Error(errorMessage)
+  }
+
+  return buildVideoSubtitles(await response.json())
+}
+
+function buildVideoSummary(response: ClipSuggestionResponse): VideoSummaryResponse {
+  const { data } = response
+  const suggestions = [...data.suggestions].sort((a, b) => a.startTime - b.startTime)
+  const transcript = cleanSummaryText(data.fullTranscript, '')
+  const transcriptPreview = sentencePreview(transcript, 700)
+  const bestMoments = suggestions
+    .slice(0, 4)
+    .map((clip, index) => cleanSummaryText(clip.reason, `Important moment ${index + 1}`))
+
+  const overviewFromTranscript = transcriptPreview
+  const overviewFromClips = bestMoments.length
+    ? `This video centers on ${bestMoments.map((point) => point.toLowerCase()).join(', ')}.`
+    : ''
+
+  return {
+    sourceUrl: data.url,
+    platform: data.platform,
+    duration: data.videoDuration,
+    overview: overviewFromTranscript || overviewFromClips || 'Summary generated from the detected video moments.',
+    keyPoints: bestMoments.length
+      ? bestMoments
+      : suggestions.map((clip) => cleanSummaryText(clip.transcriptSegment, 'Relevant video segment')).slice(0, 4),
+    chapters: suggestions.map((clip, index) => ({
+      title: formatChapterTitle(index, clip.reason),
+      startTime: clip.startTime,
+      endTime: clip.endTime,
+      summary: cleanSummaryText(clip.transcriptSegment, clip.reason || `Highlighted section ${index + 1}`),
+    })),
+    transcript: transcript || undefined,
+    transcriptPreview: transcriptPreview || undefined,
+  }
+}
+
 export async function getAIProviders(): Promise<{ providers: AIProvider[]; default: string }> {
   const response = await requestWithAuth('/api/ai-providers', { method: 'GET' })
   
@@ -713,17 +921,41 @@ export async function getAIProviders(): Promise<{ providers: AIProvider[]; defau
   return response.json()
 }
 
+export async function generateAiThumbnail(prompt: string): Promise<AiThumbnailResponse> {
+  const response = await requestWithAuth('/api/ai-thumbnail', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt }),
+  })
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    let errorMessage = `AI thumbnail failed: ${response.status} ${response.statusText}`
+
+    try {
+      const errorData = JSON.parse(text)
+      if (errorData.message) errorMessage = errorData.message
+    } catch {
+      // Keep default error message
+    }
+
+    throw new Error(errorMessage)
+  }
+
+  return response.json()
+}
+
 /**
  * DELETE /api/hls-clean
  * Triggers backend to remove any stale HLS jobs for the current user.
  */
 export async function hlsCleanup(): Promise<{ success: boolean; cleanedCount: number }> {
   try {
+    if (!getAccessToken()) return { success: false, cleanedCount: 0 }
     const response = await requestWithAuth('/api/hls-clean', { method: 'DELETE' })
     if (!response.ok) return { success: false, cleanedCount: 0 }
     return response.json()
-  } catch (err) {
-    console.error('[api] hls-clean failed:', err)
+  } catch {
     return { success: false, cleanedCount: 0 }
   }
 }
@@ -735,6 +967,7 @@ export async function hlsCleanup(): Promise<{ success: boolean; cleanedCount: nu
  */
 export async function hlsHeartbeat(): Promise<{ success: boolean }> {
   try {
+    if (!getAccessToken()) return { success: false }
     const response = await requestWithAuth('/api/hls-heartbeat', { method: 'POST' })
     if (!response.ok) return { success: false }
     return response.json()

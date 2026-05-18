@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useVideoEditorState } from '@/hooks/useVideoEditorState'
 import { ExportProgress, VideoClip } from '@/lib/types'
-import { exportVideo, getExportStatus, downloadExportedVideo, recordDownload, hlsCleanup, ytResolve } from '@/lib/api'
+import { exportVideo, getExportStatus, downloadExportedVideo, recordDownload, ytResolve, ClipSuggestionResponse, VideoSubtitleSegment, VideoSubtitlesResponse, VideoSummaryResponse } from '@/lib/api'
 import { generateClipThumbnail, generateRemoteClipThumbnail, createThumbnailFromClip } from '@/lib/thumbnailUtils'
 import { formatTime, getClipIndexAtTime, getYouTubeVideoId } from '@/lib/videoUtils'
 import { toast } from 'sonner'
@@ -179,6 +179,31 @@ export function VideoEditor() {
     [safeSeek, state.videoDuration]
   )
 
+  const seekToSubtitle = useCallback(
+    (time: number) => {
+      safeSeek(time)
+      setIsSequencePlaying(false)
+
+      if (isYouTubePlatform && youtubePlayerRef.current && isYouTubeReady) {
+        try {
+          youtubePlayerRef.current.seekTo(time, true)
+          youtubePlayerRef.current.playVideo()
+        } catch {
+          // Player may not be ready; safeSeek already updated editor time.
+        }
+        return
+      }
+
+      if (htmlVideoRef.current) {
+        htmlVideoRef.current.currentTime = time
+        htmlVideoRef.current.play().catch(() => undefined)
+      } else {
+        setPlaying(true)
+      }
+    },
+    [isYouTubePlatform, isYouTubeReady, safeSeek, setPlaying]
+  )
+
   const youTubeOptions = useMemo(() => ({
     width: '100%',
     height: '100%',
@@ -235,6 +260,19 @@ export function VideoEditor() {
   const [clipDurationSeconds, setClipDurationSeconds] = useState(10)
   const [showAISuggestions, setShowAISuggestions] = useState(false)
   const [proxyVideoReady, setProxyVideoReady] = useState(false)
+  const [videoSummary, setVideoSummary] = useState<VideoSummaryResponse | null>(null)
+  const [videoSummaryError, setVideoSummaryError] = useState<string | null>(null)
+  const [videoSubtitles, setVideoSubtitles] = useState<VideoSubtitlesResponse | null>(null)
+  const [videoSubtitlesError, setVideoSubtitlesError] = useState<string | null>(null)
+  const [videoTranscript, setVideoTranscript] = useState<VideoSubtitlesResponse | null>(null)
+  const [videoTranscriptError, setVideoTranscriptError] = useState<string | null>(null)
+  const [viralMoments, setViralMoments] = useState<ClipSuggestionResponse | null>(null)
+  const [viralMomentsError, setViralMomentsError] = useState<string | null>(null)
+  const [aiClipCandidates, setAiClipCandidates] = useState<ClipSuggestionResponse | null>(null)
+  const [aiClipCandidatesError, setAiClipCandidatesError] = useState<string | null>(null)
+  const [showReframePanel, setShowReframePanel] = useState(false)
+  const [reframeAspect, setReframeAspect] = useState<'vertical' | 'horizontal' | 'square'>('vertical')
+  const [reframeSafeArea, setReframeSafeArea] = useState(true)
 
   const handleYouTubeStateChange = useCallback(
     (event: { data: number; target: YouTubePlayer }) => {
@@ -461,14 +499,6 @@ export function VideoEditor() {
       clearSyncInterval()
     }
   }, [playbackSource, getLivePlayerTime, syncUIFromPlayerTime, isSequencePlaying, sortedClips, safeSeek, playbackSourceType, handleStopSequence])
-
-  useEffect(() => {
-    hlsCleanup().then((res) => {
-      if (res.success && res.cleanedCount > 0) {
-        console.log(`[hls] Cleanup complete: removed ${res.cleanedCount} stale jobs.`)
-      }
-    }).catch(err => console.error('[hls] Initial cleanup failed:', err))
-  }, [])
 
   const handleAddClip = useCallback(() => {
     if (state.videoDuration === 0) {
@@ -704,7 +734,20 @@ export function VideoEditor() {
         {canUseUrlWorkflow && (
           <div className="mb-4 flex justify-end">
             <button
-              onClick={clearVideo}
+              onClick={() => {
+                clearVideo()
+                setVideoSummary(null)
+                setVideoSummaryError(null)
+                setVideoSubtitles(null)
+                setVideoSubtitlesError(null)
+                setVideoTranscript(null)
+                setVideoTranscriptError(null)
+                setViralMoments(null)
+                setViralMomentsError(null)
+                setAiClipCandidates(null)
+                setAiClipCandidatesError(null)
+                setShowReframePanel(false)
+              }}
               className="px-4 py-2 rounded-lg text-sm font-semibold border border-white/10 text-purple-100 hover:border-purple-400/50 hover:text-white hover:bg-purple-500/10 transition-all duration-200 whitespace-nowrap"
             >
               Clear Video
@@ -732,6 +775,63 @@ export function VideoEditor() {
               }}
               onDurationResolved={(duration) => {
                 setVideoDuration(duration)
+              }}
+              onSummaryGenerated={(summary) => {
+                setVideoSummary(summary)
+                setVideoSummaryError(null)
+                toast.success('Video summary generated')
+              }}
+              onSummaryFailed={(message) => {
+                setVideoSummary(null)
+                setVideoSummaryError(message)
+                toast.error(message)
+              }}
+              onSubtitlesGenerated={(subtitles) => {
+                setVideoSubtitles(subtitles)
+                setVideoSubtitlesError(null)
+                toast.success('AI subtitles generated')
+              }}
+              onSubtitlesFailed={(message) => {
+                setVideoSubtitles(null)
+                setVideoSubtitlesError(message)
+                toast.error(message)
+              }}
+              onTranscriptGenerated={(transcript) => {
+                setVideoTranscript(transcript)
+                setVideoTranscriptError(null)
+                toast.success('Video transcript generated')
+              }}
+              onTranscriptFailed={(message) => {
+                setVideoTranscript(null)
+                setVideoTranscriptError(message)
+                toast.error(message)
+              }}
+              onMomentsGenerated={(moments) => {
+                setViralMoments(moments)
+                setViralMomentsError(null)
+                toast.success('Viral moments found')
+              }}
+              onMomentsFailed={(message) => {
+                setViralMoments(null)
+                setViralMomentsError(message)
+                toast.error(message)
+              }}
+              onAiClipsGenerated={(clips) => {
+                setAiClipCandidates(clips)
+                setAiClipCandidatesError(null)
+                toast.success('AI clip candidates generated')
+              }}
+              onAiClipsFailed={(message) => {
+                setAiClipCandidates(null)
+                setAiClipCandidatesError(message)
+                toast.error(message)
+              }}
+              onReframeRequested={() => {
+                setShowReframePanel(true)
+                setExportPlatform('tiktok')
+                setExportResizeMode('blur')
+                setReframeAspect('vertical')
+                toast.success('AI Reframe tools opened')
               }}
             />
             <VideoUpload
@@ -1124,6 +1224,502 @@ export function VideoEditor() {
 
             {/* ── Sidebar ───────────────────────────────────────────────────── */}
             <div className="lg:col-span-4 space-y-4 sm:space-y-5">
+              {showReframePanel && (
+                <div
+                  className="rounded-2xl p-4 sm:p-5"
+                  style={{
+                    background: '#150b40',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: '0 4px 32px rgba(15,8,52,0.45)',
+                  }}
+                >
+                  <div className="mb-4 flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.22em] text-purple-200">AI Reframe</p>
+                      <h2 className="mt-1 text-lg font-black text-white">Resize for every platform</h2>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowReframePanel(false)}
+                      className="rounded-lg border border-white/10 bg-[#100a2f] px-2.5 py-1.5 text-xs font-black text-purple-200 hover:border-purple-400/40 hover:text-white"
+                    >
+                      Hide
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="mb-2 text-sm font-black text-white">Aspect ratio</h3>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { id: 'vertical' as const, label: 'Vertical', sub: '9:16', platform: 'tiktok' as const },
+                          { id: 'horizontal' as const, label: 'Wide', sub: '16:9', platform: 'shorts' as const },
+                          { id: 'square' as const, label: 'Square', sub: '1:1', platform: 'reels' as const },
+                        ].map((option) => {
+                          const active = reframeAspect === option.id
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              onClick={() => {
+                                setReframeAspect(option.id)
+                                setExportPlatform(option.platform)
+                              }}
+                              className={`rounded-2xl border p-3 text-left transition ${
+                                active
+                                  ? 'border-purple-400/60 bg-purple-500/20 text-white'
+                                  : 'border-white/10 bg-[#100a2f]/90 text-purple-100 hover:border-purple-400/40'
+                              }`}
+                            >
+                              <span className="block text-sm font-black">{option.label}</span>
+                              <span className="mt-1 block text-xs opacity-70">{option.sub}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="mb-2 text-sm font-black text-white">Fit mode</h3>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[
+                          { id: 'blur' as const, label: 'Blur Fill', desc: 'Keep full frame with blurred background.' },
+                          { id: 'crop' as const, label: 'Smart Crop', desc: 'Fill canvas with tighter center crop.' },
+                        ].map((option) => {
+                          const active = exportResizeMode === option.id
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              onClick={() => setExportResizeMode(option.id)}
+                              className={`rounded-2xl border p-3 text-left transition ${
+                                active
+                                  ? 'border-purple-400/60 bg-purple-500/20 text-white'
+                                  : 'border-white/10 bg-[#100a2f]/90 text-purple-100 hover:border-purple-400/40'
+                              }`}
+                            >
+                              <span className="block text-sm font-black">{option.label}</span>
+                              <span className="mt-1 block text-xs leading-5 opacity-70">{option.desc}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#100a2f]/90 p-3">
+                      <span>
+                        <span className="block text-sm font-black text-white">Safe area guide</span>
+                        <span className="mt-1 block text-xs leading-5 text-purple-100/65">Use this while framing Shorts/Reels/TikTok UI overlays.</span>
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={reframeSafeArea}
+                        onChange={(event) => setReframeSafeArea(event.target.checked)}
+                        className="h-5 w-5 accent-purple-500"
+                      />
+                    </label>
+
+                    <div className="rounded-2xl border border-white/10 bg-[#100a2f]/90 p-4">
+                      <p className="text-xs font-black uppercase tracking-[0.18em] text-purple-200">Current Setup</p>
+                      <p className="mt-2 text-sm leading-6 text-purple-100/80">
+                        Export will use <strong className="text-white">{reframeAspect}</strong> framing with <strong className="text-white">{exportResizeMode}</strong> mode.
+                        {reframeSafeArea ? ' Keep the subject centered inside the safe area.' : ''}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setExportDialogOpen(true)}
+                      disabled={sortedClips.length === 0}
+                      className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-fuchsia-500 px-4 py-3 text-sm font-black text-white transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Export Reframed Video
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {(aiClipCandidates || aiClipCandidatesError) && (
+                <div
+                  className="rounded-2xl p-4 sm:p-5"
+                  style={{
+                    background: '#150b40',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: '0 4px 32px rgba(15,8,52,0.45)',
+                  }}
+                >
+                  <div className="mb-4 flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.22em] text-purple-200">AI Clipping</p>
+                      <h2 className="mt-1 text-lg font-black text-white">Ready-to-cut clips</h2>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAiClipCandidates(null)
+                        setAiClipCandidatesError(null)
+                      }}
+                      className="rounded-lg border border-white/10 bg-[#100a2f] px-2.5 py-1.5 text-xs font-black text-purple-200 hover:border-purple-400/40 hover:text-white"
+                    >
+                      Hide
+                    </button>
+                  </div>
+
+                  {aiClipCandidatesError ? (
+                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-3 text-sm leading-6 text-red-100">
+                      {aiClipCandidatesError}
+                    </div>
+                  ) : aiClipCandidates ? (
+                    <div className="space-y-3">
+                      <div className="rounded-xl border border-white/10 bg-[#100a2f]/90 p-3 text-xs leading-5 text-purple-100/70">
+                        {aiClipCandidates.data.suggestions.length} AI clips generated. Add the best ones, or add all and export.
+                      </div>
+                      {aiClipCandidates.data.suggestions.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            aiClipCandidates.data.suggestions.forEach((candidate) => addClip(candidate.startTime, candidate.endTime))
+                            toast.success('All AI clips added')
+                          }}
+                          className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-500 px-4 py-2.5 text-sm font-black text-white transition hover:scale-[1.01]"
+                        >
+                          Add All Clips
+                        </button>
+                      )}
+                      <div className="max-h-[520px] space-y-3 overflow-y-auto pr-1">
+                        {aiClipCandidates.data.suggestions.map((candidate, index) => (
+                          <div key={`${candidate.startTime}-${candidate.endTime}-${index}`} className="rounded-xl border border-white/10 bg-[#100a2f]/90 p-3">
+                            <div className="mb-2 flex flex-wrap items-center gap-2">
+                              <span className="rounded-full border border-purple-400/20 bg-purple-500/10 px-2.5 py-1 text-xs font-black text-purple-100">
+                                Clip {index + 1}
+                              </span>
+                              <span className="rounded-full border border-white/10 bg-[#150b40] px-2.5 py-1 text-xs font-black text-purple-100">
+                                {formatTime(candidate.startTime)} - {formatTime(candidate.endTime)}
+                              </span>
+                              <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-black text-emerald-100">
+                                {Math.round(candidate.confidence * 100)}%
+                              </span>
+                            </div>
+                            <p className="text-sm font-black leading-6 text-white">{candidate.reason}</p>
+                            {candidate.transcriptSegment && (
+                              <p className="mt-2 text-xs leading-5 text-purple-100/65">{candidate.transcriptSegment}</p>
+                            )}
+                            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                              <button
+                                type="button"
+                                onClick={() => seekToSubtitle(candidate.startTime)}
+                                className="rounded-xl border border-white/10 bg-[#150b40] px-3 py-2 text-xs font-black text-purple-100 transition hover:border-purple-400/50 hover:text-white"
+                              >
+                                Preview
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  addClip(candidate.startTime, candidate.endTime)
+                                  toast.success(`Clip ${index + 1} added`)
+                                }}
+                                className="rounded-xl bg-emerald-500 px-3 py-2 text-xs font-black text-white transition hover:bg-emerald-400"
+                              >
+                                Add Clip
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              )}
+
+              {(viralMoments || viralMomentsError) && (
+                <div
+                  className="rounded-2xl p-4 sm:p-5"
+                  style={{
+                    background: '#150b40',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: '0 4px 32px rgba(15,8,52,0.45)',
+                  }}
+                >
+                  <div className="mb-4 flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.22em] text-purple-200">Find Moments</p>
+                      <h2 className="mt-1 text-lg font-black text-white">Viral clip candidates</h2>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setViralMoments(null)
+                        setViralMomentsError(null)
+                      }}
+                      className="rounded-lg border border-white/10 bg-[#100a2f] px-2.5 py-1.5 text-xs font-black text-purple-200 hover:border-purple-400/40 hover:text-white"
+                    >
+                      Hide
+                    </button>
+                  </div>
+
+                  {viralMomentsError ? (
+                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-3 text-sm leading-6 text-red-100">
+                      {viralMomentsError}
+                    </div>
+                  ) : viralMoments ? (
+                    <div className="space-y-3">
+                      <div className="rounded-xl border border-white/10 bg-[#100a2f]/90 p-3 text-xs leading-5 text-purple-100/70">
+                        {viralMoments.data.suggestions.length} moments found from {viralMoments.data.platform}. Preview a moment or add it to your clips.
+                      </div>
+                      <div className="max-h-[520px] space-y-3 overflow-y-auto pr-1">
+                        {viralMoments.data.suggestions.map((moment, index) => (
+                          <div key={`${moment.startTime}-${moment.endTime}-${index}`} className="rounded-xl border border-white/10 bg-[#100a2f]/90 p-3">
+                            <div className="mb-2 flex flex-wrap items-center gap-2">
+                              <span className="rounded-full border border-purple-400/20 bg-purple-500/10 px-2.5 py-1 text-xs font-black text-purple-100">
+                                {formatTime(moment.startTime)} - {formatTime(moment.endTime)}
+                              </span>
+                              <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-black text-emerald-100">
+                                {Math.round(moment.confidence * 100)}% confidence
+                              </span>
+                            </div>
+                            <p className="text-sm font-black leading-6 text-white">{moment.reason}</p>
+                            {moment.transcriptSegment && (
+                              <p className="mt-2 text-xs leading-5 text-purple-100/65">{moment.transcriptSegment}</p>
+                            )}
+                            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                              <button
+                                type="button"
+                                onClick={() => seekToSubtitle(moment.startTime)}
+                                className="rounded-xl border border-white/10 bg-[#150b40] px-3 py-2 text-xs font-black text-purple-100 transition hover:border-purple-400/50 hover:text-white"
+                              >
+                                Preview Moment
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  addClip(moment.startTime, moment.endTime)
+                                  toast.success('Moment added to clips')
+                                }}
+                                className="rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-500 px-3 py-2 text-xs font-black text-white transition hover:scale-[1.01]"
+                              >
+                                Add Clip
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              )}
+
+              {(videoTranscript || videoTranscriptError) && (
+                <div
+                  className="rounded-2xl p-4 sm:p-5"
+                  style={{
+                    background: '#150b40',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: '0 4px 32px rgba(15,8,52,0.45)',
+                  }}
+                >
+                  <div className="mb-4 flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.22em] text-purple-200">Video Transcript</p>
+                      <h2 className="mt-1 text-lg font-black text-white">Full spoken transcript</h2>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setVideoTranscript(null)
+                        setVideoTranscriptError(null)
+                      }}
+                      className="rounded-lg border border-white/10 bg-[#100a2f] px-2.5 py-1.5 text-xs font-black text-purple-200 hover:border-purple-400/40 hover:text-white"
+                    >
+                      Hide
+                    </button>
+                  </div>
+
+                  {videoTranscriptError ? (
+                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-3 text-sm leading-6 text-red-100">
+                      {videoTranscriptError}
+                    </div>
+                  ) : videoTranscript ? (
+                    <div className="space-y-3">
+                      <div className="rounded-xl border border-white/10 bg-[#100a2f]/90 p-3 text-xs leading-5 text-purple-100/70">
+                        {videoTranscript.segments.length} transcript segments generated. Click any segment to play that part.
+                      </div>
+                      <div className="max-h-[520px] space-y-2 overflow-y-auto pr-1">
+                        {videoTranscript.segments.map((segment) => (
+                          <button
+                            key={segment.id}
+                            type="button"
+                            onClick={() => seekToSubtitle(segment.start)}
+                            className="w-full rounded-xl border border-white/10 bg-[#100a2f]/90 p-3 text-left transition hover:border-purple-400/40"
+                          >
+                            <span className="mb-2 inline-flex rounded-full border border-purple-400/20 bg-purple-500/10 px-2.5 py-1 text-xs font-black text-purple-100">
+                              {formatTime(segment.start)} - {formatTime(segment.end)}
+                            </span>
+                            <p className="text-sm leading-6 text-purple-100/85">{segment.text}</p>
+                          </button>
+                        ))}
+                      </div>
+                      <details className="rounded-xl border border-white/10 bg-[#100a2f]/90 p-3 text-sm text-purple-100/75">
+                        <summary className="cursor-pointer font-black text-white">Plain transcript</summary>
+                        <p className="mt-3 max-h-72 overflow-y-auto whitespace-pre-wrap leading-6">{videoTranscript.transcript}</p>
+                      </details>
+                    </div>
+                  ) : null}
+                </div>
+              )}
+
+              {(videoSubtitles || videoSubtitlesError) && (
+                <div
+                  className="rounded-2xl p-4 sm:p-5"
+                  style={{
+                    background: '#150b40',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: '0 4px 32px rgba(15,8,52,0.45)',
+                  }}
+                >
+                  <div className="mb-4 flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.22em] text-purple-200">AI Subtitles</p>
+                      <h2 className="mt-1 text-lg font-black text-white">Editable transcript timeline</h2>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setVideoSubtitles(null)
+                        setVideoSubtitlesError(null)
+                      }}
+                      className="rounded-lg border border-white/10 bg-[#100a2f] px-2.5 py-1.5 text-xs font-black text-purple-200 hover:border-purple-400/40 hover:text-white"
+                    >
+                      Hide
+                    </button>
+                  </div>
+
+                  {videoSubtitlesError ? (
+                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-3 text-sm leading-6 text-red-100">
+                      {videoSubtitlesError}
+                    </div>
+                  ) : videoSubtitles ? (
+                    <div className="space-y-3">
+                      <div className="rounded-xl border border-white/10 bg-[#100a2f]/90 p-3 text-xs leading-5 text-purple-100/70">
+                        {videoSubtitles.segments.length} subtitle lines generated. Click any timestamp to move the video to that exact part, then edit the text inline.
+                      </div>
+                      <div className="max-h-[520px] space-y-2 overflow-y-auto pr-1">
+                        {videoSubtitles.segments.map((subtitle, index) => (
+                          <div key={subtitle.id} className="rounded-xl border border-white/10 bg-[#100a2f]/90 p-3">
+                            <button
+                              type="button"
+                              onClick={() => seekToSubtitle(subtitle.start)}
+                              className="mb-2 rounded-full border border-purple-400/20 bg-purple-500/10 px-2.5 py-1 text-xs font-black text-purple-100 transition hover:border-purple-300/50 hover:text-white"
+                            >
+                              {formatTime(subtitle.start)} - {formatTime(subtitle.end)}
+                            </button>
+                            <textarea
+                              value={subtitle.text}
+                              onClick={() => seekToSubtitle(subtitle.start)}
+                              onFocus={() => seekToSubtitle(subtitle.start)}
+                              onChange={(event) => {
+                                const nextSegments: VideoSubtitleSegment[] = videoSubtitles.segments.map((item, itemIndex) =>
+                                  itemIndex === index ? { ...item, text: event.target.value } : item
+                                )
+                                setVideoSubtitles({
+                                  ...videoSubtitles,
+                                  segments: nextSegments,
+                                  transcript: nextSegments.map((item) => item.text).join(' '),
+                                })
+                              }}
+                              className="min-h-20 w-full resize-y rounded-xl border border-white/10 bg-[#150b40] p-3 text-sm leading-6 text-white outline-none transition focus:border-purple-400/60"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              )}
+
+              {(videoSummary || videoSummaryError) && (
+                <div
+                  className="rounded-2xl p-4 sm:p-5"
+                  style={{
+                    background: '#150b40',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: '0 4px 32px rgba(15,8,52,0.45)',
+                  }}
+                >
+                  <div className="mb-4 flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.22em] text-purple-200">Video Summary</p>
+                      <h2 className="mt-1 text-lg font-black text-white">AI generated overview</h2>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setVideoSummary(null)
+                        setVideoSummaryError(null)
+                      }}
+                      className="rounded-lg border border-white/10 bg-[#100a2f] px-2.5 py-1.5 text-xs font-black text-purple-200 hover:border-purple-400/40 hover:text-white"
+                    >
+                      Hide
+                    </button>
+                  </div>
+
+                  {videoSummaryError ? (
+                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-3 text-sm leading-6 text-red-100">
+                      {videoSummaryError}
+                    </div>
+                  ) : videoSummary ? (
+                    <div className="space-y-4">
+                      <p className="text-sm leading-6 text-purple-100/85">{videoSummary.overview}</p>
+
+                      {videoSummary.keyPoints.length > 0 && (
+                        <div>
+                          <h3 className="text-sm font-black text-white">Key points</h3>
+                          <div className="mt-2 grid gap-2">
+                            {videoSummary.keyPoints.map((point, index) => (
+                              <div key={`${point}-${index}`} className="rounded-xl border border-white/10 bg-[#100a2f]/90 p-3 text-sm leading-6 text-purple-100/80">
+                                <span className="mr-2 font-black text-purple-200">{index + 1}.</span>
+                                {point}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {videoSummary.chapters.length > 0 && (
+                        <div>
+                          <h3 className="text-sm font-black text-white">Chapters</h3>
+                          <div className="mt-2 max-h-72 space-y-2 overflow-y-auto pr-1">
+                            {videoSummary.chapters.map((chapter, index) => (
+                              <button
+                                key={`${chapter.startTime}-${index}`}
+                                type="button"
+                                onClick={() => safeSeek(chapter.startTime)}
+                                className="w-full rounded-xl border border-white/10 bg-[#100a2f]/90 p-3 text-left transition hover:border-purple-400/40"
+                              >
+                                <div className="flex flex-wrap items-center gap-2 text-sm font-black text-white">
+                                  <span className="rounded-full border border-purple-400/20 bg-purple-500/10 px-2 py-1 text-xs text-purple-100">
+                                    {formatTime(chapter.startTime)} - {formatTime(chapter.endTime)}
+                                  </span>
+                                  {chapter.title}
+                                </div>
+                                <p className="mt-2 text-xs leading-5 text-purple-100/70">{chapter.summary}</p>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {(videoSummary.transcript || videoSummary.transcriptPreview) && (
+                        <details className="rounded-xl border border-white/10 bg-[#100a2f]/90 p-3 text-sm text-purple-100/75">
+                          <summary className="cursor-pointer font-black text-white">Full transcript</summary>
+                          <p className="mt-3 max-h-72 overflow-y-auto whitespace-pre-wrap leading-6">
+                            {videoSummary.transcript || videoSummary.transcriptPreview}
+                          </p>
+                        </details>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+              )}
 
               {/* AI Suggestions Toggle */}
               {canUseUrlWorkflow && (
