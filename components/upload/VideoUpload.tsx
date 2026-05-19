@@ -25,7 +25,7 @@ interface VideoUploadProps {
 }
 
 export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = false, showUrlUpload = true }: VideoUploadProps) {
-  const [uploadMethod, setUploadMethod] = useState<'file' | 'url'>('file')
+  const [uploadMethod, setUploadMethod] = useState<'file' | 'url'>('url')
   const [urlInput, setUrlInput] = useState('')
   const [urlLoading, setUrlLoading] = useState(false)
   const [fileLoading, setFileLoading] = useState(false)

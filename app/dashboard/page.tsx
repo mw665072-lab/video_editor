@@ -52,6 +52,8 @@ export default function DashboardPage() {
   const clipsProgress = user ? Math.min((user.clipsThisMonth / clipsLimit) * 100, 100) : 0
   const downloadsProgress = user ? Math.min((user.downloadsThisMonth / downloadsLimit) * 100, 100) : 0
 
+  const isGuestUser = user?.email === 'guest@clipai.local' || user?.name === 'Guest'
+
   return (
     <div
       className="relative min-h-screen overflow-hidden"
@@ -84,28 +86,30 @@ export default function DashboardPage() {
           title="Dashboard"
           subtitle="Overview of your account & activity"
           actions={
-            <button
-              onClick={onLogout}
-              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all duration-200"
-              style={{
-                background: 'rgba(240,101,125,0.14)',
-                border: '1px solid rgba(240,101,125,0.26)',
-                color: '#ffd2db',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(240,101,125,0.2)'
-                e.currentTarget.style.color = '#fff1f4'
-                e.currentTarget.style.borderColor = 'rgba(240,101,125,0.36)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(240,101,125,0.14)'
-                e.currentTarget.style.color = '#ffd2db'
-                e.currentTarget.style.borderColor = 'rgba(240,101,125,0.26)'
-              }}
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
+            !isGuestUser ? (
+              <button
+                onClick={onLogout}
+                className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all duration-200"
+                style={{
+                  background: 'rgba(240,101,125,0.14)',
+                  border: '1px solid rgba(240,101,125,0.26)',
+                  color: '#ffd2db',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(240,101,125,0.2)'
+                  e.currentTarget.style.color = '#fff1f4'
+                  e.currentTarget.style.borderColor = 'rgba(240,101,125,0.36)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(240,101,125,0.14)'
+                  e.currentTarget.style.color = '#ffd2db'
+                  e.currentTarget.style.borderColor = 'rgba(240,101,125,0.26)'
+                }}
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            ) : undefined
           }
         >
           {error && (

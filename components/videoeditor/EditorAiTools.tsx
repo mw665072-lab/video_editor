@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Captions, Download, FileText, ImagePlus, Loader2, Scan, Scissors, Search, ScrollText, Sparkles, Video } from 'lucide-react'
 import { VideoUpload } from '@/components/upload/VideoUpload'
 import { generateAiThumbnail, generateUploadedVideoSubtitles, generateUploadedVideoSummary, generateVideoSubtitles, generateVideoSummary, suggestClips, ClipSuggestionResponse, VideoSubtitlesResponse, VideoSummaryResponse } from '@/lib/api'
@@ -34,6 +34,9 @@ interface EditorAiToolsProps {
   onAiClipsGenerated?: (clips: ClipSuggestionResponse) => void
   onAiClipsFailed?: (message: string) => void
   onReframeRequested?: () => void
+  selectedToolSlug?: string | null
+  hideToolGrid?: boolean
+  onCloseTool?: () => void
 }
 
 const editorTools: EditorTool[] = [
@@ -61,8 +64,52 @@ export function EditorAiTools({
   onAiClipsGenerated,
   onAiClipsFailed,
   onReframeRequested,
+  selectedToolSlug,
+  hideToolGrid = false,
+  onCloseTool,
 }: EditorAiToolsProps) {
   const [selectedTool, setSelectedTool] = useState<EditorTool | null>(null)
+
+  // Auto-open modal when tool is selected from sidebar
+  useEffect(() => {
+    if (selectedToolSlug) {
+      const tool = editorTools.find(t => t.slug === selectedToolSlug)
+      if (tool) {
+        setSelectedTool(tool)
+      }
+    }
+  }, [selectedToolSlug])
+
+  const handleCloseModal = () => {
+    setSelectedTool(null)
+    onCloseTool?.()
+  }
+
+  if (hideToolGrid) {
+    return (
+      <>
+        {selectedTool && (
+          <EditorToolModal
+            tool={selectedTool}
+            onClose={handleCloseModal}
+            onVideoLoaded={onVideoLoaded}
+            onDurationResolved={onDurationResolved}
+            onSummaryGenerated={onSummaryGenerated}
+            onSummaryFailed={onSummaryFailed}
+            onSubtitlesGenerated={onSubtitlesGenerated}
+            onSubtitlesFailed={onSubtitlesFailed}
+            onTranscriptGenerated={onTranscriptGenerated}
+            onTranscriptFailed={onTranscriptFailed}
+            onMomentsGenerated={onMomentsGenerated}
+            onMomentsFailed={onMomentsFailed}
+            onAiClipsGenerated={onAiClipsGenerated}
+            onAiClipsFailed={onAiClipsFailed}
+            onReframeRequested={onReframeRequested}
+          />
+        )}
+      </>
+    )
+  }
 
   return (
     <section className="w-full rounded-3xl border border-white/10 bg-[#100a2f]/95 p-4 text-left shadow-[0_16px_60px_rgba(38,24,103,0.45)] sm:p-5">
@@ -99,7 +146,7 @@ export function EditorAiTools({
       {selectedTool && (
         <EditorToolModal
           tool={selectedTool}
-          onClose={() => setSelectedTool(null)}
+          onClose={handleCloseModal}
           onVideoLoaded={onVideoLoaded}
           onDurationResolved={onDurationResolved}
           onSummaryGenerated={onSummaryGenerated}
