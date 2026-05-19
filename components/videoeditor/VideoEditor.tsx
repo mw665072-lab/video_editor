@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useVideoEditorState } from '@/hooks/useVideoEditorState'
@@ -273,6 +274,17 @@ export function VideoEditor() {
   const [showReframePanel, setShowReframePanel] = useState(false)
   const [reframeAspect, setReframeAspect] = useState<'vertical' | 'horizontal' | 'square'>('vertical')
   const [reframeSafeArea, setReframeSafeArea] = useState(true)
+  const [selectedToolFromSidebar, setSelectedToolFromSidebar] = useState<string | null>(null)
+
+  const searchParams = useSearchParams()
+
+  // Handle tool selection from sidebar query parameter
+  useEffect(() => {
+    const tool = searchParams.get('tool')
+    if (tool) {
+      setSelectedToolFromSidebar(tool)
+    }
+  }, [searchParams])
 
   const handleYouTubeStateChange = useCallback(
     (event: { data: number; target: YouTubePlayer }) => {
@@ -765,74 +777,6 @@ export function VideoEditor() {
             <div
               className="absolute w-64 h-64 rounded-full pointer-events-none opacity-15 blur-3xl"
               style={{ background: 'rgba(123,97,255,0.35)' }}
-            />
-            <EditorAiTools
-              onVideoLoaded={(source, duration, fileName, sourceType, originalSource) => {
-                setVideo(source, duration, fileName, sourceType, originalSource)
-                setYoutubeFallbackUrl(null)
-                setProxyVideoReady(false)
-                toast.success('Video loaded successfully')
-              }}
-              onDurationResolved={(duration) => {
-                setVideoDuration(duration)
-              }}
-              onSummaryGenerated={(summary) => {
-                setVideoSummary(summary)
-                setVideoSummaryError(null)
-                toast.success('Video summary generated')
-              }}
-              onSummaryFailed={(message) => {
-                setVideoSummary(null)
-                setVideoSummaryError(message)
-                toast.error(message)
-              }}
-              onSubtitlesGenerated={(subtitles) => {
-                setVideoSubtitles(subtitles)
-                setVideoSubtitlesError(null)
-                toast.success('AI subtitles generated')
-              }}
-              onSubtitlesFailed={(message) => {
-                setVideoSubtitles(null)
-                setVideoSubtitlesError(message)
-                toast.error(message)
-              }}
-              onTranscriptGenerated={(transcript) => {
-                setVideoTranscript(transcript)
-                setVideoTranscriptError(null)
-                toast.success('Video transcript generated')
-              }}
-              onTranscriptFailed={(message) => {
-                setVideoTranscript(null)
-                setVideoTranscriptError(message)
-                toast.error(message)
-              }}
-              onMomentsGenerated={(moments) => {
-                setViralMoments(moments)
-                setViralMomentsError(null)
-                toast.success('Viral moments found')
-              }}
-              onMomentsFailed={(message) => {
-                setViralMoments(null)
-                setViralMomentsError(message)
-                toast.error(message)
-              }}
-              onAiClipsGenerated={(clips) => {
-                setAiClipCandidates(clips)
-                setAiClipCandidatesError(null)
-                toast.success('AI clip candidates generated')
-              }}
-              onAiClipsFailed={(message) => {
-                setAiClipCandidates(null)
-                setAiClipCandidatesError(message)
-                toast.error(message)
-              }}
-              onReframeRequested={() => {
-                setShowReframePanel(true)
-                setExportPlatform('tiktok')
-                setExportResizeMode('blur')
-                setReframeAspect('vertical')
-                toast.success('AI Reframe tools opened')
-              }}
             />
             <VideoUpload
               onVideoLoaded={(source, duration, fileName, sourceType, originalSource) => {
@@ -1865,6 +1809,97 @@ export function VideoEditor() {
           </div>
         )}
       </div>
+
+      {/* AI Tools Modal Handler - triggered from sidebar */}
+      <EditorAiTools
+        hideToolGrid={true}
+        selectedToolSlug={selectedToolFromSidebar}
+        onCloseTool={() => {
+          setSelectedToolFromSidebar(null)
+          // Remove the tool query parameter from URL
+          const url = new URL(window.location.href)
+          url.searchParams.delete('tool')
+          window.history.replaceState({}, '', url.toString())
+        }}
+        onVideoLoaded={(source, duration, fileName, sourceType, originalSource) => {
+          setVideo(source, duration, fileName, sourceType, originalSource)
+          setYoutubeFallbackUrl(null)
+          setProxyVideoReady(false)
+          setSelectedToolFromSidebar(null)
+          toast.success('Video loaded successfully')
+        }}
+        onDurationResolved={(duration) => {
+          setVideoDuration(duration)
+        }}
+        onSummaryGenerated={(summary) => {
+          setVideoSummary(summary)
+          setVideoSummaryError(null)
+          setSelectedToolFromSidebar(null)
+          toast.success('Video summary generated')
+        }}
+        onSummaryFailed={(message) => {
+          setVideoSummary(null)
+          setVideoSummaryError(message)
+          setSelectedToolFromSidebar(null)
+          toast.error(message)
+        }}
+        onSubtitlesGenerated={(subtitles) => {
+          setVideoSubtitles(subtitles)
+          setVideoSubtitlesError(null)
+          setSelectedToolFromSidebar(null)
+          toast.success('AI subtitles generated')
+        }}
+        onSubtitlesFailed={(message) => {
+          setVideoSubtitles(null)
+          setVideoSubtitlesError(message)
+          setSelectedToolFromSidebar(null)
+          toast.error(message)
+        }}
+        onTranscriptGenerated={(transcript) => {
+          setVideoTranscript(transcript)
+          setVideoTranscriptError(null)
+          setSelectedToolFromSidebar(null)
+          toast.success('Video transcript generated')
+        }}
+        onTranscriptFailed={(message) => {
+          setVideoTranscript(null)
+          setVideoTranscriptError(message)
+          setSelectedToolFromSidebar(null)
+          toast.error(message)
+        }}
+        onMomentsGenerated={(moments) => {
+          setViralMoments(moments)
+          setViralMomentsError(null)
+          setSelectedToolFromSidebar(null)
+          toast.success('Viral moments found')
+        }}
+        onMomentsFailed={(message) => {
+          setViralMoments(null)
+          setViralMomentsError(message)
+          setSelectedToolFromSidebar(null)
+          toast.error(message)
+        }}
+        onAiClipsGenerated={(clips) => {
+          setAiClipCandidates(clips)
+          setAiClipCandidatesError(null)
+          setSelectedToolFromSidebar(null)
+          toast.success('AI clip candidates generated')
+        }}
+        onAiClipsFailed={(message) => {
+          setAiClipCandidates(null)
+          setAiClipCandidatesError(message)
+          setSelectedToolFromSidebar(null)
+          toast.error(message)
+        }}
+        onReframeRequested={() => {
+          setShowReframePanel(true)
+          setExportPlatform('tiktok')
+          setExportResizeMode('blur')
+          setReframeAspect('vertical')
+          setSelectedToolFromSidebar(null)
+          toast.success('AI Reframe tools opened')
+        }}
+      />
 
       {/* Export Dialog */}
       <ExportDialog

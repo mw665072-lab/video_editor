@@ -29,6 +29,8 @@ import {
   Video,
   PanelLeftClose,
   PanelLeftOpen,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react'
 
 type SidebarUser = {
@@ -51,6 +53,17 @@ const adminNavItems = [
   { href: '/admin/blogs', label: 'Create Blogs', icon: PenSquare },
   { href: '/admin/cms', label: 'CMS Builder', icon: Settings },
   { href: '/blogs', label: 'Public Blogs', icon: BookOpen },
+]
+
+const editorTools = [
+  { label: 'AI Clipping', slug: 'ai-clipping', icon: Scissors, description: 'Generate short clip candidates from video' },
+  { label: 'Find Moments', slug: 'find-moments', icon: Search, description: 'Detect hooks, highlights, and key moments' },
+  { label: 'AI Subtitles', slug: 'subtitles', icon: Captions, description: 'Generate captions and subtitle styling' },
+  { label: 'AI Thumbnail', slug: 'thumbnail', icon: ImagePlus, description: 'Choose frames for thumbnail generation' },
+  { label: 'Video Transcript', slug: 'transcript', icon: FileText, description: 'Turn speech into searchable text' },
+  { label: 'Video Summary', slug: 'summary', icon: ScrollText, description: 'Generate summary and chapter outline' },
+  { label: 'AI Reframe', slug: 'reframe', icon: Scan, description: 'Reframe for Shorts, Reels, and TikTok' },
+  { label: 'AI Video', slug: 'ai-video', icon: Video, description: 'AI assisted editing tools' },
 ]
 
 const iconMap: Record<string, typeof LayoutDashboard> = {
@@ -109,6 +122,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
   const [user, setUser] = useState<SidebarUser | null>(null)
   const [cmsUserItems, setCmsUserItems] = useState(navItems)
   const [cmsAdminItems, setCmsAdminItems] = useState(adminNavItems)
+  const [clipEditorDropdownOpen, setClipEditorDropdownOpen] = useState(false)
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -134,7 +148,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
   }
 
   return (
-    <div className="md:sticky md:top-4 md:h-full">
+    <div className="flex h-full flex-col">
 
       {/* ── Mobile top bar ──────────────────────────────────────────── */}
       <div
@@ -183,7 +197,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
 
       {/* ── Sidebar panel ───────────────────────────────────────────── */}
       <aside
-        className={`${mobileOpen ? 'block' : 'hidden'} md:block rounded-2xl shadow-xl transition-all duration-300 ${collapsed ? 'p-3' : 'p-5'}`}
+        className={`${mobileOpen ? 'flex' : 'hidden'} md:flex flex-col h-full rounded-2xl shadow-xl transition-all duration-300 ${collapsed ? 'p-3' : 'p-5'}`}
         style={{
           background: 'rgba(255,255,255,0.08)',
           border: '1px solid rgba(255,255,255,0.14)',
@@ -242,8 +256,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
           )}
         </div>
 
-        {/* Nav items */}
-        <nav className="flex flex-col gap-1.5">
+        {/* Nav items - scrollable */}
+        <nav className="flex flex-col gap-1.5 flex-1 overflow-y-auto">
           {items.map((item) => {
             const currentPath = searchParams.size ? `${pathname}?${searchParams.toString()}` : pathname
             const itemPath = item.href.split('?')[0]
@@ -253,6 +267,107 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
               : pathname === item.href || (item.href !== '/admin' && pathname.startsWith(`${itemPath}/`))
             const Icon = item.icon
             const external = 'external' in item && item.external
+            const isClipEditor = item.href === '/editor'
+
+            // Render Clip Editor with dropdown
+            if (isClipEditor && !collapsed) {
+              return (
+                <div key={item.href} className="flex flex-col">
+                  <div
+                    className="flex items-center rounded-xl text-sm font-semibold transition-all duration-200 gap-3 px-3.5 py-2.5 cursor-pointer"
+                    style={
+                      isActive
+                        ? {
+                            background: 'linear-gradient(135deg, #ffd36b 0%, #ffb32c 100%)',
+                            color: '#351765',
+                            boxShadow: '0 12px 28px rgba(255,179,44,0.2)',
+                          }
+                        : {
+                            color: 'rgba(248,247,255,0.74)',
+                            background: 'transparent',
+                          }
+                    }
+                    onClick={() => {
+                      router.push(item.href)
+                      setClipEditorDropdownOpen(!clipEditorDropdownOpen)
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
+                        e.currentTarget.style.color = '#ffd36b'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.background = 'transparent'
+                        e.currentTarget.style.color = 'rgba(248,247,255,0.74)'
+                      }
+                    }}
+                  >
+                    <Icon
+                      size={16}
+                      className="shrink-0"
+                      style={{ opacity: isActive ? 1 : 0.7 }}
+                    />
+                    {item.label}
+                    <span className="ml-auto">
+                      {clipEditorDropdownOpen ? (
+                        <ChevronDown size={14} style={{ opacity: 0.7 }} />
+                      ) : (
+                        <ChevronRight size={14} style={{ opacity: 0.7 }} />
+                      )}
+                    </span>
+                  </div>
+
+                  {/* Dropdown submenu for AI tools */}
+                  {clipEditorDropdownOpen && (
+                    <div className="ml-7 mt-1 flex flex-col gap-1 border-l border-white/10 pl-3">
+                      {editorTools.map((tool) => {
+                        const ToolIcon = tool.icon
+                        const toolHref = `/editor?tool=${tool.slug}`
+                        const isToolActive = currentPath === toolHref
+                        return (
+                          <Link
+                            key={tool.slug}
+                            href={toolHref}
+                            className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all duration-200"
+                            style={
+                              isToolActive
+                                ? {
+                                    background: 'rgba(139, 92, 246, 0.15)',
+                                    color: '#ffd36b',
+                                  }
+                                : {
+                                    color: 'rgba(248,247,255,0.6)',
+                                    background: 'transparent',
+                                  }
+                            }
+                            onMouseEnter={(e) => {
+                              if (!isToolActive) {
+                                e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
+                                e.currentTarget.style.color = 'rgba(255,211,107,0.8)'
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isToolActive) {
+                                e.currentTarget.style.background = 'transparent'
+                                e.currentTarget.style.color = 'rgba(248,247,255,0.6)'
+                              }
+                            }}
+                          >
+                            <ToolIcon size={13} className="shrink-0" style={{ opacity: 0.8 }} />
+                            <span className="flex-1">{tool.label}</span>
+                            <Sparkles size={11} style={{ opacity: 0.5 }} />
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            }
+
+            // Regular nav item
             return (
               <Link
                 key={item.href}
@@ -305,78 +420,130 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
           })}
         </nav>
 
-        {!collapsed && (
-          <>
-            {/* Tips box */}
-            <div
-              className="mt-6 rounded-xl p-3.5"
-              style={{
-                background: 'rgba(16,8,44,0.44)',
-                border: '1px solid rgba(255,255,255,0.12)',
-              }}
-            >
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <Zap size={11} style={{ color: '#ffd36b' }} />
-                <p className="text-xs font-bold uppercase tracking-wider" style={{ color: '#ffd36b' }}>
-                  {isAdmin ? 'Admin' : 'Tips'}
+        {/* Bottom section - Fixed at bottom */}
+        <div className="mt-auto pt-4 flex flex-col gap-3">
+          {!collapsed && (
+            <>
+              {/* Tips box */}
+              {/* <div
+                className="rounded-xl p-3.5"
+                style={{
+                  background: 'rgba(16,8,44,0.44)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                }}
+              >
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Zap size={11} style={{ color: '#ffd36b' }} />
+                  <p className="text-xs font-bold uppercase tracking-wider" style={{ color: '#ffd36b' }}>
+                    {isAdmin ? 'Admin' : 'Tips'}
+                  </p>
+                </div>
+                <p className="text-xs leading-relaxed" style={{ color: 'rgba(248,247,255,0.62)' }}>
+                  {isAdmin ? (
+                    <>
+                      Review platform usage, publish blog content, and track creator engagement from admin views.
+                    </>
+                  ) : (
+                    <>
+                      Use <span className="font-semibold" style={{ color: '#ffd36b' }}>Clip Editor</span> for trimming and exporting, or{' '}
+                      <span className="font-semibold" style={{ color: '#ffd36b' }}>Visual Editor</span> for filters, audio, and captions.
+                    </>
+                  )}
                 </p>
-              </div>
-              <p className="text-xs leading-relaxed" style={{ color: 'rgba(248,247,255,0.62)' }}>
-                {isAdmin ? (
-                  <>
-                    Review platform usage, publish blog content, and track creator engagement from admin views.
-                  </>
-                ) : (
-                  <>
-                    Use <span className="font-semibold" style={{ color: '#ffd36b' }}>Clip Editor</span> for trimming and exporting, or{' '}
-                    <span className="font-semibold" style={{ color: '#ffd36b' }}>Visual Editor</span> for filters, audio, and captions.
-                  </>
-                )}
-              </p>
-            </div>
+              </div> */}
 
-            {isLoggedIn && (
+              {isLoggedIn && (
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all duration-200"
+                  style={{
+                    background: 'rgba(240,101,125,0.12)',
+                    border: '1px solid rgba(240,101,125,0.24)',
+                    color: '#ffc2ce',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(240,101,125,0.18)'
+                    e.currentTarget.style.color = '#ffe0e6'
+                    e.currentTarget.style.borderColor = 'rgba(240,101,125,0.32)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(240,101,125,0.12)'
+                    e.currentTarget.style.color = '#ffc2ce'
+                    e.currentTarget.style.borderColor = 'rgba(240,101,125,0.24)'
+                  }}
+                >
+                  <LogOut size={14} />
+                  Logout
+                </button>
+              )}
+
+              {/* User Profile Section - Full Width */}
+              {isLoggedIn && (
+                <div
+                  className="w-full rounded-xl p-3 flex items-center gap-3 -mx-5 -mb-5 px-5 pb-5"
+                  style={{
+                    background: 'rgba(16,8,44,0.52)',
+                    borderTop: '1px solid rgba(255,255,255,0.12)',
+                  }}
+                >
+                  <span
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-sm font-black text-white shrink-0"
+                    style={{
+                      background: 'linear-gradient(135deg, #ffd36b 0%, #ffb32c 100%)',
+                      color: '#3b1769',
+                      boxShadow: '0 6px 18px rgba(255,179,44,0.24)',
+                    }}
+                  >
+                    {user?.name?.charAt(0)?.toUpperCase() || (isAdmin ? 'A' : 'U')}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-white/90 truncate">{user?.name || (isAdmin ? 'Admin' : 'User')}</p>
+                    <p className="text-xs text-white/50 truncate">{user?.role || 'Member'}</p>
+                  </div>
+                  <Settings size={16} className="text-white/40 hover:text-white/70 cursor-pointer transition-colors shrink-0" />
+                </div>
+              )}
+            </>
+          )}
+
+          {collapsed && isLoggedIn && (
+            <>
               <button
                 onClick={handleLogout}
-                className="mt-3 w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all duration-200"
+                aria-label="Logout"
+                title="Logout"
+                className="flex w-full items-center justify-center rounded-xl py-3 transition-all duration-200"
                 style={{
                   background: 'rgba(240,101,125,0.12)',
                   border: '1px solid rgba(240,101,125,0.24)',
                   color: '#ffc2ce',
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(240,101,125,0.18)'
-                  e.currentTarget.style.color = '#ffe0e6'
-                  e.currentTarget.style.borderColor = 'rgba(240,101,125,0.32)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(240,101,125,0.12)'
-                  e.currentTarget.style.color = '#ffc2ce'
-                  e.currentTarget.style.borderColor = 'rgba(240,101,125,0.24)'
+              >
+                <LogOut size={16} />
+              </button>
+
+              {/* User Profile - Collapsed */}
+              <div
+                className="w-full rounded-xl p-2 flex items-center justify-center -mx-3 -mb-3 px-3 pb-3"
+                style={{
+                  background: 'rgba(16,8,44,0.52)',
+                  borderTop: '1px solid rgba(255,255,255,0.12)',
                 }}
               >
-                <LogOut size={14} />
-                Logout
-              </button>
-            )}
-          </>
-        )}
-
-        {collapsed && isLoggedIn && (
-          <button
-            onClick={handleLogout}
-            aria-label="Logout"
-            title="Logout"
-            className="mt-4 flex w-full items-center justify-center rounded-xl py-3 transition-all duration-200"
-            style={{
-              background: 'rgba(240,101,125,0.12)',
-              border: '1px solid rgba(240,101,125,0.24)',
-              color: '#ffc2ce',
-            }}
-          >
-            <LogOut size={16} />
-          </button>
-        )}
+                <span
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-sm font-black text-white"
+                  style={{
+                    background: 'linear-gradient(135deg, #ffd36b 0%, #ffb32c 100%)',
+                    color: '#3b1769',
+                    boxShadow: '0 6px 18px rgba(255,179,44,0.24)',
+                  }}
+                >
+                  {user?.name?.charAt(0)?.toUpperCase() || (isAdmin ? 'A' : 'U')}
+                </span>
+              </div>
+            </>
+          )}
+        </div>
       </aside>
     </div>
   )
@@ -386,9 +553,9 @@ export function Sidebar(props: SidebarProps) {
   return (
     <Suspense
       fallback={
-        <div className="md:sticky md:top-4 md:h-full">
+        <div className="flex h-full flex-col">
           <div
-            className="rounded-2xl p-5 shadow-xl"
+            className="flex flex-col h-full rounded-2xl p-5 shadow-xl"
             style={{
               background: 'rgba(255,255,255,0.08)',
               border: '1px solid rgba(255,255,255,0.14)',
@@ -397,7 +564,7 @@ export function Sidebar(props: SidebarProps) {
             }}
           >
             <div className="h-8 animate-pulse rounded-xl bg-white/10" />
-            <div className="mt-4 space-y-2">
+            <div className="mt-4 space-y-2 flex-1">
               <div className="h-9 animate-pulse rounded-xl bg-white/10" />
               <div className="h-9 animate-pulse rounded-xl bg-white/10" />
               <div className="h-9 animate-pulse rounded-xl bg-white/10" />

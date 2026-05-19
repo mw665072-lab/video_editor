@@ -35,7 +35,7 @@ export function PageShell({ title, subtitle, actions, children }: PageShellProps
         }`}
         style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(20, 9, 50, 0.32)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)' }}
       >
-        <div className="h-full overflow-y-auto p-4">
+        <div className="flex h-full flex-col ">
           <Sidebar collapsed={sidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed((value) => !value)} />
         </div>
       </aside>
