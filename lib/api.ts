@@ -27,6 +27,16 @@ export interface ClipSuggestionResponse {
   }
 }
 
+export interface ClipSuggestionJobResponse {
+  success: boolean
+  jobId: string
+  status: 'pending' | 'running' | 'done' | 'failed'
+  progress: number
+  step: string
+  error?: string
+  data?: ClipSuggestionResponse['data']
+}
+
 export interface VideoSummaryChapter {
   title: string
   startTime: number
@@ -258,6 +268,7 @@ export async function health(): Promise<{ status: string }> {
 }
 
 const ACCESS_TOKEN_KEY = 'clipai_access_token'
+let refreshPromise: Promise<string> | null = null
 
 const getAccessToken = () => (typeof window === 'undefined' ? null : window.localStorage.getItem(ACCESS_TOKEN_KEY))
 const setAccessToken = (token: string) => {
@@ -275,6 +286,16 @@ const redirectToLogin = () => {
 }
 
 async function refreshToken() {
+  if (refreshPromise) return refreshPromise
+
+  refreshPromise = refreshTokenOnce().finally(() => {
+    refreshPromise = null
+  })
+
+  return refreshPromise
+}
+
+async function refreshTokenOnce() {
   const response = await fetch(`${BASE_URL}/api/auth/refresh-token`, {
     method: 'POST',
     credentials: 'include',
@@ -320,7 +341,7 @@ export async function requestWithAuth(input: RequestInfo, init: RequestInit = {}
     credentials: 'include',
   })
 
-  if (response.status === 401) {
+  if (response.status === 401 && token) {
     try {
       const newToken = await refreshToken()
       headers.set('Authorization', `Bearer ${newToken}`)
@@ -720,7 +741,7 @@ export async function suggestClips(
   url: string,
   aiProvider: 'openai' | 'gemini' | 'anthropic' | 'auto' = 'auto'
 ): Promise<ClipSuggestionResponse> {
-  const response = await requestWithAuth('/api/suggest-clips', {
+  const response = await requestWithAuth('/api/suggest-clips/jobs', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ url, aiProvider }),
@@ -742,7 +763,47 @@ export async function suggestClips(
     throw new Error(errorMessage)
   }
   
-  return response.json()
+  const started = await response.json() as ClipSuggestionJobResponse
+  if (!started.jobId) {
+    throw new Error('Clip suggestion job did not return a job id')
+  }
+
+  return waitForClipSuggestionJob(started.jobId)
+}
+
+async function waitForClipSuggestionJob(jobId: string): Promise<ClipSuggestionResponse> {
+  const startedAt = Date.now()
+  const timeoutMs = 1000 * 60 * 20
+  let delayMs = 1500
+
+  while (Date.now() - startedAt < timeoutMs) {
+    await new Promise((resolve) => setTimeout(resolve, delayMs))
+
+    const response = await requestWithAuth(`/api/suggest-clips/jobs/${encodeURIComponent(jobId)}`, {
+      method: 'GET',
+    })
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => '')
+      throw new Error(`Clip suggestion status failed: ${response.status} ${response.statusText} ${text}`)
+    }
+
+    const job = await response.json() as ClipSuggestionJobResponse
+    if (job.status === 'done' && job.data) {
+      return {
+        success: true,
+        data: job.data,
+      }
+    }
+
+    if (job.status === 'failed') {
+      throw new Error(job.error || 'Clip suggestion failed')
+    }
+
+    delayMs = Math.min(5000, delayMs + 500)
+  }
+
+  throw new Error('Clip suggestion is taking longer than expected. Please try again in a few minutes.')
 }
 
 function cleanSummaryText(value: string | undefined, fallback: string) {
