@@ -1,6 +1,9 @@
 import { VideoClip } from './types'
 import { requestWithAuth } from './api'
 
+const remoteThumbnailCache = new Map<string, string>()
+const remoteThumbnailRequests = new Map<string, Promise<string>>()
+
 export async function generateClipThumbnail(source: Blob | string, time: number): Promise<string> {
   return new Promise(async (resolve, reject) => {
     const video = document.createElement('video')
@@ -91,8 +94,24 @@ export async function generateClipThumbnail(source: Blob | string, time: number)
 }
 
 export async function generateRemoteClipThumbnail(url: string, time: number): Promise<string> {
+  const normalizedTime = Math.max(0, Number(time) || 0)
+  const cacheKey = `${url}|${normalizedTime.toFixed(2)}`
+  const cached = remoteThumbnailCache.get(cacheKey)
+  if (cached) return cached
+
+  const inFlight = remoteThumbnailRequests.get(cacheKey)
+  if (inFlight) return inFlight
+
+  const request = fetchRemoteClipThumbnail(url, normalizedTime).finally(() => {
+    remoteThumbnailRequests.delete(cacheKey)
+  })
+  remoteThumbnailRequests.set(cacheKey, request)
+  return request
+}
+
+async function fetchRemoteClipThumbnail(url: string, time: number): Promise<string> {
   const response = await requestWithAuth(
-    `/api/thumbnail?url=${encodeURIComponent(url)}&time=${encodeURIComponent(String(Math.max(0, time)))}`,
+    `/api/thumbnail?url=${encodeURIComponent(url)}&time=${encodeURIComponent(String(time))}`,
     { method: 'GET' },
   )
 
@@ -103,7 +122,7 @@ export async function generateRemoteClipThumbnail(url: string, time: number): Pr
 
   const blob = await response.blob()
 
-  return await new Promise<string>((resolve, reject) => {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => {
       if (typeof reader.result === 'string') resolve(reader.result)
@@ -112,6 +131,10 @@ export async function generateRemoteClipThumbnail(url: string, time: number): Pr
     reader.onerror = () => reject(new Error('Failed to read thumbnail'))
     reader.readAsDataURL(blob)
   })
+
+  const cacheKey = `${url}|${time.toFixed(2)}`
+  remoteThumbnailCache.set(cacheKey, dataUrl)
+  return dataUrl
 }
 
 export function createThumbnailFromClip(clip: VideoClip): string {

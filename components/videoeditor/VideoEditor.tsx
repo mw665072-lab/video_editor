@@ -91,6 +91,7 @@ export function VideoEditor() {
   const syncIntervalRef = useRef<number | null>(null)
   const activeClipIndexRef = useRef<number>(0)
   const bufferingTimerRef = useRef<number | null>(null)
+  const thumbnailJobsRef = useRef<Set<string>>(new Set())
 
   const [isYouTubeReady, setIsYouTubeReady] = useState(false)
   const [showYouTubeLoadingHint, setShowYouTubeLoadingHint] = useState(false)
@@ -564,7 +565,7 @@ export function VideoEditor() {
   useEffect(() => {
     if (!playbackSource || !sortedClips.length) return
 
-    const clipsNeedingThumbnail = sortedClips.filter(c => !c.thumbnailUrl)
+    const clipsNeedingThumbnail = sortedClips.filter(c => !c.thumbnailUrl && !thumbnailJobsRef.current.has(c.id))
     if (!clipsNeedingThumbnail.length) return
 
     let isCancelled = false
@@ -572,6 +573,7 @@ export function VideoEditor() {
     ;(async () => {
       for (const clip of clipsNeedingThumbnail) {
         if (isCancelled) return
+        thumbnailJobsRef.current.add(clip.id)
         try {
           const thumb =
             typeof sourceForProcessing === 'string'
@@ -582,6 +584,8 @@ export function VideoEditor() {
         } catch (error) {
           if (isCancelled) return
           updateClip({ ...clip, thumbnailUrl: createThumbnailFromClip(clip) })
+        } finally {
+          thumbnailJobsRef.current.delete(clip.id)
         }
       }
     })()
