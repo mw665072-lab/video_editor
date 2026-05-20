@@ -1081,9 +1081,11 @@ export async function hlsStatus(jobId: string): Promise<{
 }
 
 export async function ytResolve(url: string): Promise<{
+  importId?: string
   streamUrl: string
   duration: number
   title: string
+  expiresAt?: string
 }> {
   const response = await requestWithAuth(`/api/yt-resolve?url=${encodeURIComponent(url)}`, { method: 'GET' })
   if (!response.ok) {

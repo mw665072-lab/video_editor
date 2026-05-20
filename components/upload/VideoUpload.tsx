@@ -111,9 +111,13 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
         toast.error('Invalid YouTube URL')
         return
       }
+
+      const resolved = await resolveAndLoad(trimmedUrl, 'YouTube')
+      if (resolved) return
+
       onVideoLoaded(trimmedUrl, 0, undefined, 'youtube', trimmedUrl)
       setUrlInput('')
-      toast.success('YouTube video loaded — clip preview enabled.')
+      toast.success('YouTube video loaded with embedded preview. Export will retry when the stream is available.')
       return
     }
 
@@ -181,8 +185,10 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
         const fallbackLabel = sourceType === 'proxy'
           ? 'Video'
           : sourceType.charAt(0).toUpperCase() + sourceType.slice(1)
-        await resolveAndLoad(originalUrl, fallbackLabel)
-        toast.success('Loaded via proxy fallback', { id: toastId })
+        const resolved = await resolveAndLoad(originalUrl, fallbackLabel)
+        if (resolved) {
+          toast.success('Loaded via proxy fallback', { id: toastId })
+        }
       } catch (fallbackError) {
         toast.error(
           fallbackError instanceof Error ? fallbackError.message : `Failed to load ${platformLabel} video`,
@@ -197,7 +203,7 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
   const resolveAndLoad = async (
     originalUrl: string,
     platformLabel: string
-  ) => {
+  ): Promise<boolean> => {
     setUrlLoading(true)
     const toastId = `resolve-${Date.now()}`
 
@@ -219,8 +225,10 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
         `${platformLabel} loaded${data.title && data.title !== 'Untitled' ? ` — ${data.title}` : ''}`,
         { id: toastId }
       )
+      return true
     } catch (error) {
       toast.error(error instanceof Error ? error.message : `Failed to load ${platformLabel} video`, { id: toastId })
+      return false
     } finally {
       setUrlLoading(false)
     }

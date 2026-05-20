@@ -627,8 +627,12 @@ export function VideoEditor() {
       })
 
       try {
-        const sourceUrl = sourceForProcessing
-        if (!sourceUrl) {
+        const exportPlaybackSource = typeof playbackSource === 'string'
+          ? playbackSource
+          : sourceForProcessing
+        const exportOriginalSource = sourceForProcessing ?? exportPlaybackSource
+
+        if (!exportPlaybackSource) {
           throw new Error('This source cannot be exported yet because no backend-accessible URL is available.')
         }
         const clipsPayload = sortedClips.map((clip) => ({
@@ -638,8 +642,8 @@ export function VideoEditor() {
         }))
 
         const { jobId } = await exportVideo({
-          videoSource: sourceUrl,
-          originalSource: sourceUrl,
+          videoSource: exportPlaybackSource,
+          originalSource: exportOriginalSource,
           clips: clipsPayload,
           platform,
           resizeMode,
