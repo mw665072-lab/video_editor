@@ -931,7 +931,7 @@ export function VideoEditor() {
                             style={{ background: '#150b40', borderTop: '1px solid rgba(255,255,255,0.08)' }}
                           >
                             <p className="text-xs font-semibold text-purple-200">● YouTube — clip preview enabled</p>
-                            <p className="text-xs text-white/40 mt-0.5">Export stays disabled for embedded sources.</p>
+                            <p className="text-xs text-white/40 mt-0.5">Export prepares the source only when you click export.</p>
                           </div>
                           {state.videoDuration <= 0 && (
                             <div className="p-3 grid grid-cols-1 sm:grid-cols-2 gap-2" style={{ borderTop: '1px solid #2a1a08' }}>
