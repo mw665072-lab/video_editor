@@ -115,9 +115,7 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
       const resolved = await resolveAndLoad(trimmedUrl, 'YouTube')
       if (resolved) return
 
-      onVideoLoaded(trimmedUrl, 0, undefined, 'youtube', trimmedUrl)
-      setUrlInput('')
-      toast.success('YouTube video loaded with embedded preview. Export will retry when the stream is available.')
+      toast.error('YouTube import failed. Export needs the backend-prepared stream, the same as Facebook and TikTok.')
       return
     }
 

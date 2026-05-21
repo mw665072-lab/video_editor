@@ -1085,6 +1085,8 @@ export async function ytResolve(url: string): Promise<{
   streamUrl: string
   duration: number
   title: string
+  storageProvider?: 'local' | 'cloudinary'
+  importProvider?: 'managed' | 'yt-dlp'
   expiresAt?: string
 }> {
   const response = await requestWithAuth(`/api/yt-resolve?url=${encodeURIComponent(url)}`, { method: 'GET' })
