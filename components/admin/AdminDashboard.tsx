@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { BarChart3, BookOpen, Download, FileVideo, MessageCircle, PenSquare, ThumbsUp, Users } from 'lucide-react'
-import { AdminStats, getAdminStats, getProfile } from '@/lib/api'
+import { BarChart3, BookOpen, Download, FileVideo, MessageCircle, PenSquare, ShieldCheck, ThumbsUp, Users } from 'lucide-react'
+import { AdminStats, ProxyPoolStatus, getAdminProxyStatus, getAdminStats, getProfile } from '@/lib/api'
 import { PageShell } from '@/components/layout/PageShell'
 
 export function AdminDashboard() {
   const router = useRouter()
   const [stats, setStats] = useState<AdminStats | null>(null)
+  const [proxyPool, setProxyPool] = useState<ProxyPoolStatus | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -17,9 +18,12 @@ export function AdminDashboard() {
     getProfile()
       .then((data) => {
         if (data.user?.role !== 'ADMIN' && !data.user?.isAdmin) throw new Error('Admin only')
-        return getAdminStats()
+        return Promise.all([getAdminStats(), getAdminProxyStatus()])
       })
-      .then((data) => setStats(data.stats))
+      .then(([statsData, proxyData]) => {
+        setStats(statsData.stats)
+        setProxyPool(proxyData.proxyPool)
+      })
       .catch((err) => {
         setError(err.message || 'Admin access required')
         router.replace('/dashboard')
@@ -54,6 +58,50 @@ export function AdminDashboard() {
           <StatCard icon={<MessageCircle />} label="Comments" value={stats.comments} detail="All blog comments" />
           <StatCard icon={<Download />} label="Plan Mix" value={stats.planBreakdown.PRO || 0} detail={`PRO users, ${stats.planBreakdown.FREE || 0} free`} />
         </div>
+
+        {proxyPool && (
+          <Panel title="Proxy Pool">
+            <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <MiniStat label="Proxies" value={proxyPool.totalProxies} />
+              <MiniStat label="Downloads" value={proxyPool.totalDownloads} />
+              <MiniStat label="Errors" value={proxyPool.totalErrors} />
+              <MiniStat label="Est. Cost" value={`$${proxyPool.estimatedCost.toFixed(2)}`} />
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] text-left text-xs">
+                <thead className="text-[#8a6a45]">
+                  <tr className="border-b border-[#2a1a08]">
+                    <th className="py-2 pr-3">Proxy</th>
+                    <th className="py-2 pr-3">Health</th>
+                    <th className="py-2 pr-3">Downloads</th>
+                    <th className="py-2 pr-3">Errors</th>
+                    <th className="py-2 pr-3">GB</th>
+                    <th className="py-2 pr-3">Cost</th>
+                    <th className="py-2 pr-3">Last Error</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {proxyPool.proxies.map((proxy) => (
+                    <tr key={proxy.id} className="border-b border-[#2a1a08]/70 text-[#ead7c7]">
+                      <td className="max-w-[220px] truncate py-3 pr-3 font-mono">{proxy.label}</td>
+                      <td className="py-3 pr-3">
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-black uppercase ${proxy.healthy ? 'bg-emerald-500/10 text-emerald-300' : 'bg-red-500/10 text-red-300'}`}>
+                          <ShieldCheck className="h-3 w-3" />
+                          {proxy.healthy ? 'Healthy' : 'Cooling'}
+                        </span>
+                      </td>
+                      <td className="py-3 pr-3">{proxy.downloads}</td>
+                      <td className="py-3 pr-3">{proxy.errors}</td>
+                      <td className="py-3 pr-3">{proxy.gb.toFixed(3)}</td>
+                      <td className="py-3 pr-3">${proxy.estimatedCost.toFixed(2)}</td>
+                      <td className="max-w-[220px] truncate py-3 pr-3 text-[#c07040]">{proxy.lastError || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Panel>
+        )}
 
         <div className="grid gap-5 xl:grid-cols-2">
           <Panel title="Recent Users">
@@ -93,6 +141,15 @@ export function AdminDashboard() {
         </div>
       </div>
     </PageShell>
+  )
+}
+
+function MiniStat({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="rounded-2xl border border-[#2a1a08] bg-[#0d0905] p-3">
+      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#8a6a45]">{label}</p>
+      <p className="mt-1 text-2xl font-black text-white">{value}</p>
+    </div>
   )
 }
 

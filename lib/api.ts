@@ -588,6 +588,40 @@ export async function getAdminStats() {
   return parseApiResponse<{ stats: AdminStats }>(response)
 }
 
+export interface ProxyPoolStatus {
+  enabled: boolean
+  totalProxies: number
+  costPerGb: number
+  totalDownloads: number
+  totalErrors: number
+  totalBytes: number
+  totalGb: number
+  estimatedCost: number
+  proxies: Array<{
+    id: string
+    label: string
+    healthy: boolean
+    disabledUntil: string | null
+    attempts: number
+    successes: number
+    errors: number
+    downloads: number
+    bytes: number
+    gb: number
+    estimatedCost: number
+    consecutiveFailures: number
+    lastUsedAt?: string
+    lastSuccessAt?: string
+    lastErrorAt?: string
+    lastError?: string
+  }>
+}
+
+export async function getAdminProxyStatus() {
+  const response = await requestWithAuth('/api/admin/proxies/status', { method: 'GET' })
+  return parseApiResponse<{ proxyPool: ProxyPoolStatus }>(response)
+}
+
 export type CmsNavLocation = 'navbar' | 'footer' | 'sidebar_user' | 'sidebar_admin'
 export type CmsAudience = 'public' | 'user' | 'admin' | 'all'
 export type CmsPageStatus = 'draft' | 'published' | 'archived'
