@@ -590,7 +590,9 @@ export async function getAdminStats() {
 
 export interface ProxyPoolStatus {
   enabled: boolean
+  source: 'db' | 'env' | 'both'
   totalProxies: number
+  activeProxies: number
   costPerGb: number
   totalDownloads: number
   totalErrors: number
@@ -600,6 +602,10 @@ export interface ProxyPoolStatus {
   proxies: Array<{
     id: string
     label: string
+    provider: string
+    country: string
+    status: 'healthy' | 'cooldown' | 'disabled' | 'dead'
+    active: boolean
     healthy: boolean
     disabledUntil: string | null
     attempts: number
@@ -619,6 +625,30 @@ export interface ProxyPoolStatus {
 
 export async function getAdminProxyStatus() {
   const response = await requestWithAuth('/api/admin/proxies/status', { method: 'GET' })
+  return parseApiResponse<{ proxyPool: ProxyPoolStatus }>(response)
+}
+
+export async function importAdminProxies(payload: {
+  proxies: string
+  provider?: string
+  country?: string
+  costPerGb?: number
+  replaceProvider?: boolean
+}) {
+  const response = await requestWithAuth('/api/admin/proxies/import', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return parseApiResponse<{ result: { imported: number; skipped: number }; proxyPool: ProxyPoolStatus }>(response)
+}
+
+export async function updateAdminProxy(id: string, payload: { isActive?: boolean; status?: ProxyPoolStatus['proxies'][number]['status'] }) {
+  const response = await requestWithAuth(`/api/admin/proxies/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
   return parseApiResponse<{ proxyPool: ProxyPoolStatus }>(response)
 }
 
