@@ -593,29 +593,73 @@ export interface ProxyPoolStatus {
   source: 'db' | 'env' | 'both'
   totalProxies: number
   activeProxies: number
+  usableProxies: number
+  statusCounts: Record<'untested' | 'healthy' | 'cooldown' | 'quarantined' | 'disabled' | 'dead', number>
+  maxUsesPerHour: number
+  validator: {
+    enabled: boolean
+    intervalMs: number
+    batchSize: number
+    validationDelayMs: number
+    testUrl: string
+    healthTtlMs: number
+    quarantineMs: number
+    running: boolean
+  }
   costPerGb: number
   totalDownloads: number
   totalErrors: number
+  totalBotBlockErrors: number
+  totalProxyAuthErrors: number
   totalBytes: number
   totalGb: number
   estimatedCost: number
+  providerQuality: Array<{
+    provider: string
+    totalProxies: number
+    activeProxies: number
+    usableProxies: number
+    attempts: number
+    successes: number
+    errors: number
+    botBlockErrors: number
+    proxyAuthErrors: number
+    networkErrors: number
+    downloads: number
+    bytes: number
+    gb: number
+    estimatedCost: number
+    successRate: number
+    botBlockRate: number
+    proxyAuthRate: number
+    gbPerSuccessfulImport: number
+  }>
   proxies: Array<{
     id: string
     label: string
     provider: string
     country: string
-    status: 'healthy' | 'cooldown' | 'disabled' | 'dead'
+    status: 'untested' | 'healthy' | 'cooldown' | 'quarantined' | 'disabled' | 'dead'
     active: boolean
     healthy: boolean
     disabledUntil: string | null
     attempts: number
     successes: number
     errors: number
+    botBlockErrors: number
+    proxyAuthErrors: number
+    networkErrors: number
     downloads: number
     bytes: number
     gb: number
     estimatedCost: number
     consecutiveFailures: number
+    validationAttempts: number
+    hourlyUses: number
+    maxUsesPerHour: number
+    validatedAt?: string | null
+    lastValidationAt?: string | null
+    hourWindowStartedAt?: string | null
     lastUsedAt?: string
     lastSuccessAt?: string
     lastErrorAt?: string
@@ -641,6 +685,22 @@ export async function importAdminProxies(payload: {
     body: JSON.stringify(payload),
   })
   return parseApiResponse<{ result: { imported: number; skipped: number }; proxyPool: ProxyPoolStatus }>(response)
+}
+
+export async function validateAdminProxies(payload: { limit?: number; proxyId?: string } = {}) {
+  const response = await requestWithAuth('/api/admin/proxies/validate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return parseApiResponse<{
+    result: {
+      validated: number
+      healthy: number
+      results: Array<{ id: string; proxy: string; ok: boolean; status: ProxyPoolStatus['proxies'][number]['status']; error?: string }>
+    }
+    proxyPool: ProxyPoolStatus
+  }>(response)
 }
 
 export async function updateAdminProxy(id: string, payload: { isActive?: boolean; status?: ProxyPoolStatus['proxies'][number]['status'] }) {

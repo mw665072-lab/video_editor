@@ -152,7 +152,7 @@ export function AdminCmsManager() {
     <PageShell
       title="CMS Builder"
       subtitle="Control navbar, sidebars, footer, global copy, and public pages from one admin workspace."
-      actions={<Link href="/" className="rounded-xl bg-[#fa6a00] px-4 py-2 text-sm font-black text-white">View site</Link>}
+      actions={<Link href="/" className="rounded-full bg-[#ffb32c] px-4 py-2 text-sm font-black text-[#3b1769] shadow-[0_16px_40px_rgba(255,179,44,0.24)] transition hover:bg-[#ffd36b]">View site</Link>}
     >
       <div className="space-y-5">
         <div className="flex flex-wrap gap-2">
@@ -160,7 +160,7 @@ export function AdminCmsManager() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`rounded-xl px-4 py-2 text-sm font-black capitalize ${activeTab === tab ? 'bg-[#fa6a00] text-white' : 'bg-[#1a100a] text-[#c07040]'}`}
+              className={`rounded-full border px-4 py-2 text-sm font-black capitalize transition ${activeTab === tab ? 'border-[#ffb32c] bg-[#ffb32c] text-[#3b1769] shadow-[0_14px_34px_rgba(255,179,44,0.18)]' : 'border-white/10 bg-white/[0.08] text-white/70 hover:border-white/20 hover:bg-white/10'}`}
             >
               {tab}
             </button>
@@ -171,7 +171,7 @@ export function AdminCmsManager() {
         {notice && <div className="rounded-2xl border border-emerald-900/60 bg-emerald-950/30 p-4 text-sm text-emerald-200">{notice}</div>}
 
         {activeTab === 'settings' && (
-          <Panel title="Site Settings" action={<button disabled={saving} onClick={saveSettings} className="rounded-xl bg-[#fa6a00] px-4 py-2 text-sm font-black text-white disabled:opacity-50">Save settings</button>}>
+          <Panel title="Site Settings" action={<PrimaryButton disabled={saving} onClick={saveSettings}>Save settings</PrimaryButton>}>
             <div className="grid gap-4 md:grid-cols-2">
               <TextInput label="Site name" value={settings.siteName} onChange={(value) => setSettings({ ...settings, siteName: value })} />
               <TextInput label="Logo text" value={settings.logoText} onChange={(value) => setSettings({ ...settings, logoText: value })} />
@@ -198,7 +198,7 @@ export function AdminCmsManager() {
 
         {activeTab === 'navigation' && (
           <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
-            <Panel title={editingNavId ? 'Edit Navigation Item' : 'Add Navigation Item'} action={<button disabled={saving} onClick={saveNav} className="rounded-xl bg-[#fa6a00] px-4 py-2 text-sm font-black text-white disabled:opacity-50">{editingNavId ? 'Update' : 'Create'}</button>}>
+            <Panel title={editingNavId ? 'Edit Navigation Item' : 'Add Navigation Item'} action={<PrimaryButton disabled={saving} onClick={saveNav}>{editingNavId ? 'Update' : 'Create'}</PrimaryButton>}>
               <div className="grid gap-4 md:grid-cols-2">
                 <TextInput label="Label" value={navForm.label} onChange={(value) => setNavForm({ ...navForm, label: value })} />
                 <TextInput label="Href" value={navForm.href} onChange={(value) => setNavForm({ ...navForm, href: value })} />
@@ -217,10 +217,10 @@ export function AdminCmsManager() {
                   <Row key={item.id}>
                     <div>
                       <p className="font-black text-white">{item.label}</p>
-                      <p className="text-xs text-[#7a5030]">{item.location} · {item.href} · order {item.order}</p>
+                      <p className="text-xs text-white/45">{item.location} · {item.href} · order {item.order}</p>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => { setEditingNavId(item.id); setNavForm(toNavPayload(item)); }} className="rounded-lg bg-[#1a100a] px-3 py-2 text-xs font-black text-[#fa6a00]">Edit</button>
+                      <button onClick={() => { setEditingNavId(item.id); setNavForm(toNavPayload(item)); }} className="rounded-full border border-white/10 bg-white/[0.08] px-3 py-2 text-xs font-black text-[#ffb32c] transition hover:border-[#ffb32c]/50 hover:bg-white/10">Edit</button>
                       <button onClick={() => run(() => deleteCmsNavItem(item.id).then(() => undefined), 'Navigation item deleted.')} className="rounded-lg bg-red-950/50 px-3 py-2 text-xs font-black text-red-200">Delete</button>
                     </div>
                   </Row>
@@ -232,7 +232,7 @@ export function AdminCmsManager() {
 
         {activeTab === 'pages' && (
           <div className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
-            <Panel title={editingPageId ? 'Edit Page' : 'Create Page'} action={<button disabled={saving} onClick={savePage} className="rounded-xl bg-[#fa6a00] px-4 py-2 text-sm font-black text-white disabled:opacity-50">{editingPageId ? 'Update page' : 'Create page'}</button>}>
+            <Panel title={editingPageId ? 'Edit Page' : 'Create Page'} action={<PrimaryButton disabled={saving} onClick={savePage}>{editingPageId ? 'Update page' : 'Create page'}</PrimaryButton>}>
               <div className="grid gap-4 md:grid-cols-2">
                 <TextInput label="Title" value={pageForm.title} onChange={(value) => setPageForm({ ...pageForm, title: value })} />
                 <TextInput label="Slug" value={pageForm.slug} onChange={(value) => setPageForm({ ...pageForm, slug: value })} />
@@ -250,9 +250,9 @@ export function AdminCmsManager() {
                       const finalValue = value === 'prompt' ? window.prompt('Paste URL') || '' : value
                       document.execCommand(command, false, finalValue)
                       setPageForm((prev) => ({ ...prev, contentHtml: editorRef.current?.innerHTML || prev.contentHtml }))
-                    }} className="rounded-lg bg-[#1a100a] px-3 py-2 text-xs font-black text-[#c07040]">{label}</button>
+                    }} className="rounded-full border border-white/10 bg-white/[0.08] px-3 py-2 text-xs font-black text-white/70 transition hover:border-[#ffb32c]/50 hover:bg-white/10 hover:text-[#ffb32c]">{label}</button>
                   ))}
-                  <label className="cursor-pointer rounded-lg bg-[#1a100a] px-3 py-2 text-xs font-black text-[#c07040]">
+                  <label className="cursor-pointer rounded-full border border-white/10 bg-white/[0.08] px-3 py-2 text-xs font-black text-white/70 transition hover:border-[#ffb32c]/50 hover:bg-white/10 hover:text-[#ffb32c]">
                     Image
                     <input type="file" accept="image/*" className="hidden" onChange={(event) => {
                       const file = event.target.files?.[0]
@@ -266,7 +266,7 @@ export function AdminCmsManager() {
                   contentEditable
                   suppressContentEditableWarning
                   onInput={() => setPageForm((prev) => ({ ...prev, contentHtml: editorRef.current?.innerHTML || prev.contentHtml }))}
-                  className="cms-prose min-h-[320px] max-h-[520px] overflow-y-auto rounded-2xl border border-[#2a1a08] bg-[#0d0905] p-5 text-sm leading-7 text-white outline-none"
+                  className="cms-prose min-h-[320px] max-h-[520px] overflow-y-auto rounded-2xl border border-white/10 bg-[#100a2f]/90 p-5 text-sm leading-7 text-white outline-none"
                 />
               </div>
             </Panel>
@@ -277,11 +277,11 @@ export function AdminCmsManager() {
                   <Row key={page.id}>
                     <div>
                       <p className="font-black text-white">{page.title}</p>
-                      <p className="text-xs text-[#7a5030]">/{page.slug} · {page.status} · {page.showInNavbar ? 'navbar' : ''} {page.showInFooter ? 'footer' : ''}</p>
+                      <p className="text-xs text-white/45">/{page.slug} · {page.status} · {page.showInNavbar ? 'navbar' : ''} {page.showInFooter ? 'footer' : ''}</p>
                     </div>
                     <div className="flex gap-2">
-                      {page.status === 'published' && <Link href={`/p/${page.slug}`} className="rounded-lg bg-[#1a100a] px-3 py-2 text-xs font-black text-[#c07040]">View</Link>}
-                      <button onClick={() => { setEditingPageId(page.id); setPageForm(toPagePayload(page)); }} className="rounded-lg bg-[#1a100a] px-3 py-2 text-xs font-black text-[#fa6a00]">Edit</button>
+                      {page.status === 'published' && <Link href={`/p/${page.slug}`} className="rounded-full border border-white/10 bg-white/[0.08] px-3 py-2 text-xs font-black text-white/70 transition hover:border-white/20 hover:bg-white/10">View</Link>}
+                      <button onClick={() => { setEditingPageId(page.id); setPageForm(toPagePayload(page)); }} className="rounded-full border border-white/10 bg-white/[0.08] px-3 py-2 text-xs font-black text-[#ffb32c] transition hover:border-[#ffb32c]/50 hover:bg-white/10">Edit</button>
                       <button onClick={() => run(() => deleteCmsPage(page.id).then(() => undefined), 'Page deleted.')} className="rounded-lg bg-red-950/50 px-3 py-2 text-xs font-black text-red-200">Delete</button>
                     </div>
                   </Row>
@@ -297,7 +297,7 @@ export function AdminCmsManager() {
 
 function Panel({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return (
-    <section className="rounded-3xl border border-[#2a1a08] bg-[#13100c] p-5 shadow-[0_16px_60px_rgba(0,0,0,0.35)]">
+    <section className="rounded-3xl border border-white/12 bg-white/[0.07] p-5 shadow-[0_24px_80px_rgba(15,2,45,0.28)] backdrop-blur-xl">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-black text-white">{title}</h2>
         {action}
@@ -308,41 +308,49 @@ function Panel({ title, action, children }: { title: string; action?: ReactNode;
 }
 
 function Row({ children }: { children: ReactNode }) {
-  return <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#2a1a08] bg-[#0d0905] p-3">{children}</div>
+  return <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-3 transition hover:border-white/18 hover:bg-white/[0.08]">{children}</div>
+}
+
+function PrimaryButton({ children, disabled, onClick }: { children: ReactNode; disabled?: boolean; onClick: () => void }) {
+  return (
+    <button disabled={disabled} onClick={onClick} className="rounded-full bg-[#ffb32c] px-4 py-2 text-sm font-black text-[#3b1769] shadow-[0_16px_40px_rgba(255,179,44,0.2)] transition hover:bg-[#ffd36b] disabled:opacity-50">
+      {children}
+    </button>
+  )
 }
 
 function TextInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   return (
-    <label className="grid gap-1 text-xs font-black uppercase tracking-[0.18em] text-[#7a5030]">
+    <label className="grid gap-1 text-xs font-black uppercase tracking-[0.18em] text-white/45">
       {label}
-      <input value={value} onChange={(event) => onChange(event.target.value)} className="rounded-xl border border-[#2a1a08] bg-[#0d0905] px-3 py-2 text-sm normal-case tracking-normal text-white outline-none focus:border-[#fa6a00]" />
+      <input value={value} onChange={(event) => onChange(event.target.value)} className="rounded-xl border border-white/10 bg-[#100a2f]/90 px-3 py-2 text-sm normal-case tracking-normal text-white outline-none focus:border-[#ffb32c]/70" />
     </label>
   )
 }
 
 function NumberInput({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) {
   return (
-    <label className="grid gap-1 text-xs font-black uppercase tracking-[0.18em] text-[#7a5030]">
+    <label className="grid gap-1 text-xs font-black uppercase tracking-[0.18em] text-white/45">
       {label}
-      <input type="number" value={value} onChange={(event) => onChange(Number(event.target.value))} className="rounded-xl border border-[#2a1a08] bg-[#0d0905] px-3 py-2 text-sm normal-case tracking-normal text-white outline-none focus:border-[#fa6a00]" />
+      <input type="number" value={value} onChange={(event) => onChange(Number(event.target.value))} className="rounded-xl border border-white/10 bg-[#100a2f]/90 px-3 py-2 text-sm normal-case tracking-normal text-white outline-none focus:border-[#ffb32c]/70" />
     </label>
   )
 }
 
 function Textarea({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   return (
-    <label className="grid gap-1 text-xs font-black uppercase tracking-[0.18em] text-[#7a5030]">
+    <label className="grid gap-1 text-xs font-black uppercase tracking-[0.18em] text-white/45">
       {label}
-      <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={4} className="rounded-xl border border-[#2a1a08] bg-[#0d0905] px-3 py-2 text-sm normal-case tracking-normal text-white outline-none focus:border-[#fa6a00]" />
+      <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={4} className="rounded-xl border border-white/10 bg-[#100a2f]/90 px-3 py-2 text-sm normal-case tracking-normal text-white outline-none focus:border-[#ffb32c]/70" />
     </label>
   )
 }
 
 function Select({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (value: string) => void }) {
   return (
-    <label className="grid gap-1 text-xs font-black uppercase tracking-[0.18em] text-[#7a5030]">
+    <label className="grid gap-1 text-xs font-black uppercase tracking-[0.18em] text-white/45">
       {label}
-      <select value={value} onChange={(event) => onChange(event.target.value)} className="rounded-xl border border-[#2a1a08] bg-[#0d0905] px-3 py-2 text-sm normal-case tracking-normal text-white outline-none focus:border-[#fa6a00]">
+      <select value={value} onChange={(event) => onChange(event.target.value)} className="rounded-xl border border-white/10 bg-[#100a2f]/90 px-3 py-2 text-sm normal-case tracking-normal text-white outline-none focus:border-[#ffb32c]/70">
         {options.map((option) => <option key={option} value={option}>{option}</option>)}
       </select>
     </label>
@@ -351,9 +359,9 @@ function Select({ label, value, options, onChange }: { label: string; value: str
 
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
   return (
-    <label className="flex items-center justify-between gap-3 rounded-xl border border-[#2a1a08] bg-[#0d0905] px-3 py-2 text-sm font-bold text-white">
+    <label className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#100a2f]/90 px-3 py-2 text-sm font-bold text-white">
       {label}
-      <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="h-4 w-4 accent-[#fa6a00]" />
+      <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="h-4 w-4 accent-[#ffb32c]" />
     </label>
   )
 }
@@ -380,3 +388,4 @@ const toPagePayload = (page: CmsPage): CmsPagePayload => ({
   showInNavbar: page.showInNavbar,
   showInFooter: page.showInFooter,
 })
+

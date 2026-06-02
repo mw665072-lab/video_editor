@@ -242,30 +242,30 @@ export function AdminBlogManager() {
     }
   }
 
-  if (loading) return <main className="min-h-screen bg-[#0d0905] p-8 text-center text-[#c07040]">Loading admin...</main>
+  if (loading) return <main className="min-h-screen bg-[#100a2f]/90 p-8 text-center text-white/70">Loading admin...</main>
 
   return (
     <PageShell
       title="Blog Admin"
       subtitle="Write rich posts, upload Cloudinary images, publish categories, and manage creator comments."
       actions={
-        <button onClick={reset} className="inline-flex items-center gap-2 rounded-xl border border-[#2a1a08] bg-[#1a100a] px-4 py-2 text-sm font-bold text-[#c07040] hover:text-[#fa6a00]">
+        <button onClick={reset} className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.08] px-4 py-2 text-sm font-bold text-white/80 backdrop-blur transition hover:border-[#ffb32c]/50 hover:bg-white/10 hover:text-[#ffb32c]">
           <Plus className="h-4 w-4" />
           New post
         </button>
       }
     >
       <div className="mx-auto flex h-[calc(100vh-11rem)] max-w-7xl min-h-[680px] flex-col overflow-hidden text-white">
-        {message && <div className="mb-4 rounded-2xl border border-[#2a2118] bg-[#13100c] p-3 text-sm text-[#fa6a00]">{message}</div>}
+        {message && <div className="mb-4 rounded-2xl border border-white/14 bg-white/[0.08] p-3 text-sm text-[#ffd36b] shadow-[0_16px_50px_rgba(15,2,45,0.2)]">{message}</div>}
 
         <div className="grid min-h-0 flex-1 gap-6 xl:grid-cols-[340px_1fr]">
-          <aside className="flex min-h-0 flex-col rounded-[2rem] border border-[#2a2118] bg-[#13100c] p-4">
-            <h2 className="mb-3 text-sm font-black uppercase tracking-widest text-[#8a6a45]">Posts</h2>
+          <aside className="flex min-h-0 flex-col rounded-[2rem] border border-white/12 bg-white/[0.07] p-4 shadow-[0_24px_80px_rgba(15,2,45,0.28)] backdrop-blur-xl">
+            <h2 className="mb-3 text-sm font-black uppercase tracking-widest text-white/45">Posts</h2>
             <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
               {posts.map((post) => (
-                <button key={post.id} onClick={() => selectPost(post)} className={`w-full rounded-2xl border p-3 text-left ${editingId === post.id ? 'border-[#fa6a00]/60 bg-[#fa6a00]/10' : 'border-[#2a1a08] bg-[#0d0905]'}`}>
+                <button key={post.id} onClick={() => selectPost(post)} className={`w-full rounded-2xl border p-3 text-left transition ${editingId === post.id ? 'border-[#ffb32c]/60 bg-[#ffb32c]/10 shadow-[0_12px_34px_rgba(255,179,44,0.12)]' : 'border-white/10 bg-white/[0.05] hover:border-white/18 hover:bg-white/[0.08]'}`}>
                   <div className="line-clamp-1 text-sm font-bold text-white">{post.title}</div>
-                  <div className="mt-1 flex items-center justify-between text-[11px] text-[#8a6a45]">
+                  <div className="mt-1 flex items-center justify-between text-[11px] text-white/45">
                     <span className="capitalize">{post.status}</span>
                     <span>{post.category}</span>
                   </div>
@@ -278,27 +278,27 @@ export function AdminBlogManager() {
             </div>
           </aside>
 
-          <section className="flex min-h-0 flex-col rounded-[2rem] border border-[#2a2118] bg-[#13100c] p-4 sm:p-5">
+          <section className="flex min-h-0 flex-col rounded-[2rem] border border-white/12 bg-white/[0.07] p-4 shadow-[0_24px_80px_rgba(15,2,45,0.28)] backdrop-blur-xl sm:p-5">
             <div className="grid shrink-0 gap-3 md:grid-cols-2">
-              <input value={draft.title} onChange={(event) => setDraft((prev) => ({ ...prev, title: event.target.value }))} placeholder="Blog title" className="rounded-2xl border border-[#2a1a08] bg-[#0d0905] px-4 py-3 text-sm outline-none focus:border-[#fa6a00]" />
-              <input value={draft.slug} onChange={(event) => setDraft((prev) => ({ ...prev, slug: event.target.value }))} placeholder="Custom slug optional" className="rounded-2xl border border-[#2a1a08] bg-[#0d0905] px-4 py-3 text-sm outline-none focus:border-[#fa6a00]" />
-              <input value={draft.category} onChange={(event) => setDraft((prev) => ({ ...prev, category: event.target.value }))} placeholder="Category" className="rounded-2xl border border-[#2a1a08] bg-[#0d0905] px-4 py-3 text-sm outline-none focus:border-[#fa6a00]" />
-              <input value={tagText} onChange={(event) => setTagText(event.target.value)} placeholder="Tags comma separated" className="rounded-2xl border border-[#2a1a08] bg-[#0d0905] px-4 py-3 text-sm outline-none focus:border-[#fa6a00]" />
+              <input value={draft.title} onChange={(event) => setDraft((prev) => ({ ...prev, title: event.target.value }))} placeholder="Blog title" className="rounded-2xl border border-white/10 bg-[#100a2f]/90 px-4 py-3 text-sm outline-none focus:border-[#ffb32c]/70" />
+              <input value={draft.slug} onChange={(event) => setDraft((prev) => ({ ...prev, slug: event.target.value }))} placeholder="Custom slug optional" className="rounded-2xl border border-white/10 bg-[#100a2f]/90 px-4 py-3 text-sm outline-none focus:border-[#ffb32c]/70" />
+              <input value={draft.category} onChange={(event) => setDraft((prev) => ({ ...prev, category: event.target.value }))} placeholder="Category" className="rounded-2xl border border-white/10 bg-[#100a2f]/90 px-4 py-3 text-sm outline-none focus:border-[#ffb32c]/70" />
+              <input value={tagText} onChange={(event) => setTagText(event.target.value)} placeholder="Tags comma separated" className="rounded-2xl border border-white/10 bg-[#100a2f]/90 px-4 py-3 text-sm outline-none focus:border-[#ffb32c]/70" />
             </div>
 
-            <textarea value={draft.excerpt} onChange={(event) => setDraft((prev) => ({ ...prev, excerpt: event.target.value }))} placeholder="SEO excerpt / short summary" className="mt-3 h-20 shrink-0 resize-none rounded-2xl border border-[#2a1a08] bg-[#0d0905] px-4 py-3 text-sm outline-none focus:border-[#fa6a00]" />
+            <textarea value={draft.excerpt} onChange={(event) => setDraft((prev) => ({ ...prev, excerpt: event.target.value }))} placeholder="SEO excerpt / short summary" className="mt-3 h-20 shrink-0 resize-none rounded-2xl border border-white/10 bg-[#100a2f]/90 px-4 py-3 text-sm outline-none focus:border-[#ffb32c]/70" />
 
             <div className="mt-3 grid min-h-0 flex-1 gap-3 lg:grid-cols-[220px_1fr]">
-              <div className="rounded-2xl border border-dashed border-[#2a1a08] bg-[#0d0905] p-3">
-                {draft.coverImageUrl ? <img src={draft.coverImageUrl} alt="Cover" className="aspect-video w-full rounded-xl object-cover" /> : <div className="flex aspect-video items-center justify-center text-xs text-[#8a6a45]">Cover image</div>}
-                <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#1a100a] px-3 py-2 text-xs font-bold text-[#c07040]">
+              <div className="rounded-2xl border border-dashed border-white/10 bg-[#100a2f]/90 p-3">
+                {draft.coverImageUrl ? <img src={draft.coverImageUrl} alt="Cover" className="aspect-video w-full rounded-xl object-cover" /> : <div className="flex aspect-video items-center justify-center text-xs text-white/45">Cover image</div>}
+                <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-white/[0.08] px-3 py-2 text-xs font-bold text-white/70">
                   <Upload className="h-4 w-4" />
                   Upload cover
                   <input type="file" accept="image/*" onChange={(event) => onImage(event, 'cover')} className="sr-only" />
                 </label>
               </div>
               <div className="flex min-h-0 flex-col">
-                <div className="mb-2 flex max-h-32 flex-wrap gap-2 overflow-y-auto rounded-2xl border border-[#2a1a08] bg-[#0d0905] p-2">
+                <div className="mb-2 flex max-h-32 flex-wrap gap-2 overflow-y-auto rounded-2xl border border-white/10 bg-[#100a2f]/90 p-2">
                   <select
                     onMouseDown={rememberEditorSelection}
                     onChange={(event) => {
@@ -306,7 +306,7 @@ export function AdminBlogManager() {
                       event.target.value = ''
                     }}
                     defaultValue=""
-                    className="h-9 rounded-lg border border-[#2a1a08] bg-[#1a100a] px-2 text-xs font-bold text-[#c07040] outline-none"
+                    className="h-9 rounded-lg border border-white/10 bg-white/[0.08] px-2 text-xs font-bold text-white/70 outline-none"
                   >
                     <option value="" disabled>Format</option>
                     <option value="p">Paragraph</option>
@@ -334,15 +334,15 @@ export function AdminBlogManager() {
                   <EditorButton label="Undo" onClick={() => format('undo')}><Undo2 className="h-4 w-4" /></EditorButton>
                   <EditorButton label="Redo" onClick={() => format('redo')}><Redo2 className="h-4 w-4" /></EditorButton>
                   <EditorButton label="Clear" onClick={() => format('removeFormat')}><Eraser className="h-4 w-4" /></EditorButton>
-                  <label className="flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-[#1a100a] px-2 text-xs font-bold text-[#c07040]" title="Text color">
+                  <label className="flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-white/[0.08] px-2 text-xs font-bold text-white/70" title="Text color">
                     <span className="flex items-center gap-1"><Highlighter className="h-4 w-4" />Text</span>
                     <input type="color" defaultValue="#ffffff" onMouseDown={rememberEditorSelection} onChange={(event) => setTextColor(event.target.value)} className="h-5 w-6 cursor-pointer border-0 bg-transparent p-0" />
                   </label>
-                  <label className="flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-[#1a100a] px-2 text-xs font-bold text-[#c07040]" title="Highlight color">
+                  <label className="flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-white/[0.08] px-2 text-xs font-bold text-white/70" title="Highlight color">
                     <span>Bg</span>
-                    <input type="color" defaultValue="#fa6a00" onMouseDown={rememberEditorSelection} onChange={(event) => setHighlightColor(event.target.value)} className="h-5 w-6 cursor-pointer border-0 bg-transparent p-0" />
+                    <input type="color" defaultValue="#ffb32c" onMouseDown={rememberEditorSelection} onChange={(event) => setHighlightColor(event.target.value)} className="h-5 w-6 cursor-pointer border-0 bg-transparent p-0" />
                   </label>
-                  <label className="flex cursor-pointer items-center gap-2 rounded-lg bg-[#1a100a] px-3 py-2 text-xs font-bold text-[#c07040]">
+                  <label className="flex cursor-pointer items-center gap-2 rounded-lg bg-white/[0.08] px-3 py-2 text-xs font-bold text-white/70">
                     <ImagePlus className="h-4 w-4" />
                     Inline image
                     <input type="file" accept="image/*" onChange={(event) => onImage(event, 'inline')} className="sr-only" />
@@ -355,18 +355,18 @@ export function AdminBlogManager() {
                   onKeyUp={rememberEditorSelection}
                   onMouseUp={rememberEditorSelection}
                   onBlur={rememberEditorSelection}
-                  className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-[#2a1a08] bg-[#0d0905] p-4 text-sm leading-7 text-[#f6e7d4] outline-none focus:border-[#fa6a00] [&_a]:text-[#fa6a00] [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-[#fa6a00] [&_blockquote]:pl-4 [&_blockquote]:text-[#ffd2a8] [&_figcaption]:mt-1 [&_figcaption]:text-center [&_figcaption]:text-xs [&_figcaption]:text-[#8a6a45] [&_figure]:my-4 [&_h2]:text-2xl [&_h2]:font-black [&_h3]:text-xl [&_h3]:font-black [&_h4]:text-lg [&_h4]:font-bold [&_hr]:my-5 [&_hr]:border-[#2a1a08] [&_img]:max-h-[360px] [&_img]:max-w-full [&_img]:rounded-2xl [&_img]:object-contain [&_ol]:list-decimal [&_ol]:pl-6 [&_pre]:overflow-auto [&_pre]:rounded-2xl [&_pre]:bg-black/40 [&_pre]:p-4 [&_ul]:list-disc [&_ul]:pl-6"
+                  className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-white/10 bg-[#100a2f]/90 p-4 text-sm leading-7 text-[#f6e7d4] outline-none focus:border-[#ffb32c]/70 [&_a]:text-[#ffb32c] [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-[#ffb32c] [&_blockquote]:pl-4 [&_blockquote]:text-[#ffd2a8] [&_figcaption]:mt-1 [&_figcaption]:text-center [&_figcaption]:text-xs [&_figcaption]:text-white/45 [&_figure]:my-4 [&_h2]:text-2xl [&_h2]:font-black [&_h3]:text-xl [&_h3]:font-black [&_h4]:text-lg [&_h4]:font-bold [&_hr]:my-5 [&_hr]:border-white/10 [&_img]:max-h-[360px] [&_img]:max-w-full [&_img]:rounded-2xl [&_img]:object-contain [&_ol]:list-decimal [&_ol]:pl-6 [&_pre]:overflow-auto [&_pre]:rounded-2xl [&_pre]:bg-black/40 [&_pre]:p-4 [&_ul]:list-disc [&_ul]:pl-6"
                 />
               </div>
             </div>
 
             <div className="mt-4 flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <select value={draft.status} onChange={(event) => setDraft((prev) => ({ ...prev, status: event.target.value as BlogPayload['status'] }))} className="rounded-xl border border-[#2a1a08] bg-[#0d0905] px-4 py-2 text-sm text-white">
+              <select value={draft.status} onChange={(event) => setDraft((prev) => ({ ...prev, status: event.target.value as BlogPayload['status'] }))} className="rounded-xl border border-white/10 bg-[#100a2f]/90 px-4 py-2 text-sm text-white">
                 <option value="draft">Draft</option>
                 <option value="published">Published</option>
                 <option value="archived">Archived</option>
               </select>
-              <button onClick={save} disabled={busy} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#fa6a00] px-5 py-3 text-sm font-black text-white disabled:opacity-50">
+              <button onClick={save} disabled={busy} className="inline-flex items-center justify-center gap-2 rounded-full bg-[#ffb32c] px-5 py-3 text-sm font-black text-[#3b1769] shadow-[0_16px_40px_rgba(255,179,44,0.24)] transition hover:bg-[#ffd36b] disabled:opacity-50">
                 <Save className="h-4 w-4" />
                 {editingId ? 'Update blog' : 'Create blog'}
               </button>
@@ -394,9 +394,10 @@ function EditorButton({ label, onClick, children }: { label: string; onClick: ()
       title={label}
       onMouseDown={(event) => event.preventDefault()}
       onClick={onClick}
-      className="rounded-lg bg-[#1a100a] p-2 text-[#c07040] transition hover:bg-[#fa6a00]/10 hover:text-[#fa6a00]"
+      className="rounded-lg bg-white/[0.08] p-2 text-white/70 transition hover:bg-[#ffb32c]/10 hover:text-[#ffb32c]"
     >
       {children}
     </button>
   )
 }
+
