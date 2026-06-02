@@ -684,7 +684,7 @@ export async function importAdminProxies(payload: {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
-  return parseApiResponse<{ result: { imported: number; skipped: number }; proxyPool: ProxyPoolStatus }>(response)
+  return parseApiResponse<{ result: { imported: number; skipped: number } }>(response)
 }
 
 export async function validateAdminProxies(payload: { limit?: number; proxyId?: string } = {}) {

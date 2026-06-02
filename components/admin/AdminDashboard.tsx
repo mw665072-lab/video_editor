@@ -69,9 +69,9 @@ export function AdminDashboard() {
         costPerGb: Number(proxyCostPerGb || 0),
         replaceProvider,
       })
-      setProxyPool(data.proxyPool)
       setProxyImportText('')
       setProxyMessage(`Imported ${data.result.imported} proxies. Skipped ${data.result.skipped}.`)
+      await refreshProxyPool()
     } catch (err) {
       setProxyMessage(err instanceof Error ? err.message : 'Proxy import failed')
     } finally {
