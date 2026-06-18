@@ -6,7 +6,21 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useVideoEditorState } from '@/hooks/useVideoEditorState'
 import { ExportProgress, VideoClip } from '@/lib/types'
-import { exportVideo, getExportStatus, downloadExportedVideo, recordDownload, ytResolve, ClipSuggestionResponse, VideoSubtitleSegment, VideoSubtitlesResponse, VideoSummaryResponse } from '@/lib/api'
+import {
+  exportVideo,
+  getExportStatus,
+  downloadExportedVideo,
+  recordDownload,
+  ytResolve,
+  importYouTubeVideo,
+  getYouTubeImportStatus,
+  ClipSuggestionResponse,
+  VideoSubtitleSegment,
+  VideoSubtitlesResponse,
+  VideoSummaryResponse,
+  YouTubeImportResult,
+  YouTubeImportStartResponse,
+} from '@/lib/api'
 import { generateClipThumbnail, generateRemoteClipThumbnail, createThumbnailFromClip } from '@/lib/thumbnailUtils'
 import { formatTime, getClipIndexAtTime, getYouTubeVideoId } from '@/lib/videoUtils'
 import { toast } from 'sonner'
@@ -278,6 +292,65 @@ export function VideoEditor() {
   const [selectedToolFromSidebar, setSelectedToolFromSidebar] = useState<string | null>(null)
 
   const searchParams = useSearchParams()
+
+  const getCompletedYouTubeImport = useCallback(async (url: string): Promise<YouTubeImportResult> => {
+    const extractResult = (payload: YouTubeImportStartResponse): YouTubeImportResult | null => {
+      if (payload.result?.streamUrl) return payload.result
+      if (payload.streamUrl && payload.importId && payload.title && payload.expiresAt) {
+        return {
+          importId: payload.importId,
+          title: payload.title,
+          duration: payload.duration ?? 0,
+          streamUrl: payload.streamUrl,
+          storageProvider: payload.storageProvider ?? 'local',
+          r2Key: payload.r2Key,
+          r2Url: payload.r2Url,
+          cloudinaryUrl: payload.cloudinaryUrl,
+          expiresAt: payload.expiresAt,
+        }
+      }
+      return null
+    }
+
+    setExportProgress({
+      isExporting: true,
+      progress: 5,
+      currentStep: 'Importing YouTube video...',
+    })
+
+    const started = await importYouTubeVideo(url)
+    const immediateResult = extractResult(started)
+    if (immediateResult) return immediateResult
+
+    const importJobId = started.importJobId || started.jobId
+    const importJobToken = started.importJobToken || started.jobToken
+    if (!importJobId) {
+      throw new Error(started.error || started.failedReason || 'YouTube import did not return a job id')
+    }
+
+    const pollInterval = 1500
+    let status = started
+    while (['pending', 'waiting', 'delayed', 'active'].includes(status.status)) {
+      setExportProgress({
+        isExporting: true,
+        progress: status.status === 'active' ? 20 : 10,
+        currentStep: 'Importing YouTube video...',
+      })
+      await new Promise((resolve) => setTimeout(resolve, pollInterval))
+      status = await getYouTubeImportStatus(importJobId, status.importJobToken || status.jobToken || importJobToken)
+    }
+
+    if (status.status === 'failed') {
+      throw new Error(status.error || status.failedReason || 'YouTube import failed')
+    }
+
+    const completedResult = extractResult(status)
+    if (!completedResult) {
+      throw new Error('YouTube import completed without a stream URL')
+    }
+
+    return completedResult
+  }, [])
 
   // Handle tool selection from sidebar query parameter
   useEffect(() => {
@@ -627,7 +700,7 @@ export function VideoEditor() {
       })
 
       try {
-        const exportPlaybackSource = typeof playbackSource === 'string'
+        let exportPlaybackSource = typeof playbackSource === 'string'
           ? playbackSource
           : sourceForProcessing
         const exportOriginalSource = sourceForProcessing ?? exportPlaybackSource
@@ -635,13 +708,24 @@ export function VideoEditor() {
         if (!exportPlaybackSource) {
           throw new Error('This source cannot be exported yet because no backend-accessible URL is available.')
         }
+
+        if (state.videoSourceType === 'youtube' && exportOriginalSource) {
+          const imported = await getCompletedYouTubeImport(exportOriginalSource)
+          exportPlaybackSource = imported.streamUrl.startsWith('http')
+            ? imported.streamUrl
+            : `${BACKEND_URL}${imported.streamUrl}`
+          if (imported.duration > 0 && imported.duration !== state.videoDuration) {
+            setVideoDuration(imported.duration)
+          }
+        }
+
         const clipsPayload = sortedClips.map((clip) => ({
           startTime: clip.startTime,
           endTime: clip.endTime,
           order: clip.order,
         }))
 
-        const { jobId } = await exportVideo({
+        const { jobId, jobToken } = await exportVideo({
           videoSource: exportPlaybackSource,
           originalSource: exportOriginalSource,
           clips: clipsPayload,
@@ -650,7 +734,7 @@ export function VideoEditor() {
         })
 
         const pollInterval = 1500
-        let status = await getExportStatus(jobId)
+        let status = await getExportStatus(jobId, jobToken)
 
         while (status.status === 'pending' || status.status === 'running') {
           setExportProgress({
@@ -660,7 +744,7 @@ export function VideoEditor() {
           })
 
           await new Promise((resolve) => setTimeout(resolve, pollInterval))
-          status = await getExportStatus(jobId)
+          status = await getExportStatus(jobId, status.jobToken || jobToken)
         }
 
         if (status.status === 'failed') {
@@ -724,7 +808,19 @@ export function VideoEditor() {
         toast.error(errorMessage)
       }
     },
-    [sortedClips, playbackSource, sourceForProcessing, clearVideo]
+    [
+      BACKEND_URL,
+      clearVideo,
+      exportDisabledReason,
+      getCompletedYouTubeImport,
+      isClipExportableSource,
+      playbackSource,
+      setVideoDuration,
+      sortedClips,
+      sourceForProcessing,
+      state.videoDuration,
+      state.videoSourceType,
+    ]
   )
 
   // ─── Shared panel style ───────────────────────────────────────────────────

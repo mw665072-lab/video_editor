@@ -118,7 +118,62 @@ export interface ExportVideoRequest {
   resizeMode?: 'blur' | 'crop'
 }
 
-export async function exportVideo(options: ExportVideoRequest): Promise<{ jobId: string }> {
+export interface YouTubeImportResult {
+  importId: string
+  title: string
+  duration: number
+  streamUrl: string
+  storageProvider: string
+  r2Key?: string
+  r2Url?: string
+  cloudinaryUrl?: string
+  expiresAt: string
+}
+
+export interface YouTubeImportStartResponse extends Partial<YouTubeImportResult> {
+  importJobId?: string
+  importJobToken?: string
+  jobId?: string
+  jobToken?: string
+  status: 'pending' | 'waiting' | 'delayed' | 'active' | 'completed' | 'done' | 'failed'
+  statusUrl?: string
+  result?: YouTubeImportResult
+  error?: string
+  failedReason?: string
+}
+
+export async function importYouTubeVideo(url: string): Promise<YouTubeImportStartResponse> {
+  const response = await requestWithAuth('/api/import-youtube', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ url }),
+  })
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`YouTube import request failed: ${response.status} ${response.statusText} ${text}`)
+  }
+
+  return response.json()
+}
+
+export async function getYouTubeImportStatus(jobId: string, jobToken?: string): Promise<YouTubeImportStartResponse> {
+  const tokenParam = jobToken ? `?token=${encodeURIComponent(jobToken)}` : ''
+  const response = await requestWithAuth(`/api/import-youtube/${encodeURIComponent(jobId)}${tokenParam}`, {
+    method: 'GET',
+  })
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`YouTube import status failed: ${response.status} ${response.statusText} ${text}`)
+  }
+
+  return response.json()
+}
+
+export async function exportVideo(options: ExportVideoRequest): Promise<{ jobId: string; jobToken?: string }> {
   const response = await requestWithAuth('/api/export-video', {
     method: 'POST',
     headers: {
@@ -135,14 +190,16 @@ export async function exportVideo(options: ExportVideoRequest): Promise<{ jobId:
   return response.json()
 }
 
-export async function getExportStatus(jobId: string): Promise<{
+export async function getExportStatus(jobId: string, jobToken?: string): Promise<{
   status: 'pending' | 'running' | 'done' | 'failed'
   progress: number
   step?: string
   error?: string
+  jobToken?: string
   downloadUrls?: string[]
 }> {
-  const response = await requestWithAuth(`/api/export-video?jobId=${encodeURIComponent(jobId)}`, {
+  const tokenParam = jobToken ? `&token=${encodeURIComponent(jobToken)}` : ''
+  const response = await requestWithAuth(`/api/export-video?jobId=${encodeURIComponent(jobId)}${tokenParam}`, {
     method: 'GET',
   })
   if (!response.ok) {
