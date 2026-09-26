@@ -100,13 +100,13 @@ export function ClipSuggestionPanel({
 
   if (availableProviders.length === 0) {
     return (
-      <Card className="border-purple-500/30 bg-purple-500/10">
+      <Card className="border-emerald-500/30 bg-emerald-500/10">
         <CardContent className="pt-6">
           <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-purple-300 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-emerald-300 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-purple-100">AI Service Not Configured</p>
-              <p className="text-xs text-purple-100/70 mt-1">
+              <p className="text-sm font-medium text-emerald-100">AI Service Not Configured</p>
+              <p className="text-xs text-emerald-100/70 mt-1">
                 Clip suggestions require OpenAI, Anthropic, or Gemini API key to be configured on the backend.
               </p>
             </div>
@@ -117,11 +117,11 @@ export function ClipSuggestionPanel({
   }
 
   return (
-    <div className="space-y-4 rounded-3xl border border-white/10 bg-[#100a2f]/90 p-4 text-white shadow-[0_16px_60px_rgba(38,24,103,0.45)]">
+    <div className="space-y-4 rounded-3xl border border-white/10 bg-[#111827]/90 p-4 text-white shadow-[0_16px_60px_rgba(15,23,42,0.45)]">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Wand2 className="w-5 h-5 text-purple-400" />
+          <Wand2 className="w-5 h-5 text-emerald-400" />
           <h3 className="text-lg font-semibold text-slate-100">AI Clip Suggestions</h3>
         </div>
         {hasAnalyzed && (
@@ -139,7 +139,7 @@ export function ClipSuggestionPanel({
           onClick={() => setSelectedProvider('auto')}
           className={cn(
             "text-xs",
-            selectedProvider === 'auto' && "bg-purple-600 hover:bg-purple-700"
+            selectedProvider === 'auto' && "bg-emerald-600 hover:bg-emerald-700"
           )}
         >
           Auto
@@ -153,7 +153,7 @@ export function ClipSuggestionPanel({
             disabled={!provider.available}
             className={cn(
               "text-xs",
-              selectedProvider === provider.id && "bg-purple-600 hover:bg-purple-700",
+              selectedProvider === provider.id && "bg-emerald-600 hover:bg-emerald-700",
               !provider.available && "opacity-50 cursor-not-allowed"
             )}
           >
@@ -166,7 +166,7 @@ export function ClipSuggestionPanel({
       <Button
         onClick={handleSuggestClips}
         disabled={isLoading}
-        className="w-full bg-gradient-to-r from-purple-600 to-violet-500 hover:from-purple-500 hover:to-violet-400 text-white"
+        className="w-full bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-500 hover:to-green-400 text-white"
       >
         {isLoading ? (
           <>
@@ -193,11 +193,11 @@ export function ClipSuggestionPanel({
 
       {/* Error Message */}
       {error && (
-        <Card className="border-purple-500/30 bg-purple-500/10">
+        <Card className="border-emerald-500/30 bg-emerald-500/10">
           <CardContent className="pt-4">
             <div className="flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-purple-300 mt-0.5" />
-              <p className="text-sm text-purple-100">{error}</p>
+              <AlertCircle className="w-4 h-4 text-emerald-300 mt-0.5" />
+              <p className="text-sm text-emerald-100">{error}</p>
             </div>
           </CardContent>
         </Card>
@@ -219,14 +219,14 @@ export function ClipSuggestionPanel({
           {suggestions.map((clip, index) => (
             <Card 
               key={index} 
-              className="border-white/10 bg-[#12072f]/80 hover:border-purple-500/50 transition-colors"
+              className="border-white/10 bg-[#0f172a]/80 hover:border-emerald-500/50 transition-colors"
             >
               <CardContent className="p-3">
                 <div className="space-y-2">
                   {/* Header with rank and confidence */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-purple-600 text-xs font-bold text-white">
+                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600 text-xs font-bold text-white">
                         {index + 1}
                       </span>
                       <Badge 
@@ -254,13 +254,13 @@ export function ClipSuggestionPanel({
                   </div>
 
                   {/* Reason */}
-                  <p className="text-xs text-purple-100/70 line-clamp-2">
+                  <p className="text-xs text-emerald-100/70 line-clamp-2">
                     {clip.reason}
                   </p>
 
                   {/* Transcript preview */}
                   {clip.transcriptSegment && (
-                    <p className="text-xs text-purple-100/70 italic line-clamp-2 border-l-2 border-purple-500/20 pl-2">
+                    <p className="text-xs text-emerald-100/70 italic line-clamp-2 border-l-2 border-emerald-500/20 pl-2">
                       &ldquo;{clip.transcriptSegment}&rdquo;
                     </p>
                   )}
@@ -278,7 +278,7 @@ export function ClipSuggestionPanel({
                     </Button>
                     <Button
                       size="sm"
-                      className="flex-1 h-8 text-xs bg-purple-600 hover:bg-purple-700"
+                      className="flex-1 h-8 text-xs bg-emerald-600 hover:bg-emerald-700"
                       onClick={() => {
                         onClipAdd(clip.startTime, clip.endTime)
                         toast.success('Clip added to timeline!')
@@ -296,7 +296,7 @@ export function ClipSuggestionPanel({
       )}
 
       {/* Info footer */}
-      <p className="text-xs text-purple-200/70 text-center">
+      <p className="text-xs text-emerald-200/70 text-center">
         AI analyzes speech, identifies hooks, emotional peaks, and viral moments
       </p>
     </div>

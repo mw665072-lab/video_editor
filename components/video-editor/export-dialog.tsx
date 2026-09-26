@@ -489,7 +489,7 @@ const ExportDialog: React.FC<{ open: boolean; onClose: () => void }> = ({ open, 
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
-      <DialogContent className="bg-zinc-900 border-zinc-700 text-zinc-100 sm:max-w-[520px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="visual-editor-dialog-theme max-h-[90vh] overflow-y-auto border-[#dce5dc] bg-white text-[#18231b] shadow-[0_30px_100px_rgba(31,52,36,0.20)] sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-zinc-50">
             <Download className="w-4 h-4 text-emerald-400" />

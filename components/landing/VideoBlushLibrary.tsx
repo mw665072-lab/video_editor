@@ -74,16 +74,16 @@ export default function BlushingVideoPreview() {
   };
 
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-zinc-950 relative overflow-hidden">
+    <section className="relative overflow-hidden border-y border-slate-200 bg-white py-12 sm:py-16 lg:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-8 sm:mb-10 lg:mb-12">
-          <span className="px-4 py-1.5 sm:px-5 sm:py-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white text-xs sm:text-sm font-semibold rounded-full">
+          <span className="rounded-full bg-emerald-50 px-4 py-1.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200 sm:px-5 sm:py-2 sm:text-sm">
             LIVE PREVIEW
           </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mt-4 sm:mt-6 tracking-tighter px-2">
+          <h2 className="mt-4 px-2 text-3xl font-bold tracking-tighter text-slate-950 sm:mt-6 sm:text-4xl md:text-5xl lg:text-6xl">
             Blushing Video Previews
           </h2>
-          <p className="text-zinc-400 text-base sm:text-lg md:text-xl mt-2 sm:mt-3 px-2">
+          <p className="mt-2 px-2 text-base text-slate-500 sm:mt-3 sm:text-lg md:text-xl">
             Real working auto-playing videos
           </p>
         </div>
@@ -142,8 +142,8 @@ export default function BlushingVideoPreview() {
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
                 onClick={() => handleVideoClick(video.id)}
-                className={`group flex gap-3 sm:gap-4 md:gap-5 bg-zinc-900 rounded-2xl sm:rounded-3xl p-3 sm:p-4 cursor-pointer border transition-all hover:border-violet-500 ${
-                  activeVideo === video.id ? "border-violet-500 ring-1 ring-violet-500/50" : "border-zinc-800"
+                className={`group flex cursor-pointer gap-3 rounded-2xl border bg-white p-3 shadow-sm transition-all hover:border-emerald-300 hover:shadow-lg sm:gap-4 sm:rounded-3xl sm:p-4 md:gap-5 ${
+                  activeVideo === video.id ? "border-emerald-500 ring-2 ring-emerald-100" : "border-slate-200"
                 }`}
               >
                 <div className="relative w-32 sm:w-40 md:w-48 lg:w-56 aspect-video rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0">
@@ -158,11 +158,11 @@ export default function BlushingVideoPreview() {
                 </div>
 
                 <div className="flex-1 py-1 sm:py-2 min-w-0">
-                  <h4 className="font-semibold text-white text-sm sm:text-base md:text-[17px] leading-tight line-clamp-2 group-hover:text-violet-400 transition-colors">
+                  <h4 className="line-clamp-2 text-sm font-semibold leading-tight text-slate-900 transition-colors group-hover:text-emerald-600 sm:text-base md:text-[17px]">
                     {video.title}
                   </h4>
-                  <p className="text-zinc-400 text-xs sm:text-sm mt-2 sm:mt-3">{video.creator}</p>
-                  <div className="flex gap-2 sm:gap-3 text-[10px] sm:text-xs text-zinc-500 mt-2 sm:mt-4">
+                  <p className="mt-2 text-xs text-slate-500 sm:mt-3 sm:text-sm">{video.creator}</p>
+                  <div className="mt-2 flex gap-2 text-[10px] text-slate-400 sm:mt-4 sm:gap-3 sm:text-xs">
                     <span>{video.duration}</span>
                     <span>•</span>
                     <span>{video.views} views</span>
@@ -175,7 +175,7 @@ export default function BlushingVideoPreview() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => router.push("/editor")}
-              className="mt-6 sm:mt-8 w-full py-4 sm:py-5 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600 text-white font-semibold rounded-2xl sm:rounded-3xl text-base sm:text-lg flex items-center justify-center gap-2 sm:gap-3 hover:brightness-110 transition-all"
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 py-4 text-base font-semibold text-white shadow-lg shadow-emerald-200 transition-all hover:brightness-105 sm:mt-8 sm:gap-3 sm:rounded-3xl sm:py-5 sm:text-lg"
             >
               Start Editing Now
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />

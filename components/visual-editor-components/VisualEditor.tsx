@@ -37,25 +37,25 @@ const ProductionBlueprintPanel = lazy(() => import('./ProductionBlueprintPanel')
 
 // ─── Static class strings (outside component — avoids string recreation per render) ─
 const ROOT_CLS =
-  'relative flex h-full min-h-[640px] w-full min-w-0 flex-col overflow-hidden text-[#f8f7ff] editor-root sm:min-h-[680px] xl:min-h-[560px]';
+  'visual-editor-theme relative flex h-full min-h-[640px] w-full min-w-0 flex-col overflow-hidden text-[#18231b] editor-root sm:min-h-[680px] xl:min-h-[560px]';
 
 const SIDEBAR_CLS =
-  'hidden xl:flex xl:w-64 2xl:w-72 flex-col flex-shrink-0 border-r border-white/10 bg-[#100a2f]/90 shadow-[inset_-1px_0_0_rgba(255,255,255,0.05)]';
+  'hidden xl:flex xl:w-64 2xl:w-72 flex-col flex-shrink-0 border-r border-[#dce5dc] bg-[#f8fbf6]';
 
 const PANEL_LABEL_CLS =
-  'px-4 py-3 border-b border-white/10 bg-[#140932]/85 text-[10px] font-bold uppercase tracking-[0.2em] text-[#c7b4ff] select-none';
+  'select-none border-b border-[#dce5dc] bg-[#eef5ec] px-4 py-3 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#31533b]';
 
 const STATUS_BAR_CLS =
-  'flex flex-col gap-2 border-t border-white/10 bg-[#10082c]/95 px-3 pb-[calc(env(safe-area-inset-bottom)+14px)] pt-2.5 text-[11px] text-[#c7b4ff] backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:pb-2.5';
+  'flex flex-col gap-2 border-t border-[#dce5dc] bg-white/95 px-3 pb-[calc(env(safe-area-inset-bottom)+14px)] pt-2.5 text-[11px] text-[#526159] backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:pb-2.5';
 
 // ─── Tiny skeleton shown while lazy chunks load ──────────────────────────────
 const PanelSkeleton = memo(({ className }: { className?: string }) => (
   <div
-    className={`flex items-center justify-center bg-[#100a2f]/70 ${className ?? 'h-full w-full'}`}
+    className={`flex items-center justify-center bg-[#f1f6ef] ${className ?? 'h-full w-full'}`}
     aria-label="Loading panel…"
     role="status"
   >
-    <Loader2 className="w-5 h-5 text-[#ffb32c] animate-spin" />
+    <Loader2 className="w-5 h-5 text-[#22a653] animate-spin" />
   </div>
 ));
 PanelSkeleton.displayName = 'PanelSkeleton';
@@ -78,7 +78,7 @@ const IconBtn = memo(
             variant="ghost"
             size="icon"
             aria-label={label}
-            className={`h-8 w-8 rounded-xl text-white/80 hover:text-[#ffd36b] hover:bg-white/10 transition-colors ${className ?? ''}`}
+            className={`h-8 w-8 rounded-xl text-[#526159] hover:bg-[#e7f4e9] hover:text-[#15803d] transition-colors ${className ?? ''}`}
             onClick={onClick}
           >
             {children}
@@ -103,7 +103,7 @@ const PropertiesPanelWrapper = memo(({ onClose }: PropertiesPanelWrapperProps) =
     aria-label="Properties panel"
     className="
       absolute inset-x-2 bottom-14 top-14 z-40 flex flex-col overflow-hidden rounded-2xl
-      border border-white/10 bg-[#100a2f]/95 shadow-2xl backdrop-blur-xl
+      border border-[#dce5dc] bg-white/95 shadow-2xl backdrop-blur-xl
       animate-in slide-in-from-right-4 duration-200
       md:left-auto md:w-[340px]
       xl:static xl:z-auto xl:w-[300px] xl:flex-shrink-0 xl:rounded-none xl:border-y-0 xl:border-r-0 xl:border-l xl:shadow-none
@@ -137,26 +137,26 @@ const MobileMediaOverlay = memo(({ onClose }: MobileMediaOverlayProps) => (
     aria-modal="true"
     aria-label="Media Browser"
     className="
-      absolute inset-0 z-30 bg-[#12072f]/96 p-2 backdrop-blur-xl sm:p-4
+      absolute inset-0 z-30 bg-[#eef5ec]/96 p-2 backdrop-blur-xl sm:p-4
       animate-in fade-in duration-150
     "
   >
     <div className="flex items-center justify-between mb-4">
       <div>
-        <p className="text-sm font-semibold text-[#f8f7ff]">Media Browser</p>
-        <p className="text-xs text-[#c7b4ff]">Tap to choose clips and assets.</p>
+        <p className="text-sm font-semibold text-[#18231b]">Media Browser</p>
+        <p className="text-xs text-[#667069]">Tap to choose clips and assets.</p>
       </div>
       <Button
         variant="ghost"
         size="icon"
         aria-label="Close Media Browser"
         onClick={onClose}
-        className="h-8 w-8 rounded-xl text-white/80 hover:text-[#ffd36b] hover:bg-white/10"
+        className="h-8 w-8 rounded-xl text-[#526159] hover:bg-[#e7f4e9] hover:text-[#15803d]"
       >
         <X className="w-4 h-4" />
       </Button>
     </div>
-    <div className="h-[calc(100%-3.5rem)] overflow-hidden rounded-2xl border border-white/10 bg-[#100a2f]/90 shadow-2xl sm:rounded-3xl">
+    <div className="h-[calc(100%-3.5rem)] overflow-hidden rounded-2xl border border-[#dce5dc] bg-white shadow-2xl sm:rounded-3xl">
       <Suspense fallback={<PanelSkeleton />}>
         <MediaBrowser />
       </Suspense>
@@ -181,42 +181,42 @@ const StatusBar = memo(
         <StatusItem label="Tool">
           <span
             className={`capitalize font-medium tabular-nums ${
-              activeTool === 'cut' ? 'text-red-300' : 'text-[#f2c5ff]'
+              activeTool === 'cut' ? 'text-red-300' : 'text-[#e2e8f0]'
             }`}
           >
             {activeTool}
           </span>
         </StatusItem>
         <StatusItem label="Zoom">
-          <span className="text-[#f2c5ff] tabular-nums">{zoom.toFixed(0)} px/s</span>
+          <span className="text-[#e2e8f0] tabular-nums">{zoom.toFixed(0)} px/s</span>
         </StatusItem>
         <StatusItem label="Speed">
-          <span className={`tabular-nums ${playbackSpeed !== 1 ? 'text-[#ffb32c]' : 'text-[#f2c5ff]'}`}>
+          <span className={`tabular-nums ${playbackSpeed !== 1 ? 'text-[#22a653]' : 'text-[#e2e8f0]'}`}>
             {playbackSpeed}×
           </span>
         </StatusItem>
         <StatusItem label="Clips">
-          <span className="text-[#f2c5ff] tabular-nums">{clipCount}</span>
+          <span className="text-[#e2e8f0] tabular-nums">{clipCount}</span>
         </StatusItem>
         <StatusItem label="Tracks">
-          <span className="text-[#f2c5ff] tabular-nums">{trackCount}</span>
+          <span className="text-[#e2e8f0] tabular-nums">{trackCount}</span>
         </StatusItem>
       </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
         <StatusItem label="Time">
-          <span className="font-mono tabular-nums text-[#ffd36b]">
+          <span className="font-mono tabular-nums text-[#dcfce7]">
             {formatStatusBarTime(currentTime)}
           </span>
         </StatusItem>
-        <span className="hidden md:inline text-[#8f7bd6] text-[10px] tracking-wide">
+        <span className="hidden md:inline text-[#94a3b8] text-[10px] tracking-wide">
           <kbd className="kbd">Space</kbd> Play ·{' '}
           <kbd className="kbd">J/K/L</kbd> Shuttle ·{' '}
           <kbd className="kbd">,/.</kbd> Frame ·{' '}
           <kbd className="kbd">S</kbd> Split ·{' '}
           <kbd className="kbd">⇧Del</kbd> Ripple Delete
         </span>
-        <span className="md:hidden text-[#8f7bd6] text-[10px]">
+        <span className="md:hidden text-[#94a3b8] text-[10px]">
           Space: Play · S: Split · Del: Delete
         </span>
       </div>
@@ -228,7 +228,7 @@ StatusBar.displayName = 'StatusBar';
 const StatusItem = memo(
   ({ label, children }: { label: string; children: React.ReactNode }) => (
     <span>
-      <span className="text-[#8f7bd6]">{label}: </span>
+      <span className="text-[#94a3b8]">{label}: </span>
       {children}
     </span>
   ),
@@ -272,7 +272,7 @@ const VisualEditor: React.FC = () => {
   return (
     <div className={ROOT_CLS}>
       {/* ── Toolbar ── */}
-      <Suspense fallback={<div className="h-10 bg-[#10082c]/80 border-b border-white/10" />}>
+      <Suspense fallback={<div className="h-10 border-b border-[#dce5dc] bg-white" />}>
         <Toolbar />
       </Suspense>
 
@@ -291,10 +291,10 @@ const VisualEditor: React.FC = () => {
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
 
           {/* Compact top-bar for mobile, tablet, and laptop widths */}
-          <div className="flex items-center justify-between gap-2 border-b border-white/10 bg-[#10082c]/85 px-2 py-2 sm:px-4 sm:py-3 xl:hidden">
+          <div className="flex items-center justify-between gap-2 border-b border-[#dce5dc] bg-white px-2 py-2 sm:px-4 sm:py-3 xl:hidden">
             <div>
-              <p className="text-xs font-semibold text-[#f8f7ff] sm:text-sm">Visual Editor</p>
-              <p className="hidden text-[11px] text-[#c7b4ff] sm:block">Responsive editing for every screen.</p>
+              <p className="text-xs font-semibold text-[#18231b] sm:text-sm">Visual Editor</p>
+              <p className="hidden text-[11px] text-[#667069] sm:block">Responsive editing for every screen.</p>
             </div>
             <div className="flex shrink-0 items-center gap-1">
               <IconBtn
@@ -318,16 +318,16 @@ const VisualEditor: React.FC = () => {
                 shortcut="Ctrl+B"
                 side="bottom"
                 onClick={handleToggleBlueprint}
-                className={showBlueprint ? 'bg-[#ffb32c] text-[#3b1769] hover:bg-[#ffd36b] hover:text-[#3b1769]' : ''}
+                className={showBlueprint ? 'bg-[#22a653] text-[#18231b] hover:bg-[#dcfce7] hover:text-[#18231b]' : ''}
               >
                 <Sparkles className="w-4 h-4" />
               </IconBtn>
             </div>
           </div>
 
-          <div className="hidden items-center justify-between border-b border-white/10 bg-[#10082c]/80 px-4 py-2 xl:flex">
-            <div className="flex min-w-0 items-center gap-2 text-[11px] text-[#c7b4ff]">
-              <Sparkles className="h-3.5 w-3.5 text-[#ffd36b]" />
+          <div className="hidden items-center justify-between border-b border-[#dce5dc] bg-[#f1f6ef] px-4 py-2 xl:flex">
+            <div className="flex min-w-0 items-center gap-2 text-[11px] text-[#526159]">
+              <Sparkles className="h-3.5 w-3.5 text-[#15803d]" />
               <span className="truncate">Clip-style tools for importing, cutting, captions, effects, and export</span>
             </div>
             <Button
@@ -335,8 +335,8 @@ const VisualEditor: React.FC = () => {
               size="sm"
               className={`h-7 gap-1.5 rounded-md px-2 text-[11px] ${
                 showBlueprint
-                  ? 'bg-[#ffb32c] text-[#3b1769] hover:bg-[#ffd36b] hover:text-[#3b1769]'
-                  : 'text-white/80 hover:bg-white/10 hover:text-[#ffd36b]'
+                  ? 'bg-[#22a653] text-[#18231b] hover:bg-[#dcfce7] hover:text-[#18231b]'
+                  : 'text-white/80 hover:bg-white/10 hover:text-[#dcfce7]'
               }`}
               onClick={handleToggleBlueprint}
             >
@@ -364,7 +364,7 @@ const VisualEditor: React.FC = () => {
             )}
 
             <div className={`min-h-0 ${showBlueprint ? 'flex flex-col gap-2 overflow-hidden sm:gap-3' : 'flex flex-1 flex-col gap-2 sm:gap-3'}`}>
-              <div className={`overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_20px_60px_rgba(12,2,32,0.35)] ${
+              <div className={`overflow-hidden rounded-2xl border border-[#cfdccf] bg-black shadow-[0_18px_46px_rgba(31,52,36,0.14)] ${
                 showBlueprint ? 'h-[min(30svh,290px)] min-h-[160px] sm:h-[min(34svh,320px)] sm:min-h-[170px] min-[1500px]:h-[42vh]' : 'h-[min(42svh,460px)] min-h-[200px] flex-none sm:h-[min(48svh,520px)] sm:min-h-[220px] lg:h-[52vh]'
               }`}>
                 <Suspense fallback={<PanelSkeleton className="h-full w-full" />}>
@@ -372,7 +372,7 @@ const VisualEditor: React.FC = () => {
                 </Suspense>
               </div>
 
-              <div className={`overflow-hidden rounded-2xl border border-white/10 bg-[#100a2f]/80 shadow-inner ${
+              <div className={`overflow-hidden rounded-2xl border border-[#dce5dc] bg-white shadow-inner ${
                 showBlueprint ? 'min-h-[250px] flex-1 sm:min-h-[220px]' : 'min-h-[260px] flex-1 sm:min-h-[220px]'
               }`}>
               <Suspense fallback={<PanelSkeleton className="h-full w-full" />}>

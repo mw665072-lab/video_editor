@@ -78,7 +78,7 @@ export default function DashboardPage() {
       />
       <div
         className="pointer-events-none absolute bottom-[-80px] right-[-80px] w-[280px] h-[280px] rounded-full blur-[120px] opacity-10"
-        style={{ background: '#ffb32c' }}
+        style={{ background: '#166534' }}
       />
 
       <div className="relative z-10">
@@ -118,7 +118,7 @@ export default function DashboardPage() {
               style={{
                 background: 'rgba(240,101,125,0.14)',
                 border: '1px solid rgba(240,101,125,0.24)',
-                color: '#ffe4e9',
+                color: '#b42336',
               }}
             >
               {error}
@@ -134,45 +134,45 @@ export default function DashboardPage() {
                 <div
                   className="rounded-2xl p-5 transition-all duration-200"
                   style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    border: '1px solid rgba(255,255,255,0.14)',
-                    boxShadow: '0 24px 60px rgba(12,2,32,0.2)',
+                    background: '#ffffff',
+                    border: '1px solid #e2e6ee',
+                    boxShadow: '0 14px 44px rgba(38,49,72,0.09)',
                     backdropFilter: 'blur(20px)',
                   }}
                 >
-                  <div className="flex items-center gap-2.5 mb-5 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
+                  <div className="flex items-center gap-2.5 mb-5 pb-4" style={{ borderBottom: '1px solid rgba(23,32,51,0.08)' }}>
                     <div
                       className="w-7 h-7 rounded-lg flex items-center justify-center"
-                      style={{ background: 'rgba(255,211,107,0.18)', border: '1px solid rgba(255,255,255,0.16)' }}
+                      style={{ background: 'rgba(21,128,61,0.10)', border: '1px solid rgba(21,128,61,0.16)' }}
                     >
-                      <User className="w-3.5 h-3.5" style={{ color: '#ffd36b' }} />
+                      <User className="w-3.5 h-3.5" style={{ color: '#15803d' }} />
                     </div>
-                    <h3 className="font-bold text-white/90 text-sm tracking-wide uppercase">Profile</h3>
+                    <h3 className="font-bold text-slate-900 text-sm tracking-wide uppercase">Profile</h3>
                   </div>
 
                   <div className="flex items-center gap-3.5">
                     <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-black text-white shrink-0"
+                      className="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-black text-slate-950 shrink-0"
                       style={{
-                        background: 'linear-gradient(135deg, #ffd36b 0%, #ffb32c 100%)',
-                        color: '#351765',
-                        boxShadow: '0 8px 24px rgba(255,179,44,0.22)',
+                        background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)',
+                        color: '#ffffff',
+                        boxShadow: '0 8px 24px rgba(21,128,61,0.22)',
                       }}
                     >
                       {user.name?.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="font-bold text-white">{user.name}</p>
-                      <p className="text-xs flex items-center gap-1.5 mt-0.5" style={{ color: 'rgba(248,247,255,0.62)' }}>
+                      <p className="font-bold text-slate-950">{user.name}</p>
+                      <p className="text-xs flex items-center gap-1.5 mt-0.5" style={{ color: '#7b8596' }}>
                         <Mail className="w-3 h-3" />
                         {user.email}
                       </p>
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-4 grid grid-cols-2 gap-3" style={{ borderTop: '1px solid rgba(255,255,255,0.12)' }}>
+                  <div className="mt-4 pt-4 grid grid-cols-2 gap-3" style={{ borderTop: '1px solid rgba(23,32,51,0.08)' }}>
                     <div>
-                      <p className="text-xs uppercase tracking-wider mb-1" style={{ color: 'rgba(248,247,255,0.62)' }}>Status</p>
+                      <p className="text-xs uppercase tracking-wider mb-1" style={{ color: '#7b8596' }}>Status</p>
                       <div className="flex items-center gap-1.5">
                         <span
                           className="w-1.5 h-1.5 rounded-full"
@@ -182,10 +182,10 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     <div>
-                      <p className="text-xs uppercase tracking-wider mb-1" style={{ color: 'rgba(248,247,255,0.62)' }}>Plan</p>
+                      <p className="text-xs uppercase tracking-wider mb-1" style={{ color: '#7b8596' }}>Plan</p>
                       <p
                         className="text-sm font-black"
-                        style={{ color: '#ffd36b' }}
+                        style={{ color: '#15803d' }}
                       >
                         {user.subscriptionPlan}
                       </p>
@@ -197,28 +197,28 @@ export default function DashboardPage() {
                 <div
                   className="rounded-2xl p-5 transition-all duration-200"
                   style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    border: '1px solid rgba(255,255,255,0.14)',
-                    boxShadow: '0 24px 60px rgba(12,2,32,0.2)',
+                    background: '#ffffff',
+                    border: '1px solid #e2e6ee',
+                    boxShadow: '0 14px 44px rgba(38,49,72,0.09)',
                     backdropFilter: 'blur(20px)',
                   }}
                 >
-                  <div className="flex items-center gap-2.5 mb-5 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
+                  <div className="flex items-center gap-2.5 mb-5 pb-4" style={{ borderBottom: '1px solid rgba(23,32,51,0.08)' }}>
                     <div
                       className="w-7 h-7 rounded-lg flex items-center justify-center"
-                      style={{ background: 'rgba(255,211,107,0.18)', border: '1px solid rgba(255,255,255,0.16)' }}
+                      style={{ background: 'rgba(21,128,61,0.10)', border: '1px solid rgba(21,128,61,0.16)' }}
                     >
-                      <Video className="w-3.5 h-3.5" style={{ color: '#ffd36b' }} />
+                      <Video className="w-3.5 h-3.5" style={{ color: '#15803d' }} />
                     </div>
-                    <h3 className="font-bold text-white/90 text-sm tracking-wide uppercase">Clips Created</h3>
+                    <h3 className="font-bold text-slate-900 text-sm tracking-wide uppercase">Clips Created</h3>
                   </div>
 
-                  <p className="text-5xl font-black text-white mb-1 leading-none">
+                  <p className="text-5xl font-black text-slate-950 mb-1 leading-none">
                     {user.clipsThisMonth}
                   </p>
                   <p className="text-sm mb-5" 
                   >
-                    of <span className="font-bold" style={{ color: '#ffd36b' }}>{clipsLimit}</span> this month
+                    of <span className="font-bold" style={{ color: '#15803d' }}>{clipsLimit}</span> this month
                   </p>
 
                   {/* Progress bar */}
@@ -230,12 +230,12 @@ export default function DashboardPage() {
                       className="h-full rounded-full transition-all duration-700"
                       style={{
                         width: `${clipsProgress}%`,
-                        background: 'linear-gradient(90deg, #ffd36b 0%, #ffb32c 100%)',
-                        boxShadow: '0 0 16px rgba(255,179,44,0.32)',
+                        background: 'linear-gradient(90deg, #15803d 0%, #166534 100%)',
+                        boxShadow: '0 0 16px rgba(21,128,61,0.32)',
                       }}
                     />
                   </div>
-                  <p className="text-xs mt-2 text-right font-semibold" style={{ color: 'rgba(248,247,255,0.62)' }}
+                  <p className="text-xs mt-2 text-right font-semibold" style={{ color: '#7b8596' }}
                   >
                     {Math.round(clipsProgress)}% used
                   </p>
@@ -245,27 +245,27 @@ export default function DashboardPage() {
                 <div
                   className="rounded-2xl p-5 transition-all duration-200"
                   style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    border: '1px solid rgba(255,255,255,0.14)',
-                    boxShadow: '0 24px 60px rgba(12,2,32,0.2)',
+                    background: '#ffffff',
+                    border: '1px solid #e2e6ee',
+                    boxShadow: '0 14px 44px rgba(38,49,72,0.09)',
                     backdropFilter: 'blur(20px)',
                   }}
                 >
-                  <div className="flex items-center gap-2.5 mb-4 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
+                  <div className="flex items-center gap-2.5 mb-4 pb-4" style={{ borderBottom: '1px solid rgba(23,32,51,0.08)' }}>
                     <div
                       className="w-7 h-7 rounded-lg flex items-center justify-center"
-                      style={{ background: 'rgba(255,211,107,0.18)', border: '1px solid rgba(255,255,255,0.16)' }}
+                      style={{ background: 'rgba(21,128,61,0.10)', border: '1px solid rgba(21,128,61,0.16)' }}
                     >
-                      <Download className="w-3.5 h-3.5" style={{ color: '#ffd36b' }} />
+                      <Download className="w-3.5 h-3.5" style={{ color: '#15803d' }} />
                     </div>
-                    <h3 className="font-bold text-white/90 text-sm tracking-wide uppercase">Downloads</h3>
+                    <h3 className="font-bold text-slate-900 text-sm tracking-wide uppercase">Downloads</h3>
                   </div>
 
                   {/* Circular progress */}
                   <div className="flex justify-center my-3">
                     <div className="relative w-32 h-32">
                       <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
-                        <circle cx="60" cy="60" r="52" stroke="rgba(255,255,255,0.12)" strokeWidth="10" fill="none" />
+                        <circle cx="60" cy="60" r="52" stroke="rgba(23,32,51,0.08)" strokeWidth="10" fill="none" />
                         <circle
                           cx="60"
                           cy="60"
@@ -278,19 +278,19 @@ export default function DashboardPage() {
                         />
                         <defs>
                           <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="#ffd36b" />
-                            <stop offset="100%" stopColor="#ffb32c" />
+                            <stop offset="0%" stopColor="#15803d" />
+                            <stop offset="100%" stopColor="#166534" />
                           </linearGradient>
                         </defs>
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <p className="text-3xl font-black text-white leading-none">{user.downloadsThisMonth}</p>
-                        <p className="text-xs mt-0.5 font-semibold" style={{ color: 'rgba(248,247,255,0.62)' }}
+                        <p className="text-3xl font-black text-slate-950 leading-none">{user.downloadsThisMonth}</p>
+                        <p className="text-xs mt-0.5 font-semibold" style={{ color: '#7b8596' }}
                         >/ {downloadsLimit}</p>
                       </div>
                     </div>
                   </div>
-                  <p className="text-xs text-center font-semibold" style={{ color: 'rgba(248,247,255,0.62)' }}
+                  <p className="text-xs text-center font-semibold" style={{ color: '#7b8596' }}
                   >
                     {Math.round(downloadsProgress)}% of limit used
                   </p>
@@ -301,20 +301,20 @@ export default function DashboardPage() {
               <div
                 className="mt-6 rounded-2xl p-6"
                 style={{
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(255,255,255,0.14)',
-                  boxShadow: '0 24px 60px rgba(12,2,32,0.2)',
+                  background: 'rgba(23,32,51,0.08)',
+                  border: '1px solid rgba(23,32,51,0.10)',
+                  boxShadow: '0 14px 44px rgba(38,49,72,0.09)',
                   backdropFilter: 'blur(20px)',
                 }}
               >
-                <div className="flex items-center gap-2.5 mb-5 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
+                <div className="flex items-center gap-2.5 mb-5 pb-4" style={{ borderBottom: '1px solid rgba(23,32,51,0.08)' }}>
                   <div
                     className="w-7 h-7 rounded-lg flex items-center justify-center"
-                    style={{ background: 'rgba(255,211,107,0.18)', border: '1px solid rgba(255,255,255,0.16)' }}
+                    style={{ background: 'rgba(21,128,61,0.10)', border: '1px solid rgba(21,128,61,0.16)' }}
                   >
-                    <Zap className="w-3.5 h-3.5" style={{ color: '#ffd36b' }} />
+                    <Zap className="w-3.5 h-3.5" style={{ color: '#15803d' }} />
                   </div>
-                  <h3 className="font-bold text-white/90 text-sm tracking-wide uppercase">Quick Actions</h3>
+                  <h3 className="font-bold text-slate-900 text-sm tracking-wide uppercase">Quick Actions</h3>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
@@ -323,33 +323,33 @@ export default function DashboardPage() {
                     href="/editor"
                     className="group flex items-center gap-4 rounded-xl p-5 transition-all duration-200"
                     style={{
-                      background: 'rgba(16,8,44,0.5)',
-                      border: '1px solid rgba(255,255,255,0.12)',
+                      background: '#f8f9fc',
+                      border: '1px solid rgba(23,32,51,0.08)',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
+                      e.currentTarget.style.borderColor = 'rgba(21,128,61,0.32)'
+                      e.currentTarget.style.background = 'rgba(23,32,51,0.08)'
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
-                      e.currentTarget.style.background = 'rgba(16,8,44,0.5)'
+                      e.currentTarget.style.borderColor = 'rgba(23,32,51,0.08)'
+                      e.currentTarget.style.background = '#f8f9fc'
                     }}
                   >
                     <div
                       className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all duration-200"
                       style={{
-                        background: 'linear-gradient(135deg, #ffd36b 0%, #ffb32c 100%)',
-                        boxShadow: '0 8px 22px rgba(255,179,44,0.22)',
+                        background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)',
+                        boxShadow: '0 8px 22px rgba(21,128,61,0.22)',
                       }}
                     >
-                      <Scissors className="w-5 h-5" style={{ color: '#351765' }} />
+                      <Scissors className="w-5 h-5" style={{ color: '#ffffff' }} />
                     </div>
                     <div>
-                      <p className="font-bold text-white">Open Editor</p>
-                      <p className="text-xs mt-0.5" style={{ color: 'rgba(248,247,255,0.62)' }}
+                      <p className="font-bold text-slate-950">Open Editor</p>
+                      <p className="text-xs mt-0.5" style={{ color: '#7b8596' }}
                       >Create a new clip</p>
                     </div>
-                    <span className="ml-auto text-lg" style={{ color: '#ffd36b' }}>→</span>
+                    <span className="ml-auto text-lg" style={{ color: '#15803d' }}>→</span>
                   </Link>
 
                   {/* Manage Billing */}
@@ -357,33 +357,33 @@ export default function DashboardPage() {
                     href="/billing"
                     className="group flex items-center gap-4 rounded-xl p-5 transition-all duration-200"
                     style={{
-                      background: 'rgba(16,8,44,0.5)',
-                      border: '1px solid rgba(255,255,255,0.12)',
+                      background: '#f8f9fc',
+                      border: '1px solid rgba(23,32,51,0.08)',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
+                      e.currentTarget.style.borderColor = 'rgba(21,128,61,0.32)'
+                      e.currentTarget.style.background = 'rgba(23,32,51,0.08)'
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
-                      e.currentTarget.style.background = 'rgba(16,8,44,0.5)'
+                      e.currentTarget.style.borderColor = 'rgba(23,32,51,0.08)'
+                      e.currentTarget.style.background = '#f8f9fc'
                     }}
                   >
                     <div
                       className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
                       style={{
-                        background: 'rgba(255,255,255,0.08)',
-                        border: '1px solid rgba(255,255,255,0.14)',
+                        background: 'rgba(23,32,51,0.08)',
+                        border: '1px solid rgba(23,32,51,0.10)',
                       }}
                     >
-                      <CreditCard className="w-5 h-5" style={{ color: '#ffd36b' }} />
+                      <CreditCard className="w-5 h-5" style={{ color: '#15803d' }} />
                     </div>
                     <div>
-                      <p className="font-bold text-white">Manage Billing</p>
-                      <p className="text-xs mt-0.5" style={{ color: 'rgba(248,247,255,0.62)' }}
+                      <p className="font-bold text-slate-950">Manage Billing</p>
+                      <p className="text-xs mt-0.5" style={{ color: '#7b8596' }}
                       >Upgrade your plan</p>
                     </div>
-                    <span className="ml-auto text-lg" style={{ color: '#ffd36b' }}>→</span>
+                    <span className="ml-auto text-lg" style={{ color: '#15803d' }}>→</span>
                   </Link>
                 </div>
               </div>
@@ -393,9 +393,9 @@ export default function DashboardPage() {
               {/* Loading spinner */}
               <div
                 className="w-10 h-10 rounded-full border-2 border-t-transparent animate-spin"
-                style={{ borderColor: '#ffd36b', borderTopColor: 'transparent' }}
+                style={{ borderColor: '#15803d', borderTopColor: 'transparent' }}
               />
-              <p className="text-sm font-semibold" style={{ color: 'rgba(248,247,255,0.72)' }}
+              <p className="text-sm font-semibold" style={{ color: '#687386' }}
               >Loading your dashboard…</p>
             </div>
           )}

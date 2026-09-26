@@ -378,19 +378,19 @@ export function SocialVideoPlayer({
         {(isInitializing || isBuffering) && !errorMessage && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-500 animate-in fade-in">
             <div className="relative mb-6">
-              <div className="absolute inset-0 rounded-full bg-purple-500/20 blur-xl animate-pulse" />
-              <Loader2 className="h-14 w-14 animate-spin text-purple-400 relative z-10" />
+              <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-xl animate-pulse" />
+              <Loader2 className="h-14 w-14 animate-spin text-emerald-400 relative z-10" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="h-2.5 w-2.5 rounded-full bg-purple-500 animate-ping" />
+                <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping" />
               </div>
             </div>
             
             <div className="text-center space-y-2 relative z-10">
-              <p className="text-lg font-semibold bg-gradient-to-r from-purple-200 to-indigo-200 bg-clip-text text-transparent">
+              <p className="text-lg font-semibold bg-gradient-to-r from-emerald-200 to-emerald-200 bg-clip-text text-transparent">
                 {pollStatus === 'polling' ? 'Preparing your stream…' : (isInitializing ? 'Optimizing video quality…' : 'Buffering segments…')}
               </p>
               
-              <div className="flex items-center justify-center gap-2.5 text-sm text-purple-200/50">
+              <div className="flex items-center justify-center gap-2.5 text-sm text-emerald-200/50">
                 <RefreshCw className="h-4 w-4 animate-reverse-spin" />
                 <span>Synchronizing with social media provider</span>
               </div>
@@ -398,12 +398,12 @@ export function SocialVideoPlayer({
               {retryCount > 0 && (
                 <div className="pt-4">
                   <div className="h-1 w-32 bg-slate-800 rounded-full mx-auto overflow-hidden">
-                    <div 
-                      className="h-full bg-purple-500 transition-all duration-1000" 
+                    <div
+                      className="h-full bg-emerald-500 transition-all duration-1000"
                       style={{ width: `${(retryCount / 40) * 100}%` }}
                     />
                   </div>
-                  <p className="mt-2 text-[10px] uppercase tracking-widest text-purple-400/40 font-bold">
+                  <p className="mt-2 text-[10px] uppercase tracking-widest text-emerald-400/40 font-bold">
                     Reconnection Attempt {retryCount} of 40
                   </p>
                 </div>

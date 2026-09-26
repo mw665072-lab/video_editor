@@ -6,7 +6,7 @@ export default function AdminCmsPage() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen items-center justify-center bg-[#12072f] text-white">
+        <main className="flex min-h-screen items-center justify-center bg-[#f6f7fb] text-slate-950">
           <Spinner />
         </main>
       }

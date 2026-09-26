@@ -34,11 +34,11 @@ export default function RootLayout({
     <html
       lang="en"
       className="h-full"
-      style={{ backgroundColor: '#12072f', color: '#f8f7ff' }}
+      style={{ backgroundColor: '#f6f7fb', color: '#172033' }}
     >
       <body
         className="h-full font-sans antialiased"
-        style={{ backgroundColor: '#12072f', color: '#f8f7ff' }}
+        style={{ backgroundColor: '#f6f7fb', color: '#172033' }}
       >
         <div className="min-h-full">
           {children}

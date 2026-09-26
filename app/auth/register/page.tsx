@@ -61,8 +61,8 @@ export default function RegisterPage() {
       <main
         style={{
           minHeight: '100vh',
-          background: '#05070C',
-          color: '#fff',
+          background: '#f6f7fb',
+          color: '#172033',
           fontFamily: "'DM Sans', sans-serif",
           display: 'flex',
           alignItems: 'center',
@@ -78,7 +78,7 @@ export default function RegisterPage() {
             inset: 0,
             pointerEvents: 'none',
             zIndex: 0,
-            background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(249,115,22,0.13) 0%, transparent 65%)',
+            background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(21,128,61,0.13) 0%, transparent 65%)',
           }}
         />
         <div
@@ -88,7 +88,7 @@ export default function RegisterPage() {
             pointerEvents: 'none',
             zIndex: 0,
             backgroundImage:
-              'repeating-linear-gradient(0deg,rgba(249,115,22,0.06) 0px,rgba(249,115,22,0.06) 1px,transparent 1px,transparent 48px),repeating-linear-gradient(90deg,rgba(249,115,22,0.06) 0px,rgba(249,115,22,0.06) 1px,transparent 1px,transparent 48px)',
+              'repeating-linear-gradient(0deg,rgba(21,128,61,0.06) 0px,rgba(21,128,61,0.06) 1px,transparent 1px,transparent 48px),repeating-linear-gradient(90deg,rgba(21,128,61,0.06) 0px,rgba(21,128,61,0.06) 1px,transparent 1px,transparent 48px)',
           }}
         />
         <div
@@ -99,7 +99,7 @@ export default function RegisterPage() {
             width: 500,
             height: 500,
             borderRadius: '50%',
-            background: 'rgba(249,115,22,0.09)',
+            background: 'rgba(21,128,61,0.09)',
             filter: 'blur(130px)',
             pointerEvents: 'none',
             zIndex: 0,
@@ -113,7 +113,7 @@ export default function RegisterPage() {
             width: 400,
             height: 400,
             borderRadius: '50%',
-            background: 'rgba(249,115,22,0.07)',
+            background: 'rgba(21,128,61,0.07)',
             filter: 'blur(110px)',
             pointerEvents: 'none',
             zIndex: 0,
@@ -126,11 +126,11 @@ export default function RegisterPage() {
             zIndex: 2,
             width: '100%',
             maxWidth: 420,
-            background: 'rgba(15,17,26,0.90)',
-            border: '1px solid rgba(255,255,255,0.10)',
+            background: 'rgba(255,255,255,0.94)',
+            border: '1px solid rgba(23,32,51,0.10)',
             borderRadius: 24,
             padding: '40px 36px',
-            boxShadow: '0 40px 100px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset',
+            boxShadow: '0 28px 80px rgba(38,49,72,0.16), 0 0 0 1px rgba(23,32,51,0.04) inset',
             backdropFilter: 'blur(24px)',
             WebkitBackdropFilter: 'blur(24px)',
           }}
@@ -146,7 +146,7 @@ export default function RegisterPage() {
               fontSize: 18,
               letterSpacing: '-0.03em',
               textDecoration: 'none',
-              color: '#fff',
+              color: '#172033',
               marginBottom: 32,
             }}
           >
@@ -155,7 +155,7 @@ export default function RegisterPage() {
                 width: 32,
                 height: 32,
                 borderRadius: 8,
-                background: 'linear-gradient(135deg, #F97316, #FB923C)',
+                background: 'linear-gradient(135deg, #15803D, #22A653)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -176,15 +176,15 @@ export default function RegisterPage() {
                 gap: 7,
                 padding: '4px 12px 4px 8px',
                 borderRadius: 100,
-                background: 'rgba(249,115,22,0.10)',
-                border: '1px solid rgba(249,115,22,0.22)',
+                background: 'rgba(21,128,61,0.10)',
+                border: '1px solid rgba(21,128,61,0.22)',
                 fontFamily: "'DM Mono', monospace",
                 fontSize: 11,
-                color: '#FB923C',
+                color: '#22A653',
                 marginBottom: 16,
               }}
             >
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#F97316' }} />
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#15803D' }} />
               Create account
             </div>
             <h1
@@ -199,7 +199,7 @@ export default function RegisterPage() {
             >
               Welcome to ClipAI
             </h1>
-            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6 }}>
+            <p style={{ fontSize: 14, color: 'rgba(104,115,134,0.92)', lineHeight: 1.6 }}>
               Sign up to unlock the first 150 clips every month.
             </p>
           </div>
@@ -211,7 +211,7 @@ export default function RegisterPage() {
                   display: 'block',
                   fontFamily: "'DM Mono', monospace",
                   fontSize: 11,
-                  color: 'rgba(255,255,255,0.4)',
+                  color: 'rgba(104,115,134,0.88)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
                   marginBottom: 8,
@@ -224,16 +224,16 @@ export default function RegisterPage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 10,
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.10)',
+                  background: 'rgba(23,32,51,0.04)',
+                  border: '1px solid rgba(23,32,51,0.10)',
                   borderRadius: 12,
                   padding: '0 16px',
                   transition: 'border-color 0.2s',
                 }}
-                onFocusCapture={(e) => (e.currentTarget.style.borderColor = 'rgba(249,115,22,0.5)')}
-                onBlurCapture={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)')}
+                onFocusCapture={(e) => (e.currentTarget.style.borderColor = 'rgba(21,128,61,0.5)')}
+                onBlurCapture={(e) => (e.currentTarget.style.borderColor = 'rgba(23,32,51,0.10)')}
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(104,115,134,0.72)" strokeWidth="2">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                   <circle cx="12" cy="7" r="4" />
                 </svg>
@@ -248,7 +248,7 @@ export default function RegisterPage() {
                     background: 'transparent',
                     border: 'none',
                     outline: 'none',
-                    color: '#fff',
+                    color: '#172033',
                     fontSize: 14,
                     fontFamily: "'DM Sans', sans-serif",
                     padding: '13px 0',
@@ -263,7 +263,7 @@ export default function RegisterPage() {
                   display: 'block',
                   fontFamily: "'DM Mono', monospace",
                   fontSize: 11,
-                  color: 'rgba(255,255,255,0.4)',
+                  color: 'rgba(104,115,134,0.88)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
                   marginBottom: 8,
@@ -276,16 +276,16 @@ export default function RegisterPage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 10,
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.10)',
+                  background: 'rgba(23,32,51,0.04)',
+                  border: '1px solid rgba(23,32,51,0.10)',
                   borderRadius: 12,
                   padding: '0 16px',
                   transition: 'border-color 0.2s',
                 }}
-                onFocusCapture={(e) => (e.currentTarget.style.borderColor = 'rgba(249,115,22,0.5)')}
-                onBlurCapture={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)')}
+                onFocusCapture={(e) => (e.currentTarget.style.borderColor = 'rgba(21,128,61,0.5)')}
+                onBlurCapture={(e) => (e.currentTarget.style.borderColor = 'rgba(23,32,51,0.10)')}
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(104,115,134,0.72)" strokeWidth="2">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                   <polyline points="22,6 12,13 2,6" />
                 </svg>
@@ -300,7 +300,7 @@ export default function RegisterPage() {
                     background: 'transparent',
                     border: 'none',
                     outline: 'none',
-                    color: '#fff',
+                    color: '#172033',
                     fontSize: 14,
                     fontFamily: "'DM Sans', sans-serif",
                     padding: '13px 0',
@@ -315,7 +315,7 @@ export default function RegisterPage() {
                   style={{
                     fontFamily: "'DM Mono', monospace",
                     fontSize: 11,
-                    color: 'rgba(255,255,255,0.4)',
+                    color: 'rgba(104,115,134,0.88)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.08em',
                   }}
@@ -328,16 +328,16 @@ export default function RegisterPage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 10,
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.10)',
+                  background: 'rgba(23,32,51,0.04)',
+                  border: '1px solid rgba(23,32,51,0.10)',
                   borderRadius: 12,
                   padding: '0 16px',
                   transition: 'border-color 0.2s',
                 }}
-                onFocusCapture={(e) => (e.currentTarget.style.borderColor = 'rgba(249,115,22,0.5)')}
-                onBlurCapture={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)')}
+                onFocusCapture={(e) => (e.currentTarget.style.borderColor = 'rgba(21,128,61,0.5)')}
+                onBlurCapture={(e) => (e.currentTarget.style.borderColor = 'rgba(23,32,51,0.10)')}
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(104,115,134,0.72)" strokeWidth="2">
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                   <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
@@ -353,7 +353,7 @@ export default function RegisterPage() {
                     background: 'transparent',
                     border: 'none',
                     outline: 'none',
-                    color: '#fff',
+                    color: '#172033',
                     fontSize: 14,
                     fontFamily: "'DM Sans', sans-serif",
                     padding: '13px 0',
@@ -367,7 +367,7 @@ export default function RegisterPage() {
                     border: 'none',
                     cursor: 'pointer',
                     padding: 0,
-                    color: 'rgba(255,255,255,0.3)',
+                    color: 'rgba(104,115,134,0.72)',
                     display: 'flex',
                     alignItems: 'center',
                   }}
@@ -437,21 +437,21 @@ export default function RegisterPage() {
                 letterSpacing: '0.03em',
                 marginTop: 4,
                 background: loading
-                  ? 'rgba(249,115,22,0.4)'
-                  : 'linear-gradient(135deg, #F97316, #EA580C)',
-                color: '#fff',
-                boxShadow: loading ? 'none' : '0 4px 24px rgba(249,115,22,0.4)',
+                  ? 'rgba(21,128,61,0.4)'
+                  : 'linear-gradient(135deg, #15803D, #166534)',
+                color: '#ffffff',
+                boxShadow: loading ? 'none' : '0 4px 24px rgba(21,128,61,0.4)',
                 transition: 'all 0.25s cubic-bezier(0.34,1.56,0.64,1)',
                 opacity: loading ? 0.7 : 1,
               }}
               onMouseEnter={(e) => {
                 if (!loading) {
-                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(249,115,22,0.55)'
+                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(21,128,61,0.55)'
                   e.currentTarget.style.transform = 'translateY(-1px)'
                 }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 4px 24px rgba(249,115,22,0.4)'
+                e.currentTarget.style.boxShadow = '0 4px 24px rgba(21,128,61,0.4)'
                 e.currentTarget.style.transform = 'translateY(0)'
               }}
             >
@@ -472,17 +472,17 @@ export default function RegisterPage() {
           </form>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '24px 0' }}>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
-            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>OR</span>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
+            <div style={{ flex: 1, height: 1, background: 'rgba(23,32,51,0.08)' }} />
+            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#8a94a5' }}>OR</span>
+            <div style={{ flex: 1, height: 1, background: 'rgba(23,32,51,0.08)' }} />
           </div>
 
-          <p style={{ textAlign: 'center', fontSize: 14, color: 'rgba(255,255,255,0.45)' }}>
+          <p style={{ textAlign: 'center', fontSize: 14, color: '#687386' }}>
             Already have an account?{' '}
             <Link
               href="/auth/login"
               style={{
-                color: '#FB923C',
+                color: '#22A653',
                 textDecoration: 'none',
                 fontWeight: 600,
                 fontFamily: "'DM Mono', monospace",

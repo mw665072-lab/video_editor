@@ -234,13 +234,13 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
   const activeUploadMethod = showUrlUpload ? uploadMethod : 'file'
 
   return (
-    <div className="w-full max-w-2xl mx-auto rounded-3xl border border-white/10 bg-[#12072f]/80 p-4">
+    <div className="w-full max-w-2xl mx-auto rounded-[2rem] border border-[#dce5dc] bg-white/95 p-5 shadow-[0_22px_60px_rgba(31,52,36,0.12)] sm:p-6">
       {showUrlUpload && (
-        <div className="flex flex-col sm:flex-row gap-2 mb-6 rounded-3xl border border-white/10 bg-[#150b40]/70 p-2">
+        <div className="mb-6 flex flex-col gap-2 rounded-2xl border border-[#dce5dc] bg-[#f1f6ef] p-1.5 sm:flex-row">
           <Button
             variant={activeUploadMethod === 'file' ? 'default' : 'outline'}
             onClick={() => setUploadMethod('file')}
-            className="w-full sm:flex-1 rounded-lg px-4 py-2 text-white text-sm bg-[#150b40]/80 hover:bg-[#1f0f4e] font-semibold"
+            className={`w-full rounded-xl px-4 py-3 text-sm font-bold transition sm:flex-1 ${activeUploadMethod === 'file' ? 'bg-[#15803d] text-white shadow-[0_8px_20px_rgba(21,128,61,0.22)] hover:bg-[#166534]' : 'border-transparent bg-transparent text-[#526159] hover:bg-white hover:text-[#18231b]'}`}
           >
             <Upload className="w-4 h-4 mr-2" />
             Upload File
@@ -248,7 +248,7 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
           <Button
             variant={activeUploadMethod === 'url' ? 'default' : 'outline'}
             onClick={() => setUploadMethod('url')}
-            className="flex-1 rounded-lg px-4 py-2 text-white text-sm bg-[#150b40]/80 hover:bg-[#1f0f4e] font-semibold"
+            className={`flex-1 rounded-xl px-4 py-3 text-sm font-bold transition ${activeUploadMethod === 'url' ? 'bg-[#15803d] text-white shadow-[0_8px_20px_rgba(21,128,61,0.22)] hover:bg-[#166534]' : 'border-transparent bg-transparent text-[#526159] hover:bg-white hover:text-[#18231b]'}`}
           >
             <LinkIcon className="w-4 h-4 mr-2" />
             Load from URL
@@ -260,7 +260,7 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
         <div
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
-          className="border-2 border-dashed border-white/20 rounded-3xl p-6 text-center transition-colors duration-200 cursor-pointer bg-[#150b40]/60 hover:border-purple-400"
+          className="cursor-pointer rounded-3xl border-2 border-dashed border-[#b9cfbd] bg-[#fbfdf9] p-8 text-center transition duration-200 hover:-translate-y-0.5 hover:border-[#15803d] hover:bg-[#f4faf3]"
           onClick={() => fileInputRef.current?.click()}
         >
           <input
@@ -272,16 +272,18 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
             className="hidden"
             disabled={isLoading || fileLoading}
           />
-          <Upload className="w-10 h-10 mx-auto mb-3 text-purple-200" />
-          <h3 className="text-lg font-semibold mb-2 text-white">Upload a video file</h3>
-          <p className="text-sm text-purple-200/70 mb-3">
+          <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e9f7eb] text-[#15803d]">
+            <Upload className="h-6 w-6" />
+          </span>
+          <h3 className="mb-2 text-lg font-extrabold text-[#18231b]">Upload a video file</h3>
+          <p className="mb-3 text-sm text-[#526159]">
             Drag and drop your video here or click to browse
           </p>
-          <p className="text-xs text-purple-200/60">
+          <p className="text-xs text-[#718078]">
             Supported formats: MP4, MOV, AVI, WebM (Max 500MB)
           </p>
           {(isLoading || fileLoading) && (
-            <p className="text-sm text-purple-200 mt-4">Loading video...</p>
+            <p className="mt-4 text-sm font-semibold text-[#15803d]">Loading video...</p>
           )}
         </div>
       ) : (
@@ -302,12 +304,12 @@ export function VideoUpload({ onVideoLoaded, onDurationResolved, isLoading = fal
             <Button
               onClick={handleLoadFromURL}
               disabled={urlLoading || !urlInput.trim()}
-              className="flex-1 rounded-lg px-4 py-2 text-white text-sm bg-purple-600 hover:bg-purple-500 font-semibold"
+              className="min-h-11 flex-1 rounded-xl bg-[#15803d] px-5 py-2 text-sm font-bold text-white shadow-[0_10px_24px_rgba(21,128,61,0.22)] hover:bg-[#166534] disabled:bg-[#a6b7aa]"
             >
               {urlLoading ? 'Loading...' : 'Load'}
             </Button>
           </div>
-          <div className="rounded-lg border border-white/10 bg-[#150b40]/80 px-3 py-2 text-xs text-purple-200/80">
+          <div className="rounded-xl border border-[#d7e5d8] bg-[#edf7ef] px-4 py-3 text-xs leading-5 text-[#41634a]">
             Supported URL sources for the MVP: YouTube, Facebook, Instagram, TikTok, X/Twitter, Vimeo, and direct MP4/WebM/M3U8 links.
           </div>
         </div>

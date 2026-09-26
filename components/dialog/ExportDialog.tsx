@@ -61,18 +61,18 @@ export function ExportDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-[#12072f] border border-white/10 shadow-[0_30px_120px_rgba(70,55,160,0.35)]">
+      <DialogContent className="editor-dialog-theme border border-[#dce5dc] bg-white shadow-[0_30px_100px_rgba(31,52,36,0.20)] sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-slate-50">Export Video</DialogTitle>
-          <DialogDescription className="text-slate-300">
+          <DialogTitle className="text-[#18231b]">Export Video</DialogTitle>
+          <DialogDescription className="text-[#667069]">
             Configure export settings for your edited video
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Summary */}
-          <div className="p-3 bg-[#150b40] rounded-lg border border-white/10">
-            <div className="grid grid-cols-2 gap-4 text-sm text-purple-100">
+          <div className="rounded-xl border border-[#dce5dc] bg-[#f8fbf6] p-3">
+            <div className="grid grid-cols-2 gap-4 text-sm text-[#31533b]">
               <div>
                 <p className="  mb-1">Clips</p>
                 <p className="font-semibold">{clips.length}</p>
@@ -95,7 +95,7 @@ export function ExportDialog({
                 placeholder="exported-video"
                 // disabled={progress.isExporting}
                 // placeholder color should be white
-                className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-[#110A05]/60 bg-[#110A05]/60 hover:text-white text-white font-semibold placeholder:text-white"
+                className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-100 bg-slate-100 hover:text-slate-950 text-slate-950 font-semibold placeholder:text-slate-950"
               />
               <span className="  py-2">.mp4</span>
             </div>
@@ -110,7 +110,7 @@ export function ExportDialog({
             <Select value={selectedQuality} onValueChange={setSelectedQuality} disabled={progress.isExporting}>
               <SelectTrigger
                 id="quality"
-                className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 bg-slate-900/60 hover:text-white text-white font-semibold placeholder:text-white"
+                className="flex-1 rounded-lg border-[#dce5dc] bg-white px-4 py-2 text-sm font-semibold text-[#18231b] hover:bg-[#f8fbf6]"
               >
                 <SelectValue />
               </SelectTrigger>
@@ -126,7 +126,7 @@ export function ExportDialog({
                 </SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-purple-200/70">
+            <p className="text-xs text-[#667069]">
               Higher quality takes longer to process
             </p>
           </div>
@@ -138,7 +138,7 @@ export function ExportDialog({
               <Select value={selectedPlatform} onValueChange={(value) => setSelectedPlatform(value as 'tiktok' | 'shorts' | 'reels')} disabled={progress.isExporting}>
                 <SelectTrigger
                   id="platform"
-                  className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 bg-slate-900/60 hover:text-white text-white font-semibold placeholder:text-white"
+                  className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 bg-slate-900/60 hover:text-slate-950 text-slate-950 font-semibold placeholder:text-slate-950"
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -155,7 +155,7 @@ export function ExportDialog({
               <Select value={selectedResizeMode} onValueChange={(value) => setSelectedResizeMode(value as 'blur' | 'crop')} disabled={progress.isExporting}>
                 <SelectTrigger
                   id="resizeMode"
-                  className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 bg-slate-900/60 hover:text-white text-white font-semibold placeholder:text-white"
+                  className="flex-1 rounded-lg px-4 py-2 text-sm hover:bg-slate-800/60 bg-slate-900/60 hover:text-slate-950 text-slate-950 font-semibold placeholder:text-slate-950"
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -170,17 +170,17 @@ export function ExportDialog({
 
           {/* Progress */}
           {progress.isExporting && (
-            <div className="space-y-3 p-3 bg-[#150b40] rounded-lg border border-purple-500/20">
+            <div className="space-y-3 p-3 bg-[#ffffff] rounded-lg border border-emerald-500/20">
               <div className="flex justify-between text-sm">
-                <span className="text-purple-100 font-medium">
+                <span className="text-emerald-100 font-medium">
                   {progress.currentStep || 'Processing...'}
                 </span>
-                <span className="text-cyan-200 font-medium">
+                <span className="font-medium text-[#15803d]">
                   {Math.round(progress.progress)}%
                 </span>
               </div>
-              <Progress value={progress.progress} className="h-2 bg-[#150b40]" />
-              <p className="text-xs text-cyan-100/80">
+              <Progress value={progress.progress} className="h-2 bg-[#ffffff]" />
+              <p className="text-xs text-[#526159]">
                 Please keep this window open while processing
               </p>
             </div>
@@ -188,23 +188,23 @@ export function ExportDialog({
 
           {/* Error */}
           {progress.error && (
-            <div className="p-3 bg-purple-500/10 rounded-lg border border-purple-500/20 flex gap-2">
-              <AlertCircle className="w-4 h-4 text-purple-300 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-purple-100">{progress.error}</p>
+            <div className="flex gap-2 rounded-lg border border-red-200 bg-red-50 p-3">
+              <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-600" />
+              <p className="text-sm text-red-700">{progress.error}</p>
             </div>
           )}
 
           {/* Browser Support Warning */}
-          <div className="p-3 bg-[#150b40] rounded-lg border border-purple-500/20 flex gap-2">
-            <AlertCircle className="w-4 h-4 text-purple-300 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-purple-100">
+          <div className="flex gap-2 rounded-lg border border-[#eadb9a] bg-[#fff9dc] p-3">
+            <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#9a6b00]" />
+            <p className="text-xs text-[#614f00]">
               Export requires a modern browser with WebAssembly support. Large files may take several minutes.
             </p>
           </div>
 
           {/* Export availability */}
           {!isExportAllowed && (
-            <div className="p-3 bg-[#150b40] rounded-lg border border-purple-500/20 text-sm text-purple-100">
+            <div className="p-3 bg-[#ffffff] rounded-lg border border-emerald-500/20 text-sm text-emerald-100">
               {exportDisabledReason || 'This source is not exportable. Use a local file or direct video URL (MP4/WebM).'}
             </div>
           )}
@@ -215,14 +215,14 @@ export function ExportDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={progress.isExporting}
-              className="flex-1 border-white/10 hover:bg-[#150b40]/70 bg-[#150b40]/70 text-purple-100 hover:text-white"
+              className="flex-1 border-[#dce5dc] bg-white text-[#31533b] hover:bg-[#edf7ef] hover:text-[#14532d]"
             >
               Cancel
             </Button>
             <Button
               onClick={handleExport}
               disabled={progress.isExporting || clips.length === 0 || !isExportAllowed}
-              className="flex-1 bg-purple-600 hover:bg-purple-500 text-white"
+              className="flex-1 bg-[#15803d] text-white hover:bg-[#166534]"
             >
               <Download className="w-4 h-4 mr-2" />
               {progress.isExporting ? 'Exporting...' : 'Export'}

@@ -101,7 +101,7 @@ export function AdminDashboard() {
     }
   }
 
-  if (loading) return <main className="min-h-screen bg-[#12072f] p-8 text-center text-white/70">Loading admin stats...</main>
+  if (loading) return <main className="min-h-screen bg-[#f6f7fb] p-8 text-center text-slate-600">Loading admin stats...</main>
   if (error || !stats) return null
 
   return (
@@ -109,7 +109,7 @@ export function AdminDashboard() {
       title="Admin Stats"
       subtitle="Platform usage, creator activity, export health, and blog engagement"
       actions={
-        <Link href="/admin/blogs" className="inline-flex items-center gap-2 rounded-2xl bg-[#ff7a1a] px-4 py-2 text-sm font-black text-white shadow-[0_12px_34px_rgba(250,106,0,0.22)] transition hover:bg-[#ff8b35]">
+        <Link href="/admin/blogs" className="inline-flex items-center gap-2 rounded-2xl bg-[#facc15] px-4 py-2 text-sm font-black text-slate-950 shadow-[0_12px_34px_rgba(217,155,0,0.22)] transition hover:bg-[#eab308]">
           <PenSquare className="h-4 w-4" />
           Create Blog
         </Link>
@@ -150,32 +150,32 @@ export function AdminDashboard() {
               <MiniStat label="GB / Success" value={`${getOverallGbPerSuccess(proxyPool).toFixed(3)} GB`} />
             </div>
 
-            <div className="mb-5 rounded-3xl border border-white/10 bg-[#150b40]/70 p-4 shadow-[0_16px_50px_rgba(12,2,32,0.28)]">
+            <div className="mb-5 rounded-3xl border border-slate-200 bg-[#ffffff]/70 p-4 shadow-[0_16px_50px_rgba(31,52,36,0.28)]">
               <div className="mb-3 grid gap-3 md:grid-cols-[1fr_120px_120px]">
                 <label className="block">
-                  <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Provider</span>
+                  <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Provider</span>
                   <input
                     value={proxyProvider}
                     onChange={(event) => setProxyProvider(event.target.value)}
-                    className="w-full rounded-2xl border border-white/10 bg-[#100a2f]/90 px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-[#ffb32c]/70"
+                    className="w-full rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-3 py-2 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#15803d]/70"
                   />
                 </label>
                 <label className="block">
-                  <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Country</span>
+                  <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Country</span>
                   <input
                     value={proxyCountry}
                     onChange={(event) => setProxyCountry(event.target.value)}
                     placeholder="US"
-                    className="w-full rounded-2xl border border-white/10 bg-[#100a2f]/90 px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-[#ffb32c]/70"
+                    className="w-full rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-3 py-2 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#15803d]/70"
                   />
                 </label>
                 <label className="block">
-                  <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.18em] text-white/45">$/GB</span>
+                  <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">$/GB</span>
                   <input
                     value={proxyCostPerGb}
                     onChange={(event) => setProxyCostPerGb(event.target.value)}
                     inputMode="decimal"
-                    className="w-full rounded-2xl border border-white/10 bg-[#100a2f]/90 px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-[#ffb32c]/70"
+                    className="w-full rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-3 py-2 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#15803d]/70"
                   />
                 </label>
               </div>
@@ -185,15 +185,15 @@ export function AdminDashboard() {
                 onChange={(event) => setProxyImportText(event.target.value)}
                 rows={4}
                 placeholder="host:port:user:pass, one per line"
-                className="mb-3 w-full resize-y rounded-2xl border border-white/10 bg-[#100a2f]/90 px-3 py-2 font-mono text-xs text-white outline-none transition placeholder:text-white/30 focus:border-[#ffb32c]/70"
+                className="mb-3 w-full resize-y rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-3 py-2 font-mono text-xs text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#15803d]/70"
               />
               <div className="flex flex-wrap items-center gap-3">
-                <label className="inline-flex items-center gap-2 text-xs font-bold text-white/75">
+                <label className="inline-flex items-center gap-2 text-xs font-bold text-slate-700">
                   <input
                     type="checkbox"
                     checked={replaceProvider}
                     onChange={(event) => setReplaceProvider(event.target.checked)}
-                    className="h-4 w-4 accent-[#ffb32c]"
+                    className="h-4 w-4 accent-[#15803d]"
                   />
                   Disable old proxies for this provider
                 </label>
@@ -201,7 +201,7 @@ export function AdminDashboard() {
                   type="button"
                   onClick={submitProxyImport}
                   disabled={proxySaving}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-[#ff7a1a] px-4 py-2 text-xs font-black text-white shadow-[0_12px_30px_rgba(250,106,0,0.22)] transition hover:bg-[#ff8b35] disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-[#facc15] px-4 py-2 text-xs font-black text-slate-950 shadow-[0_12px_30px_rgba(217,155,0,0.22)] transition hover:bg-[#eab308] disabled:opacity-60"
                 >
                   <Upload className="h-4 w-4" />
                   {proxySaving ? 'Importing...' : 'Import Proxies'}
@@ -209,7 +209,7 @@ export function AdminDashboard() {
                 <button
                   type="button"
                   onClick={refreshProxyPool}
-                  className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-black text-white/80 transition hover:border-[#ffb32c]/50 hover:bg-white/10"
+                  className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-black text-slate-700 transition hover:border-[#15803d]/50 hover:bg-slate-100"
                 >
                   Refresh
                 </button>
@@ -222,18 +222,18 @@ export function AdminDashboard() {
                   <RefreshCw className={`h-4 w-4 ${proxyValidating ? 'animate-spin' : ''}`} />
                   {proxyValidating ? 'Validating...' : 'Validate 5'}
                 </button>
-                {proxyMessage && <span className="text-xs text-[#ffb32c]">{proxyMessage}</span>}
+                {proxyMessage && <span className="text-xs text-[#15803d]">{proxyMessage}</span>}
               </div>
-              <p className="mt-3 text-xs text-white/45">
+              <p className="mt-3 text-xs text-slate-500">
                 Validator {proxyPool.validator.enabled ? 'enabled' : 'disabled'} · max {proxyPool.maxUsesPerHour} uses/proxy/hour · health TTL {Math.round(proxyPool.validator.healthTtlMs / 60000)}m · quarantine {Math.round(proxyPool.validator.quarantineMs / 3600000)}h · test URL {proxyPool.validator.testUrl}
               </p>
             </div>
 
             {proxyPool.providerQuality.length > 0 && (
-              <div className="mb-5 overflow-x-auto rounded-3xl border border-white/10 bg-[#100a2f]/70">
+              <div className="mb-5 overflow-x-auto rounded-3xl border border-slate-200 bg-[#ffffff]/70">
                 <table className="w-full min-w-[980px] text-left text-xs">
-                  <thead className="bg-white/[0.03] text-white/45">
-                    <tr className="border-b border-white/10">
+                  <thead className="bg-slate-50 text-slate-500">
+                    <tr className="border-b border-slate-200">
                       <th className="py-2 pr-3">Provider</th>
                       <th className="py-2 pr-3">Usable</th>
                       <th className="py-2 pr-3">Success</th>
@@ -247,11 +247,11 @@ export function AdminDashboard() {
                   </thead>
                   <tbody>
                     {proxyPool.providerQuality.map((provider) => (
-                      <tr key={provider.provider} className="border-b border-white/10 text-white/80 last:border-0">
+                      <tr key={provider.provider} className="border-b border-slate-200 text-slate-700 last:border-0">
                         <td className="py-3 pr-3 font-bold">{provider.provider}</td>
                         <td className="py-3 pr-3">{provider.usableProxies}/{provider.totalProxies}</td>
                         <td className="py-3 pr-3 text-emerald-300">{formatPercent(provider.successRate)}</td>
-                        <td className="py-3 pr-3 text-[#ffb32c]">{formatPercent(provider.botBlockRate)}</td>
+                        <td className="py-3 pr-3 text-[#15803d]">{formatPercent(provider.botBlockRate)}</td>
                         <td className="py-3 pr-3 text-red-300">{formatPercent(provider.proxyAuthRate)}</td>
                         <td className="py-3 pr-3">{provider.downloads}</td>
                         <td className="py-3 pr-3">{provider.gbPerSuccessfulImport.toFixed(3)}</td>
@@ -264,10 +264,10 @@ export function AdminDashboard() {
               </div>
             )}
 
-            <div className="overflow-x-auto rounded-3xl border border-white/10 bg-[#100a2f]/70">
+            <div className="overflow-x-auto rounded-3xl border border-slate-200 bg-[#ffffff]/70">
               <table className="w-full min-w-[980px] text-left text-xs">
-                <thead className="bg-white/[0.03] text-white/45">
-                  <tr className="border-b border-white/10">
+                <thead className="bg-slate-50 text-slate-500">
+                  <tr className="border-b border-slate-200">
                     <th className="py-2 pr-3">Proxy</th>
                     <th className="py-2 pr-3">Provider</th>
                     <th className="py-2 pr-3">Health</th>
@@ -282,7 +282,7 @@ export function AdminDashboard() {
                 </thead>
                 <tbody>
                   {proxyPool.proxies.map((proxy) => (
-                    <tr key={proxy.id} className="border-b border-white/10 text-white/80 last:border-0">
+                    <tr key={proxy.id} className="border-b border-slate-200 text-slate-700 last:border-0">
                       <td className="max-w-[220px] truncate py-3 pr-3 font-mono">{proxy.label}</td>
                       <td className="py-3 pr-3">{proxy.provider || '-'}</td>
                       <td className="py-3 pr-3">
@@ -296,12 +296,12 @@ export function AdminDashboard() {
                       <td className="py-3 pr-3">{proxy.errors}</td>
                       <td className="py-3 pr-3">{proxy.gb.toFixed(3)}</td>
                       <td className="py-3 pr-3">${proxy.estimatedCost.toFixed(2)}</td>
-                      <td className="max-w-[220px] truncate py-3 pr-3 text-[#ffb32c]">{proxy.lastError || '-'}</td>
+                      <td className="max-w-[220px] truncate py-3 pr-3 text-[#15803d]">{proxy.lastError || '-'}</td>
                       <td className="py-3 pr-3">
                         <button
                           type="button"
                           onClick={() => toggleProxy(proxy.id, proxy.active)}
-                          className="rounded-xl border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-black uppercase text-white/80 transition hover:border-[#ffb32c]/60 hover:bg-white/10"
+                          className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-black uppercase text-slate-700 transition hover:border-[#15803d]/60 hover:bg-slate-100"
                         >
                           {proxy.active ? 'Disable' : 'Enable'}
                         </button>
@@ -328,14 +328,14 @@ export function AdminDashboard() {
           <Panel title="Recent Users">
             <div className="space-y-2">
               {stats.recentUsers.map((user) => (
-                <div key={user.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#150b40]/70 p-3">
+                <div key={user.id} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-[#ffffff]/70 p-3">
                   <div>
-                    <p className="text-sm font-bold text-white">{user.name}</p>
-                    <p className="text-xs text-white/45">{user.email}</p>
+                    <p className="text-sm font-bold text-slate-950">{user.name}</p>
+                    <p className="text-xs text-slate-500">{user.email}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs font-black text-[#ffb32c]">{user.subscriptionPlan}</p>
-                    <p className="text-[11px] text-white/45">{user.role}</p>
+                    <p className="text-xs font-black text-[#15803d]">{user.subscriptionPlan}</p>
+                    <p className="text-[11px] text-slate-500">{user.role}</p>
                   </div>
                 </div>
               ))}
@@ -345,13 +345,13 @@ export function AdminDashboard() {
           <Panel title="Recent Blogs">
             <div className="space-y-2">
               {stats.recentBlogs.map((blog) => (
-                <Link key={blog.id} href={`/admin/blogs`} className="block rounded-2xl border border-white/10 bg-[#150b40]/70 p-3 transition hover:border-[#ffb32c]/40 hover:bg-[#1b1050]/80">
+                <Link key={blog.id} href={`/admin/blogs`} className="block rounded-2xl border border-slate-200 bg-[#ffffff]/70 p-3 transition hover:border-[#15803d]/40 hover:bg-[#edf7ef]/80">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="line-clamp-1 text-sm font-bold text-white">{blog.title}</p>
-                      <p className="text-xs capitalize text-white/45">{blog.category}</p>
+                      <p className="line-clamp-1 text-sm font-bold text-slate-950">{blog.title}</p>
+                      <p className="text-xs capitalize text-slate-500">{blog.category}</p>
                     </div>
-                    <span className={`rounded-full px-2 py-1 text-[10px] font-black uppercase ${blog.status === 'published' ? 'bg-emerald-500/10 text-emerald-300' : 'bg-[#ffb32c]/10 text-[#ffb32c]'}`}>
+                    <span className={`rounded-full px-2 py-1 text-[10px] font-black uppercase ${blog.status === 'published' ? 'bg-emerald-500/10 text-emerald-300' : 'bg-[#15803d]/10 text-[#15803d]'}`}>
                       {blog.status}
                     </span>
                   </div>
@@ -367,28 +367,28 @@ export function AdminDashboard() {
 
 function MiniStat({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#150b40]/70 p-3 shadow-[0_12px_34px_rgba(12,2,32,0.22)]">
-      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">{label}</p>
-      <p className="mt-1 text-2xl font-black text-white">{value}</p>
+    <div className="rounded-2xl border border-slate-200 bg-[#ffffff]/70 p-3 shadow-[0_12px_34px_rgba(31,52,36,0.22)]">
+      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">{label}</p>
+      <p className="mt-1 text-2xl font-black text-slate-950">{value}</p>
     </div>
   )
 }
 
 function StatCard({ icon, label, value, detail }: { icon: React.ReactNode; label: string; value: number | string; detail: string }) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-[#100a2f]/90 p-5 shadow-[0_16px_60px_rgba(38,24,103,0.32)]">
-      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-[#ffb32c]/10 text-[#ffb32c] [&_svg]:h-5 [&_svg]:w-5">{icon}</div>
-      <p className="text-xs font-black uppercase tracking-[0.2em] text-white/45">{label}</p>
-      <p className="mt-2 text-4xl font-black text-white">{value}</p>
-      <p className="mt-2 text-xs text-white/60">{detail}</p>
+    <div className="rounded-3xl border border-slate-200 bg-[#ffffff]/90 p-5 shadow-[0_16px_60px_rgba(31,52,36,0.32)]">
+      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-[#15803d]/10 text-[#15803d] [&_svg]:h-5 [&_svg]:w-5">{icon}</div>
+      <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">{label}</p>
+      <p className="mt-2 text-4xl font-black text-slate-950">{value}</p>
+      <p className="mt-2 text-xs text-slate-500">{detail}</p>
     </div>
   )
 }
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-3xl border border-white/10 bg-[#100a2f]/90 p-5 shadow-[0_16px_60px_rgba(38,24,103,0.32)]">
-      <h2 className="mb-4 text-sm font-black uppercase tracking-[0.2em] text-[#ffb32c]">{title}</h2>
+    <section className="rounded-3xl border border-slate-200 bg-[#ffffff]/90 p-5 shadow-[0_16px_60px_rgba(31,52,36,0.32)]">
+      <h2 className="mb-4 text-sm font-black uppercase tracking-[0.2em] text-[#15803d]">{title}</h2>
       {children}
     </section>
   )
@@ -396,10 +396,10 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 
 function getProxyStatusClass(status: ProxyPoolStatus['proxies'][number]['status']) {
   if (status === 'healthy') return 'bg-emerald-500/10 text-emerald-300'
-  if (status === 'untested') return 'bg-[#ffb32c]/10 text-[#ffb32c]'
+  if (status === 'untested') return 'bg-[#15803d]/10 text-[#15803d]'
   if (status === 'cooldown') return 'bg-sky-500/10 text-sky-300'
   if (status === 'quarantined') return 'bg-fuchsia-500/10 text-fuchsia-300'
-  if (status === 'disabled') return 'bg-white/10 text-white/45'
+  if (status === 'disabled') return 'bg-slate-100 text-slate-500'
   return 'bg-red-500/10 text-red-300'
 }
 

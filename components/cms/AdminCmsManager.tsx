@@ -152,7 +152,7 @@ export function AdminCmsManager() {
     <PageShell
       title="CMS Builder"
       subtitle="Control navbar, sidebars, footer, global copy, and public pages from one admin workspace."
-      actions={<Link href="/" className="rounded-full bg-[#ffb32c] px-4 py-2 text-sm font-black text-[#3b1769] shadow-[0_16px_40px_rgba(255,179,44,0.24)] transition hover:bg-[#ffd36b]">View site</Link>}
+      actions={<Link href="/" className="rounded-full bg-[#15803d] px-4 py-2 text-sm font-black text-[#ffffff] shadow-[0_16px_40px_rgba(21,128,61,0.24)] transition hover:bg-[#22a653]">View site</Link>}
     >
       <div className="space-y-5">
         <div className="flex flex-wrap gap-2">
@@ -160,7 +160,7 @@ export function AdminCmsManager() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`rounded-full border px-4 py-2 text-sm font-black capitalize transition ${activeTab === tab ? 'border-[#ffb32c] bg-[#ffb32c] text-[#3b1769] shadow-[0_14px_34px_rgba(255,179,44,0.18)]' : 'border-white/10 bg-white/[0.08] text-white/70 hover:border-white/20 hover:bg-white/10'}`}
+              className={`rounded-full border px-4 py-2 text-sm font-black capitalize transition ${activeTab === tab ? 'border-[#15803d] bg-[#15803d] text-[#ffffff] shadow-[0_14px_34px_rgba(21,128,61,0.18)]' : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-emerald-300 hover:bg-slate-100'}`}
             >
               {tab}
             </button>
@@ -216,11 +216,11 @@ export function AdminCmsManager() {
                 {cms?.navItems.map((item) => (
                   <Row key={item.id}>
                     <div>
-                      <p className="font-black text-white">{item.label}</p>
-                      <p className="text-xs text-white/45">{item.location} · {item.href} · order {item.order}</p>
+                      <p className="font-black text-slate-950">{item.label}</p>
+                      <p className="text-xs text-slate-500">{item.location} · {item.href} · order {item.order}</p>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => { setEditingNavId(item.id); setNavForm(toNavPayload(item)); }} className="rounded-full border border-white/10 bg-white/[0.08] px-3 py-2 text-xs font-black text-[#ffb32c] transition hover:border-[#ffb32c]/50 hover:bg-white/10">Edit</button>
+                      <button onClick={() => { setEditingNavId(item.id); setNavForm(toNavPayload(item)); }} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-[#15803d] transition hover:border-[#15803d]/50 hover:bg-slate-100">Edit</button>
                       <button onClick={() => run(() => deleteCmsNavItem(item.id).then(() => undefined), 'Navigation item deleted.')} className="rounded-lg bg-red-950/50 px-3 py-2 text-xs font-black text-red-200">Delete</button>
                     </div>
                   </Row>
@@ -250,9 +250,9 @@ export function AdminCmsManager() {
                       const finalValue = value === 'prompt' ? window.prompt('Paste URL') || '' : value
                       document.execCommand(command, false, finalValue)
                       setPageForm((prev) => ({ ...prev, contentHtml: editorRef.current?.innerHTML || prev.contentHtml }))
-                    }} className="rounded-full border border-white/10 bg-white/[0.08] px-3 py-2 text-xs font-black text-white/70 transition hover:border-[#ffb32c]/50 hover:bg-white/10 hover:text-[#ffb32c]">{label}</button>
+                    }} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-slate-600 transition hover:border-[#15803d]/50 hover:bg-slate-100 hover:text-[#15803d]">{label}</button>
                   ))}
-                  <label className="cursor-pointer rounded-full border border-white/10 bg-white/[0.08] px-3 py-2 text-xs font-black text-white/70 transition hover:border-[#ffb32c]/50 hover:bg-white/10 hover:text-[#ffb32c]">
+                  <label className="cursor-pointer rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-slate-600 transition hover:border-[#15803d]/50 hover:bg-slate-100 hover:text-[#15803d]">
                     Image
                     <input type="file" accept="image/*" className="hidden" onChange={(event) => {
                       const file = event.target.files?.[0]
@@ -266,7 +266,7 @@ export function AdminCmsManager() {
                   contentEditable
                   suppressContentEditableWarning
                   onInput={() => setPageForm((prev) => ({ ...prev, contentHtml: editorRef.current?.innerHTML || prev.contentHtml }))}
-                  className="cms-prose min-h-[320px] max-h-[520px] overflow-y-auto rounded-2xl border border-white/10 bg-[#100a2f]/90 p-5 text-sm leading-7 text-white outline-none"
+                  className="cms-prose min-h-[320px] max-h-[520px] overflow-y-auto rounded-2xl border border-slate-200 bg-[#ffffff]/90 p-5 text-sm leading-7 text-slate-950 outline-none"
                 />
               </div>
             </Panel>
@@ -276,12 +276,12 @@ export function AdminCmsManager() {
                 {cms?.pages.map((page) => (
                   <Row key={page.id}>
                     <div>
-                      <p className="font-black text-white">{page.title}</p>
-                      <p className="text-xs text-white/45">/{page.slug} · {page.status} · {page.showInNavbar ? 'navbar' : ''} {page.showInFooter ? 'footer' : ''}</p>
+                      <p className="font-black text-slate-950">{page.title}</p>
+                      <p className="text-xs text-slate-500">/{page.slug} · {page.status} · {page.showInNavbar ? 'navbar' : ''} {page.showInFooter ? 'footer' : ''}</p>
                     </div>
                     <div className="flex gap-2">
-                      {page.status === 'published' && <Link href={`/p/${page.slug}`} className="rounded-full border border-white/10 bg-white/[0.08] px-3 py-2 text-xs font-black text-white/70 transition hover:border-white/20 hover:bg-white/10">View</Link>}
-                      <button onClick={() => { setEditingPageId(page.id); setPageForm(toPagePayload(page)); }} className="rounded-full border border-white/10 bg-white/[0.08] px-3 py-2 text-xs font-black text-[#ffb32c] transition hover:border-[#ffb32c]/50 hover:bg-white/10">Edit</button>
+                      {page.status === 'published' && <Link href={`/p/${page.slug}`} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-slate-600 transition hover:border-emerald-300 hover:bg-slate-100">View</Link>}
+                      <button onClick={() => { setEditingPageId(page.id); setPageForm(toPagePayload(page)); }} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-[#15803d] transition hover:border-[#15803d]/50 hover:bg-slate-100">Edit</button>
                       <button onClick={() => run(() => deleteCmsPage(page.id).then(() => undefined), 'Page deleted.')} className="rounded-lg bg-red-950/50 px-3 py-2 text-xs font-black text-red-200">Delete</button>
                     </div>
                   </Row>
@@ -297,9 +297,9 @@ export function AdminCmsManager() {
 
 function Panel({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return (
-    <section className="rounded-3xl border border-white/12 bg-white/[0.07] p-5 shadow-[0_24px_80px_rgba(15,2,45,0.28)] backdrop-blur-xl">
+    <section className="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-[0_24px_80px_rgba(31,52,36,0.28)] backdrop-blur-xl">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-black text-white">{title}</h2>
+        <h2 className="text-lg font-black text-slate-950">{title}</h2>
         {action}
       </div>
       {children}
@@ -308,12 +308,12 @@ function Panel({ title, action, children }: { title: string; action?: ReactNode;
 }
 
 function Row({ children }: { children: ReactNode }) {
-  return <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-3 transition hover:border-white/18 hover:bg-white/[0.08]">{children}</div>
+  return <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 transition hover:border-slate-300 hover:bg-slate-50">{children}</div>
 }
 
 function PrimaryButton({ children, disabled, onClick }: { children: ReactNode; disabled?: boolean; onClick: () => void }) {
   return (
-    <button disabled={disabled} onClick={onClick} className="rounded-full bg-[#ffb32c] px-4 py-2 text-sm font-black text-[#3b1769] shadow-[0_16px_40px_rgba(255,179,44,0.2)] transition hover:bg-[#ffd36b] disabled:opacity-50">
+    <button disabled={disabled} onClick={onClick} className="rounded-full bg-[#15803d] px-4 py-2 text-sm font-black text-[#ffffff] shadow-[0_16px_40px_rgba(21,128,61,0.2)] transition hover:bg-[#22a653] disabled:opacity-50">
       {children}
     </button>
   )
@@ -321,36 +321,36 @@ function PrimaryButton({ children, disabled, onClick }: { children: ReactNode; d
 
 function TextInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   return (
-    <label className="grid gap-1 text-xs font-black uppercase tracking-[0.18em] text-white/45">
+    <label className="grid gap-1 text-xs font-black uppercase tracking-[0.18em] text-slate-500">
       {label}
-      <input value={value} onChange={(event) => onChange(event.target.value)} className="rounded-xl border border-white/10 bg-[#100a2f]/90 px-3 py-2 text-sm normal-case tracking-normal text-white outline-none focus:border-[#ffb32c]/70" />
+      <input value={value} onChange={(event) => onChange(event.target.value)} className="rounded-xl border border-slate-200 bg-[#ffffff]/90 px-3 py-2 text-sm normal-case tracking-normal text-slate-950 outline-none focus:border-[#15803d]/70" />
     </label>
   )
 }
 
 function NumberInput({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) {
   return (
-    <label className="grid gap-1 text-xs font-black uppercase tracking-[0.18em] text-white/45">
+    <label className="grid gap-1 text-xs font-black uppercase tracking-[0.18em] text-slate-500">
       {label}
-      <input type="number" value={value} onChange={(event) => onChange(Number(event.target.value))} className="rounded-xl border border-white/10 bg-[#100a2f]/90 px-3 py-2 text-sm normal-case tracking-normal text-white outline-none focus:border-[#ffb32c]/70" />
+      <input type="number" value={value} onChange={(event) => onChange(Number(event.target.value))} className="rounded-xl border border-slate-200 bg-[#ffffff]/90 px-3 py-2 text-sm normal-case tracking-normal text-slate-950 outline-none focus:border-[#15803d]/70" />
     </label>
   )
 }
 
 function Textarea({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   return (
-    <label className="grid gap-1 text-xs font-black uppercase tracking-[0.18em] text-white/45">
+    <label className="grid gap-1 text-xs font-black uppercase tracking-[0.18em] text-slate-500">
       {label}
-      <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={4} className="rounded-xl border border-white/10 bg-[#100a2f]/90 px-3 py-2 text-sm normal-case tracking-normal text-white outline-none focus:border-[#ffb32c]/70" />
+      <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={4} className="rounded-xl border border-slate-200 bg-[#ffffff]/90 px-3 py-2 text-sm normal-case tracking-normal text-slate-950 outline-none focus:border-[#15803d]/70" />
     </label>
   )
 }
 
 function Select({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (value: string) => void }) {
   return (
-    <label className="grid gap-1 text-xs font-black uppercase tracking-[0.18em] text-white/45">
+    <label className="grid gap-1 text-xs font-black uppercase tracking-[0.18em] text-slate-500">
       {label}
-      <select value={value} onChange={(event) => onChange(event.target.value)} className="rounded-xl border border-white/10 bg-[#100a2f]/90 px-3 py-2 text-sm normal-case tracking-normal text-white outline-none focus:border-[#ffb32c]/70">
+      <select value={value} onChange={(event) => onChange(event.target.value)} className="rounded-xl border border-slate-200 bg-[#ffffff]/90 px-3 py-2 text-sm normal-case tracking-normal text-slate-950 outline-none focus:border-[#15803d]/70">
         {options.map((option) => <option key={option} value={option}>{option}</option>)}
       </select>
     </label>
@@ -359,9 +359,9 @@ function Select({ label, value, options, onChange }: { label: string; value: str
 
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
   return (
-    <label className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#100a2f]/90 px-3 py-2 text-sm font-bold text-white">
+    <label className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-[#ffffff]/90 px-3 py-2 text-sm font-bold text-slate-950">
       {label}
-      <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="h-4 w-4 accent-[#ffb32c]" />
+      <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="h-4 w-4 accent-[#15803d]" />
     </label>
   )
 }

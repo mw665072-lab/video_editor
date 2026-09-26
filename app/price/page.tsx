@@ -56,14 +56,14 @@ export default function PricePage() {
                 style={{
                   ...S.featureCard,
                   border: plan.recommended ? "1px solid rgba(251,146,60,0.9)" : S.featureCard.border,
-                  background: plan.recommended ? "rgba(249,115,22,0.16)" : S.featureCard.background,
+                  background: plan.recommended ? "rgba(21,128,61,0.16)" : S.featureCard.background,
                   position: "relative",
                 }}
               >
                 {plan.recommended && (
                   <span style={{
                     position: "absolute", top: 14, right: 14, fontSize: 11, fontWeight: 700,
-                    color: "#FFF", background: "#F97316", borderRadius: 999, padding: "4px 10px",
+                    color: "#FFF", background: "#15803D", borderRadius: 999, padding: "4px 10px",
                     letterSpacing: "0.08em", textTransform: "uppercase",
                   }}>
                     Recommended
@@ -79,7 +79,7 @@ export default function PricePage() {
                 <ul style={{ margin: 0, padding: 0, listStyle: "none", gap: 10, display: "grid" }}>
                   {plan.benefits.map((benefit) => (
                     <li key={benefit} style={{ color: "rgba(255,255,255,0.85)", fontSize: 15, display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ color: "#FB923C" }}>✓</span>
+                      <span style={{ color: "#22A653" }}>✓</span>
                       {benefit}
                     </li>
                   ))}
@@ -90,7 +90,7 @@ export default function PricePage() {
                     ...S.btnPrimaryLg,
                     width: "100%",
                     marginTop: 22,
-                    background: plan.recommended ? "linear-gradient(135deg, #F97316, #EA580C)" : S.btnPrimaryLg.background,
+                    background: plan.recommended ? "linear-gradient(135deg, #15803D, #166534)" : S.btnPrimaryLg.background,
                   }}
                 >
                   {plan.cta}

@@ -41,7 +41,7 @@ export default function VerifyEmailPage() {
   }, [token, router])
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white p-6 md:flex md:items-center md:justify-center">
+    <main className="min-h-screen bg-slate-950 text-slate-950 p-6 md:flex md:items-center md:justify-center">
       <section className="mx-auto w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/85 p-6 shadow-xl">
         <h1 className="text-2xl font-bold">Email verification</h1>
         <p className="mt-4 text-sm text-slate-300">

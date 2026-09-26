@@ -44,14 +44,14 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white p-6 md:flex md:items-center md:justify-center">
+    <main className="min-h-screen bg-slate-950 text-slate-950 p-6 md:flex md:items-center md:justify-center">
       <section className="mx-auto w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/85 p-6 shadow-xl">
         <h1 className="text-2xl font-bold">Reset password</h1>
         <p className="mt-1 text-sm text-slate-300">Provide your new password to finish resetting your account.</p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <input value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} type="password" placeholder="New password" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-          <button type="submit" disabled={loading} className="w-full rounded-lg bg-cyan-600 px-4 py-2 font-semibold text-white hover:bg-cyan-500 disabled:opacity-60">
+          <button type="submit" disabled={loading} className="w-full rounded-lg bg-cyan-600 px-4 py-2 font-semibold text-slate-950 hover:bg-cyan-500 disabled:opacity-60">
             {loading ? 'Resetting...' : 'Reset password'}
           </button>
         </form>

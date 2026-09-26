@@ -217,13 +217,13 @@ function TimelineComponent({
   }
 
   return (
-    <div className="w-full space-y-3 rounded-2xl border border-slate-700 bg-[#110A05]/70 p-3 shadow-lg">
+    <div className="w-full space-y-3 rounded-2xl border border-[#dce5dc] bg-[#f8fbf6] p-3 shadow-sm">
       <div className="flex justify-between items-center px-2">
-        <span className="text-xs font-medium text-slate-200">{formatTime(currentTime)}</span>
-        <span className="text-xs font-medium text-slate-200">{formatTime(duration)}</span>
+        <span className="text-xs font-semibold text-[#526159]">{formatTime(currentTime)}</span>
+        <span className="text-xs font-semibold text-[#526159]">{formatTime(duration)}</span>
       </div>
 
-      <div className="relative rounded-xl border border-slate-800/80 bg-[#110A05] overflow-hidden shadow-inner">
+      <div className="relative overflow-hidden rounded-xl border border-[#dce5dc] bg-white shadow-inner">
         {/* Timeline track */}
         <div
           ref={containerRef}
@@ -243,7 +243,7 @@ function TimelineComponent({
           >
             {/* Playback cursor */}
             <div
-              className="absolute top-0 bottom-0 w-0.5 bg-cyan-400/90 z-30 pointer-events-none"
+              className="pointer-events-none absolute bottom-0 top-0 z-30 w-0.5 bg-[#eab308]"
               style={{
                 left: `${timeToPixels(currentTime, scale)}px`,
               }}
@@ -266,8 +266,8 @@ function TimelineComponent({
                 onPointerDown={(e) => handleClipDragStart(e, clip)}
                 className={`absolute top-4 h-20 rounded-2xl border-2 transition-all duration-200 ease-in-out shadow-sm ${
                   isSelected
-                    ? 'border-cyan-400 bg-cyan-500/25 ring-2 ring-cyan-400/40'
-                    : 'border-slate-500 bg-cyan-300/15 hover:border-cyan-300 hover:bg-cyan-300/20'
+                    ? 'border-[#15803d] bg-[#dcf3df] ring-2 ring-[#15803d]/20'
+                    : 'border-[#a9c8ad] bg-[#edf7ef] hover:border-[#15803d] hover:bg-[#e4f4e7]'
                 }`}
                 style={{
                   left: `${startPixels}px`,
@@ -302,7 +302,7 @@ function TimelineComponent({
           })}
 
           {/* Time markers */}
-          <div className="absolute bottom-0 left-0 right-0 flex border-t border-slate-500/80 h-6 bg-slate-950/70">
+          <div className="absolute bottom-0 left-0 right-0 flex h-6 border-t border-[#dce5dc] bg-[#eef4ec]">
             {Array.from({
               length: Math.floor(duration / 10) + 1,
             }).map((_, i) => {
@@ -311,7 +311,7 @@ function TimelineComponent({
               return (
                 <div
                   key={i}
-                  className="absolute text-[10px] text-slate-100 font-medium"
+                  className="absolute text-[10px] font-medium text-[#526159]"
                   style={{
                     left: `${pixels}px`,
                     transform: 'translateX(-50%)',

@@ -1,89 +1,62 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
-/* ─── Dark-first design system ───────────────────────────────────────────────
-   By making :root use dark-theme values, all ShadCN components render
-   correctly without requiring a .dark wrapper class on the html element.
-   The app is always dark; no theme switching is needed.
-──────────────────────────────────────────────────────────────────────────── */
+/* Modern light design system. Keep colors semantic so every shared component
+   follows the same visual language. */
 :root {
-  --background: #12072f;
-  --foreground: #f8f7ff;
-  --card: rgba(255, 255, 255, 0.08);
-  --card-foreground: #f8f7ff;
-  --popover: #1a0f42;
-  --popover-foreground: #f8f7ff;
-  --primary: #ffb32c;
-  --primary-foreground: #28104f;
-  --secondary: rgba(255, 255, 255, 0.12);
-  --secondary-foreground: #f8f7ff;
-  --muted: rgba(255, 255, 255, 0.08);
-  --muted-foreground: rgba(248, 247, 255, 0.68);
-  --accent: #6d36ff;
-  --accent-foreground: #ffffff;
-  --destructive: #f0657d;
+  --background: #f7f8f2;
+  --foreground: #18231b;
+  --card: #ffffff;
+  --card-foreground: #18231b;
+  --popover: #ffffff;
+  --popover-foreground: #18231b;
+  --primary: #15803d;
+  --primary-foreground: #ffffff;
+  --secondary: #edf7ef;
+  --secondary-foreground: #14532d;
+  --muted: #eef2ec;
+  --muted-foreground: #667069;
+  --accent: #fff4b8;
+  --accent-foreground: #614f00;
+  --destructive: #dc3545;
   --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.12);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: rgba(255, 179, 44, 0.55);
-  --chart-1: #6d36ff;
-  --chart-2: #ffb32c;
-  --chart-3: #ff89b5;
-  --chart-4: #7ae7ff;
-  --chart-5: #c4a4ff;
-  --radius: 1.25rem;
-  --sidebar: rgba(19, 10, 48, 0.82);
-  --sidebar-foreground: #f8f7ff;
-  --sidebar-primary: #ffb32c;
-  --sidebar-primary-foreground: #28104f;
-  --sidebar-accent: rgba(255, 255, 255, 0.09);
-  --sidebar-accent-foreground: #f8f7ff;
-  --sidebar-border: rgba(255, 255, 255, 0.12);
-  --sidebar-ring: rgba(255, 179, 44, 0.5);
-  --page-gradient: radial-gradient(circle at 50% 0%, rgba(145, 85, 255, 0.48) 0%, rgba(145, 85, 255, 0.12) 32%, transparent 64%), linear-gradient(115deg, #2b0d69 0%, #4c1db2 34%, #6d2cff 58%, #d48c71 100%);
-  --surface-glass: rgba(255, 255, 255, 0.08);
-  --surface-strong: rgba(21, 11, 56, 0.82);
-  --surface-border: rgba(255, 255, 255, 0.14);
-  --surface-shadow: 0 24px 80px rgba(15, 2, 45, 0.45);
+  --border: #dce5dc;
+  --input: #dfe8df;
+  --ring: rgba(21, 128, 61, 0.34);
+  --chart-1: #15803d;
+  --chart-2: #d99b00;
+  --chart-3: #0f766e;
+  --chart-4: #65a30d;
+  --chart-5: #ca8a04;
+  --radius: 1rem;
+  --sidebar: rgba(255, 255, 255, 0.92);
+  --sidebar-foreground: #27342b;
+  --sidebar-primary: #15803d;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #edf7ef;
+  --sidebar-accent-foreground: #166534;
+  --sidebar-border: #dfe6df;
+  --sidebar-ring: rgba(21, 128, 61, 0.34);
+  --page-gradient: radial-gradient(circle at 7% -5%, rgba(34, 197, 94, 0.10), transparent 32%), radial-gradient(circle at 95% 2%, rgba(250, 204, 21, 0.12), transparent 27%), linear-gradient(180deg, #fbfcf7 0%, #f5f7f1 52%, #f8f9f4 100%);
+  --surface-glass: rgba(255, 255, 255, 0.8);
+  --surface-strong: #ffffff;
+  --surface-border: rgba(24, 35, 27, 0.09);
+  --surface-shadow: 0 18px 55px rgba(31, 52, 36, 0.10);
+  --brand: #15803d;
+  --brand-hover: #166534;
+  --brand-soft: #eaf7ed;
+  --creator: #d99b00;
+  --ink: #18231b;
+  --ink-muted: #667069;
 }
 
-/* .dark is kept as an alias — same values, app-wide dark is default */
+/* Kept for third-party components that may add .dark. The product now uses
+   one consistent light appearance instead of switching back to the old UI. */
 .dark {
-  --background: #12072f;
-  --foreground: #f8f7ff;
-  --card: rgba(255, 255, 255, 0.08);
-  --card-foreground: #f8f7ff;
-  --popover: #1a0f42;
-  --popover-foreground: #f8f7ff;
-  --primary: #ffb32c;
-  --primary-foreground: #28104f;
-  --secondary: rgba(255, 255, 255, 0.12);
-  --secondary-foreground: #f8f7ff;
-  --muted: rgba(255, 255, 255, 0.08);
-  --muted-foreground: rgba(248, 247, 255, 0.68);
-  --accent: #6d36ff;
-  --accent-foreground: #ffffff;
-  --destructive: #f0657d;
-  --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.12);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: rgba(255, 179, 44, 0.55);
-  --chart-1: #6d36ff;
-  --chart-2: #ffb32c;
-  --chart-3: #ff89b5;
-  --chart-4: #7ae7ff;
-  --chart-5: #c4a4ff;
-  --sidebar: rgba(19, 10, 48, 0.82);
-  --sidebar-foreground: #f8f7ff;
-  --sidebar-primary: #ffb32c;
-  --sidebar-primary-foreground: #28104f;
-  --sidebar-accent: rgba(255, 255, 255, 0.09);
-  --sidebar-accent-foreground: #f8f7ff;
-  --sidebar-border: rgba(255, 255, 255, 0.12);
-  --sidebar-ring: rgba(255, 179, 44, 0.5);
+  color-scheme: light;
 }
 
 @theme inline {
@@ -157,21 +130,20 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: oklch(0.35 0 0);
+    background: #c3cad6;
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.45 0 0);
+    background: #9aa5b5;
   }
 
-  /* ── Inputs / selects inherit dark theme ─ */
   input, textarea, select {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   ::selection {
-    background: rgba(255, 179, 44, 0.28);
-    color: #fff8eb;
+    background: rgba(250, 204, 21, 0.34);
+    color: #27432f;
   }
 
   a,
@@ -181,17 +153,28 @@
   select {
     font: inherit;
   }
+
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  button,
+  [role='button'],
+  a {
+    touch-action: manipulation;
+  }
 }
 
 .cms-prose {
-  color: rgba(248, 247, 255, 0.82);
+  color: #4d5d51;
 }
 
 .cms-prose h1,
 .cms-prose h2,
 .cms-prose h3,
 .cms-prose h4 {
-  color: #ffffff;
+  color: #18231b;
   font-weight: 900;
   line-height: 1.15;
   margin: 1.5em 0 0.6em;
@@ -211,7 +194,7 @@
 }
 
 .cms-prose a {
-  color: #ffb32c;
+  color: #166534;
   font-weight: 800;
   text-decoration: underline;
   text-underline-offset: 4px;
@@ -227,26 +210,37 @@
 }
 
 .cms-prose blockquote {
-  border-left: 4px solid #ffb32c;
+  border-left: 4px solid #15803d;
   border-radius: 0.75rem;
-  background: rgba(24, 14, 63, 0.78);
+  background: #edf7ef;
   padding: 1rem 1.25rem;
-  color: #ffe3a8;
+  color: #31533b;
 }
 
 .cms-prose img {
   max-width: 100%;
   height: auto;
   border-radius: 1.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid #dce5dc;
   margin: 1rem 0;
 }
 
 .cms-prose pre,
 .cms-prose code {
   border-radius: 0.75rem;
-  background: rgba(24, 14, 63, 0.78);
-  color: #ffe3a8;
+  background: #edf7ef;
+  color: #31533b;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .cms-prose pre {
@@ -256,4 +250,214 @@
 
 .cms-prose code {
   padding: 0.15rem 0.35rem;
+}
+
+/* Editor workspace theme --------------------------------------------------
+   The editor historically shipped with its own navy/purple palette. These
+   scoped rules keep media canvases dark where that improves contrast while
+   moving the surrounding workspace, controls, timelines, and AI panels onto
+   the same light green/yellow system as the rest of the product. */
+.clip-editor-theme {
+  color-scheme: light;
+  color: var(--ink);
+}
+
+.clip-editor-theme .editor-surface,
+.clip-editor-theme div.rounded-2xl[style*='background'] {
+  border-color: var(--surface-border) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  box-shadow: 0 14px 38px rgba(31, 52, 36, 0.08) !important;
+}
+
+.clip-editor-theme [class*='bg-[#0f172a]'],
+.clip-editor-theme [class*='bg-[#111827]'],
+.clip-editor-theme [class*='bg-[#172033]'],
+.clip-editor-theme [class*='bg-[#110A05]'] {
+  background-color: #ffffff !important;
+}
+
+.clip-editor-theme [class*='border-white/'],
+.clip-editor-theme [class*='border-slate-'] {
+  border-color: #dce5dc !important;
+}
+
+.clip-editor-theme [class*='text-white']:not([class*='bg-emerald']):not([class*='from-emerald']),
+.clip-editor-theme [class*='text-slate-1'],
+.clip-editor-theme [class*='text-slate-2'] {
+  color: #18231b !important;
+}
+
+.clip-editor-theme [class*='text-slate-3'],
+.clip-editor-theme [class*='text-slate-4'],
+.clip-editor-theme [class*='text-slate-5'] {
+  color: #667069 !important;
+}
+
+.clip-editor-theme [class*='text-emerald-100'],
+.clip-editor-theme [class*='text-emerald-200'] {
+  color: #31533b !important;
+}
+
+.clip-editor-theme button[style*='linear-gradient'] {
+  background: linear-gradient(135deg, #15803d 0%, #eab308 100%) !important;
+  box-shadow: 0 10px 28px rgba(21, 128, 61, 0.22) !important;
+}
+
+.clip-editor-theme input[type='url'],
+.clip-editor-theme input[type='number'],
+.clip-editor-theme input[type='text'],
+.clip-editor-theme textarea,
+.editor-dialog-theme input,
+.editor-dialog-theme textarea {
+  border-color: #cfdccf !important;
+  background: #ffffff !important;
+  color: #18231b !important;
+}
+
+.clip-editor-theme [style*='border-bottom'],
+.clip-editor-theme [style*='border-top'] {
+  border-color: #e1e8df !important;
+}
+
+.clip-editor-theme [class*='bg-cyan-'],
+.clip-editor-theme [class*='from-cyan-'],
+.clip-editor-theme [class*='to-cyan-'] {
+  background-color: rgba(21, 128, 61, 0.12) !important;
+}
+
+.clip-editor-theme [class*='border-cyan-'] {
+  border-color: #15803d !important;
+}
+
+.clip-editor-theme [class*='text-cyan-'] {
+  color: #166534 !important;
+}
+
+.editor-dialog-theme {
+  color: #18231b;
+}
+
+/* Visual editor theme -----------------------------------------------------
+   Editing chrome is intentionally light and calm. The actual preview canvas
+   stays dark so video, overlays, and color decisions remain trustworthy. */
+.visual-editor-theme {
+  color-scheme: light;
+  color: #18231b;
+  background:
+    radial-gradient(circle at 12% 6%, rgba(34, 197, 94, 0.10), transparent 30%),
+    radial-gradient(circle at 92% 0%, rgba(250, 204, 21, 0.12), transparent 24%),
+    #f7f8f2;
+}
+
+.visual-editor-theme [class*='bg-[#0f172a]'],
+.visual-editor-theme [class*='bg-[#111827]'],
+.visual-editor-theme [class*='bg-[#182236]'],
+.visual-editor-theme [class*='bg-zinc-9'],
+.visual-editor-theme [class*='bg-zinc-8'],
+.visual-editor-theme [class*='bg-slate-9'],
+.visual-editor-theme [class*='bg-slate-8'] {
+  background-color: #ffffff !important;
+}
+
+.visual-editor-theme [class*='bg-white/5'] {
+  background-color: #f8fbf6 !important;
+}
+
+.visual-editor-theme [class*='bg-white/10'] {
+  background-color: #edf7ef !important;
+}
+
+.visual-editor-theme [class*='border-white/'],
+.visual-editor-theme [class*='border-zinc-'],
+.visual-editor-theme [class*='border-slate-'] {
+  border-color: #dce5dc !important;
+}
+
+.visual-editor-theme [class*='text-white'],
+.visual-editor-theme [class*='text-[#f8fafc]'],
+.visual-editor-theme [class*='text-[#e2e8f0]'] {
+  color: #18231b !important;
+}
+
+.visual-editor-theme [class*='text-[#cbd5e1]'],
+.visual-editor-theme [class*='text-[#94a3b8]'],
+.visual-editor-theme [class*='text-zinc-3'],
+.visual-editor-theme [class*='text-zinc-4'],
+.visual-editor-theme [class*='text-zinc-5'],
+.visual-editor-theme [class*='text-slate-3'],
+.visual-editor-theme [class*='text-slate-4'],
+.visual-editor-theme [class*='text-slate-5'] {
+  color: #667069 !important;
+}
+
+.visual-editor-theme input[type='search'],
+.visual-editor-theme input[type='text'],
+.visual-editor-theme input[type='number'],
+.visual-editor-theme textarea,
+.visual-editor-theme select {
+  border-color: #cfdccf !important;
+  background-color: #ffffff !important;
+  color: #18231b !important;
+}
+
+.visual-editor-theme [data-state='on'],
+.visual-editor-theme [data-state='active'] {
+  border-color: rgba(21, 128, 61, 0.22) !important;
+  background-color: #e7f4e9 !important;
+  color: #14532d !important;
+}
+
+.visual-editor-theme button:hover {
+  border-color: rgba(21, 128, 61, 0.28);
+}
+
+/* Preserve the professional dark playback monitor and its transport chrome. */
+.visual-editor-theme .visual-editor-preview,
+.visual-editor-theme .visual-editor-preview [class*='bg-[#111827]'] {
+  background-color: #111827 !important;
+}
+
+.visual-editor-theme .visual-editor-preview [class*='bg-white/5'],
+.visual-editor-theme .visual-editor-preview [class*='bg-white/10'] {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.visual-editor-theme .visual-editor-preview [class*='text-white'],
+.visual-editor-theme .visual-editor-preview [class*='text-[#f8fafc]'],
+.visual-editor-theme .visual-editor-preview [class*='text-[#e2e8f0]'] {
+  color: #f8fafc !important;
+}
+
+.visual-editor-theme .visual-editor-preview [class*='text-[#cbd5e1]'] {
+  color: #cbd5e1 !important;
+}
+
+.visual-editor-theme .visual-editor-preview [class*='text-[#94a3b8]'] {
+  color: #94a3b8 !important;
+}
+
+.visual-editor-theme .visual-editor-preview [class*='border-white/'] {
+  border-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+.visual-editor-dialog-theme [class*='bg-zinc-9'],
+.visual-editor-dialog-theme [class*='bg-zinc-8'],
+.visual-editor-dialog-theme [class*='bg-zinc-7'] {
+  background-color: #f8fbf6 !important;
+}
+
+.visual-editor-dialog-theme [class*='border-zinc-'] {
+  border-color: #dce5dc !important;
+}
+
+.visual-editor-dialog-theme [class*='text-zinc-1'],
+.visual-editor-dialog-theme [class*='text-zinc-2'],
+.visual-editor-dialog-theme [class*='text-zinc-3'] {
+  color: #18231b !important;
+}
+
+.visual-editor-dialog-theme [class*='text-zinc-4'],
+.visual-editor-dialog-theme [class*='text-zinc-5'],
+.visual-editor-dialog-theme [class*='text-zinc-6'] {
+  color: #667069 !important;
 }

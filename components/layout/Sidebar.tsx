@@ -154,9 +154,9 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
       <div
         className="md:hidden mb-3 rounded-2xl p-3"
         style={{
-          background: 'rgba(255,255,255,0.09)',
-          border: '1px solid rgba(255,255,255,0.14)',
-          boxShadow: '0 18px 46px rgba(12,2,32,0.22)',
+          background: 'rgba(255,255,255,0.92)',
+          border: '1px solid rgba(23,32,51,0.10)',
+          boxShadow: '0 14px 40px rgba(38,49,72,0.10)',
           backdropFilter: 'blur(20px)',
         }}
       >
@@ -165,10 +165,10 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
             {/* Avatar */}
             {isLoggedIn && (
               <span
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-xs font-black text-white shrink-0"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-xs font-black text-slate-950 shrink-0"
                 style={{
-                  background: 'linear-gradient(135deg, #ffd36b 0%, #ffb32c 100%)',
-                  color: '#3b1769',
+                  background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)',
+                  color: '#ffffff',
                   boxShadow: '0 6px 18px rgba(255,179,44,0.24)',
                 }}
               >
@@ -176,8 +176,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
               </span>
             )}
             <div>
-              <p className="text-sm font-bold text-white/90">{isAdmin ? 'Admin Panel' : 'Workspace'}</p>
-              <p className="text-[11px]" style={{ color: 'rgba(248,247,255,0.58)' }}>{isAdmin ? 'Platform control' : 'Tap menu'}</p>
+              <p className="text-sm font-bold text-slate-900">{isAdmin ? 'Admin Panel' : 'Workspace'}</p>
+              <p className="text-[11px]" style={{ color: '#7b8596' }}>{isAdmin ? 'Platform control' : 'Tap menu'}</p>
             </div>
           </div>
           <button
@@ -185,9 +185,9 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
             onClick={() => setMobileOpen((prev) => !prev)}
             className="rounded-lg p-2 transition-colors"
             style={{
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.14)',
-              color: '#ffd36b',
+              background: 'rgba(23,32,51,0.08)',
+              border: '1px solid rgba(23,32,51,0.10)',
+              color: '#15803d',
             }}
           >
             {mobileOpen ? <X size={18} /> : <Menu size={18} />}
@@ -199,26 +199,26 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
       <aside
         className={`${mobileOpen ? 'flex' : 'hidden'} md:flex flex-col h-full rounded-2xl shadow-xl transition-all duration-300 ${collapsed ? 'p-3' : 'p-5'}`}
         style={{
-          background: 'rgba(255,255,255,0.08)',
-          border: '1px solid rgba(255,255,255,0.14)',
-          boxShadow: '0 24px 70px rgba(12,2,32,0.24)',
+          background: 'rgba(23,32,51,0.08)',
+          border: '1px solid rgba(23,32,51,0.10)',
+          boxShadow: '0 18px 55px rgba(38,49,72,0.10)',
           backdropFilter: 'blur(24px)',
         }}
       >
         {/* Workspace header */}
         <div
           className={`mb-6 flex gap-3 pb-5 ${collapsed ? 'flex-col items-center justify-center' : 'items-center'}`}
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}
+          style={{ borderBottom: '1px solid rgba(23,32,51,0.08)' }}
         >
           {/* Logo mark */}
           <div
             className="inline-flex h-10 w-10 items-center justify-center rounded-xl shrink-0"
             style={{
-              background: 'linear-gradient(135deg, #ffd36b 0%, #ffb32c 100%)',
+              background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)',
               boxShadow: '0 6px 18px rgba(255,179,44,0.24)',
             }}
           >
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#5A2BB8" strokeWidth="2">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#ffffff" strokeWidth="2">
               <path d="M10 2v16" />
               <path d="M4 4l12 12" />
               <path d="M16 4L4 16" />
@@ -228,15 +228,11 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
             <div className="min-w-0">
               <p
                 className="text-sm font-black tracking-tight"
-                style={{
-                  background: 'linear-gradient(90deg, #ffffff 0%, #ffd36b 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
+                style={{ color: '#18231b' }}
               >
                 {isAdmin ? 'Admin Console' : 'Your Workspace'}
               </p>
-              <p className="text-xs font-medium" style={{ color: 'rgba(248,247,255,0.58)' }}>{isAdmin ? 'Stats, users, content' : 'Quick access'}</p>
+              <p className="text-xs font-medium" style={{ color: '#7b8596' }}>{isAdmin ? 'Stats, users, content' : 'Quick access'}</p>
             </div>
           )}
           {onToggleCollapse && (
@@ -246,9 +242,9 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
               onClick={onToggleCollapse}
               className={`${collapsed ? '' : 'ml-auto'} hidden rounded-lg p-2 transition-colors md:inline-flex`}
               style={{
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,255,255,0.14)',
-                color: '#ffd36b',
+                background: 'rgba(23,32,51,0.08)',
+                border: '1px solid rgba(23,32,51,0.10)',
+                color: '#15803d',
               }}
             >
               {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
@@ -278,12 +274,12 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
                     style={
                       isActive
                         ? {
-                            background: 'linear-gradient(135deg, #ffd36b 0%, #ffb32c 100%)',
-                            color: '#351765',
+                            background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)',
+                            color: '#ffffff',
                             boxShadow: '0 12px 28px rgba(255,179,44,0.2)',
                           }
                         : {
-                            color: 'rgba(248,247,255,0.74)',
+                            color: '#465267',
                             background: 'transparent',
                           }
                     }
@@ -293,14 +289,14 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
                     }}
                     onMouseEnter={(e) => {
                       if (!isActive) {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
-                        e.currentTarget.style.color = '#ffd36b'
+                        e.currentTarget.style.background = 'rgba(23,32,51,0.08)'
+                        e.currentTarget.style.color = '#15803d'
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!isActive) {
                         e.currentTarget.style.background = 'transparent'
-                        e.currentTarget.style.color = 'rgba(248,247,255,0.74)'
+                        e.currentTarget.style.color = '#465267'
                       }
                     }}
                   >
@@ -321,7 +317,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
 
                   {/* Dropdown submenu for AI tools */}
                   {clipEditorDropdownOpen && (
-                    <div className="ml-7 mt-1 flex flex-col gap-1 border-l border-white/10 pl-3">
+                    <div className="ml-7 mt-1 flex flex-col gap-1 border-l border-slate-200 pl-3">
                       {editorTools.map((tool) => {
                         const ToolIcon = tool.icon
                         const toolHref = `/editor?tool=${tool.slug}`
@@ -334,24 +330,24 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
                             style={
                               isToolActive
                                 ? {
-                                    background: 'rgba(139, 92, 246, 0.15)',
-                                    color: '#ffd36b',
+                                    background: 'rgba(34, 163, 83, 0.15)',
+                                    color: '#15803d',
                                   }
                                 : {
-                                    color: 'rgba(248,247,255,0.6)',
+                                    color: '#687386',
                                     background: 'transparent',
                                   }
                             }
                             onMouseEnter={(e) => {
                               if (!isToolActive) {
-                                e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
+                                e.currentTarget.style.background = 'rgba(23,32,51,0.06)'
                                 e.currentTarget.style.color = 'rgba(255,211,107,0.8)'
                               }
                             }}
                             onMouseLeave={(e) => {
                               if (!isToolActive) {
                                 e.currentTarget.style.background = 'transparent'
-                                e.currentTarget.style.color = 'rgba(248,247,255,0.6)'
+                                e.currentTarget.style.color = '#687386'
                               }
                             }}
                           >
@@ -381,25 +377,25 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
                 style={
                   isActive
                     ? {
-                        background: 'linear-gradient(135deg, #ffd36b 0%, #ffb32c 100%)',
-                        color: '#351765',
+                        background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)',
+                        color: '#ffffff',
                         boxShadow: '0 12px 28px rgba(255,179,44,0.2)',
                       }
                     : {
-                        color: 'rgba(248,247,255,0.74)',
+                        color: '#465267',
                         background: 'transparent',
                       }
                 }
                 onMouseEnter={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
-                    e.currentTarget.style.color = '#ffd36b'
+                    e.currentTarget.style.background = 'rgba(23,32,51,0.08)'
+                    e.currentTarget.style.color = '#15803d'
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) {
                     e.currentTarget.style.background = 'transparent'
-                    e.currentTarget.style.color = 'rgba(248,247,255,0.74)'
+                    e.currentTarget.style.color = '#465267'
                   }
                 }}
               >
@@ -412,7 +408,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
                 {isActive && !collapsed && (
                   <span
                     className="ml-auto w-1.5 h-1.5 rounded-full"
-                    style={{ background: 'rgba(255,255,255,0.7)' }}
+                    style={{ background: '#ffffff' }}
                   />
                 )}
               </Link>
@@ -433,20 +429,20 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
                 }}
               >
                 <div className="flex items-center gap-1.5 mb-1.5">
-                  <Zap size={11} style={{ color: '#ffd36b' }} />
-                  <p className="text-xs font-bold uppercase tracking-wider" style={{ color: '#ffd36b' }}>
+                  <Zap size={11} style={{ color: '#15803d' }} />
+                  <p className="text-xs font-bold uppercase tracking-wider" style={{ color: '#15803d' }}>
                     {isAdmin ? 'Admin' : 'Tips'}
                   </p>
                 </div>
-                <p className="text-xs leading-relaxed" style={{ color: 'rgba(248,247,255,0.62)' }}>
+                <p className="text-xs leading-relaxed" style={{ color: '#687386' }}>
                   {isAdmin ? (
                     <>
                       Review platform usage, publish blog content, and track creator engagement from admin views.
                     </>
                   ) : (
                     <>
-                      Use <span className="font-semibold" style={{ color: '#ffd36b' }}>Clip Editor</span> for trimming and exporting, or{' '}
-                      <span className="font-semibold" style={{ color: '#ffd36b' }}>Visual Editor</span> for filters, audio, and captions.
+                      Use <span className="font-semibold" style={{ color: '#15803d' }}>Clip Editor</span> for trimming and exporting, or{' '}
+                      <span className="font-semibold" style={{ color: '#15803d' }}>Visual Editor</span> for filters, audio, and captions.
                     </>
                   )}
                 </p>
@@ -482,25 +478,25 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
                 <div
                   className="w-full rounded-xl p-3 flex items-center gap-3 -mx-5 -mb-5 px-5 pb-5"
                   style={{
-                    background: 'rgba(16,8,44,0.52)',
-                    borderTop: '1px solid rgba(255,255,255,0.12)',
+                    background: 'rgba(246,247,251,0.96)',
+                    borderTop: '1px solid rgba(23,32,51,0.08)',
                   }}
                 >
                   <span
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-sm font-black text-white shrink-0"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-sm font-black text-slate-950 shrink-0"
                     style={{
-                      background: 'linear-gradient(135deg, #ffd36b 0%, #ffb32c 100%)',
-                      color: '#3b1769',
+                      background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)',
+                      color: '#ffffff',
                       boxShadow: '0 6px 18px rgba(255,179,44,0.24)',
                     }}
                   >
                     {user?.name?.charAt(0)?.toUpperCase() || (isAdmin ? 'A' : 'U')}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-white/90 truncate">{user?.name || (isAdmin ? 'Admin' : 'User')}</p>
-                    <p className="text-xs text-white/50 truncate">{user?.role || 'Member'}</p>
+                    <p className="text-sm font-bold text-slate-900 truncate">{user?.name || (isAdmin ? 'Admin' : 'User')}</p>
+                    <p className="text-xs text-slate-500 truncate">{user?.role || 'Member'}</p>
                   </div>
-                  <Settings size={16} className="text-white/40 hover:text-white/70 cursor-pointer transition-colors shrink-0" />
+                  <Settings size={16} className="text-slate-500 hover:text-slate-600 cursor-pointer transition-colors shrink-0" />
                 </div>
               )}
             </>
@@ -526,15 +522,15 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: SidebarProps) {
               <div
                 className="w-full rounded-xl p-2 flex items-center justify-center -mx-3 -mb-3 px-3 pb-3"
                 style={{
-                  background: 'rgba(16,8,44,0.52)',
-                  borderTop: '1px solid rgba(255,255,255,0.12)',
+                  background: 'rgba(246,247,251,0.96)',
+                  borderTop: '1px solid rgba(23,32,51,0.08)',
                 }}
               >
                 <span
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-sm font-black text-white"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-sm font-black text-slate-950"
                   style={{
-                    background: 'linear-gradient(135deg, #ffd36b 0%, #ffb32c 100%)',
-                    color: '#3b1769',
+                    background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)',
+                    color: '#ffffff',
                     boxShadow: '0 6px 18px rgba(255,179,44,0.24)',
                   }}
                 >
@@ -557,17 +553,17 @@ export function Sidebar(props: SidebarProps) {
           <div
             className="flex flex-col h-full rounded-2xl p-5 shadow-xl"
             style={{
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.14)',
-              boxShadow: '0 24px 70px rgba(12,2,32,0.24)',
+              background: 'rgba(23,32,51,0.08)',
+              border: '1px solid rgba(23,32,51,0.10)',
+              boxShadow: '0 18px 55px rgba(38,49,72,0.10)',
               backdropFilter: 'blur(24px)',
             }}
           >
-            <div className="h-8 animate-pulse rounded-xl bg-white/10" />
+            <div className="h-8 animate-pulse rounded-xl bg-slate-100" />
             <div className="mt-4 space-y-2 flex-1">
-              <div className="h-9 animate-pulse rounded-xl bg-white/10" />
-              <div className="h-9 animate-pulse rounded-xl bg-white/10" />
-              <div className="h-9 animate-pulse rounded-xl bg-white/10" />
+              <div className="h-9 animate-pulse rounded-xl bg-slate-100" />
+              <div className="h-9 animate-pulse rounded-xl bg-slate-100" />
+              <div className="h-9 animate-pulse rounded-xl bg-slate-100" />
             </div>
           </div>
         </div>

@@ -20,9 +20,9 @@ const TOOL_CSS = `
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: radial-gradient(circle at 16% 18%, rgba(167,139,250,0.16), transparent 20%),
-              radial-gradient(circle at 85% 20%, rgba(139,92,246,0.12), transparent 18%),
-              radial-gradient(circle at 70% 80%, rgba(124,58,237,0.08), transparent 24%),
+  background: radial-gradient(circle at 16% 18%, rgba(134,201,149,0.16), transparent 20%),
+              radial-gradient(circle at 85% 20%, rgba(34,163,83,0.12), transparent 18%),
+              radial-gradient(circle at 70% 80%, rgba(21,128,61,0.08), transparent 24%),
               linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   background-size: 240% 240%;
   animation: tool-bg-pan 25s ease infinite;
@@ -31,11 +31,11 @@ const TOOL_CSS = `
   position: relative;
   overflow: hidden;
   border-radius: 1.7rem;
-  border: 1px solid rgba(124,58,237,0.18);
-  background: linear-gradient(180deg, rgba(124,58,237,0.15), rgba(167,139,250,0.12));
+  border: 1px solid rgba(21,128,61,0.18);
+  background: linear-gradient(180deg, rgba(21,128,61,0.15), rgba(134,201,149,0.12));
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  box-shadow: 0 24px 80px rgba(124, 58, 237, 0.12);
+  box-shadow: 0 24px 80px rgba(21, 128, 61, 0.12);
   transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   flex-shrink: 0;
   width: 100%;
@@ -43,8 +43,8 @@ const TOOL_CSS = `
 }
 .creator-tools-card:hover {
   transform: translateY(-8px);
-  border-color: rgba(124,58,237,0.45);
-  box-shadow: 0 32px 100px rgba(124,58,237,0.22);
+  border-color: rgba(21,128,61,0.45);
+  box-shadow: 0 32px 100px rgba(21,128,61,0.22);
 }
 `;
 
@@ -128,15 +128,15 @@ export default function CreatorTools() {
         <div style={{ ...S.container, position: "relative", zIndex: 1 }}>
           {/* Header */}
           <div style={{ textAlign: "center", marginBottom: 34 }}>
-            <span style={{ ...S.sectionTagCenter, color: "#7c3aed", background: "rgba(124,58,237,0.1)", borderColor: "rgba(124,58,237,0.18)" }}>
+            <span style={{ ...S.sectionTagCenter, color: "#15803d", background: "rgba(21,128,61,0.1)", borderColor: "rgba(21,128,61,0.18)" }}>
               Creator AI Toolkit
             </span>
-            <h2 style={{ ...S.sectionTitle, marginTop: 16, marginBottom: 12, color: "#2e1065" }}>
+            <h2 style={{ ...S.sectionTitle, marginTop: 16, marginBottom: 12, color: "#18231b" }}>
               More Than Clipping.
               <br />
               A Full Creator Workflow.
             </h2>
-            <p style={{ ...S.sectionSub, margin: "0 auto", color: "#4b2cbf" }}>
+            <p style={{ ...S.sectionSub, margin: "0 auto", color: "#5d6a60" }}>
               Subtitles, transcripts, thumbnails, reframing, summaries, and timeline editing are surfaced from the homepage so users can jump straight into the job they need.
             </p>
           </div>
@@ -207,12 +207,12 @@ function InfiniteSlider({ tools, direction, router, setIsDragging }: any) {
               whileTap={{ scale: 0.97 }}
             >
               {tool.badge && (
-                <span className="absolute right-5 top-5 rounded-full border border-violet-300/30 bg-white/90 px-3 py-1 text-xs font-bold text-violet-700 shadow-sm">
+                <span className="absolute right-5 top-5 rounded-full border border-green-300/30 bg-white/90 px-3 py-1 text-xs font-bold text-green-700 shadow-sm">
                   {tool.badge}
                 </span>
               )}
 
-              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-purple-300/40 bg-white text-purple-700 transition-all group-hover:scale-110 group-hover:rotate-6">
+              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-300/40 bg-white text-emerald-700 transition-all group-hover:scale-110 group-hover:rotate-6">
                 <Icon size={30} strokeWidth={2.3} />
               </div>
 

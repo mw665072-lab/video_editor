@@ -218,7 +218,7 @@ const TimelineRuler = memo<RulerProps>(({ width, zoom, scrollX, currentTime, onS
       }
 
       // Background
-      ctx.fillStyle = '#18181b';
+      ctx.fillStyle = '#f3f7f1';
       ctx.fillRect(0, 0, w, h);
 
       const startTime = scrollX / zoom;
@@ -236,16 +236,16 @@ const TimelineRuler = memo<RulerProps>(({ width, zoom, scrollX, currentTime, onS
         const x = t * zoom - scrollX;
 
         ctx.beginPath();
-        ctx.strokeStyle = '#52525b';
+        ctx.strokeStyle = '#a8b9aa';
         ctx.moveTo(x, h - 14);
         ctx.lineTo(x, h);
         ctx.stroke();
 
-        ctx.fillStyle = '#a1a1aa';
+        ctx.fillStyle = '#5f6f64';
         ctx.textAlign = 'center';
         ctx.fillText(formatRulerLabel(t, tickInterval), x, h - 17);
 
-        ctx.strokeStyle = '#3f3f46';
+        ctx.strokeStyle = '#d5dfd6';
         ctx.lineWidth = 0.5;
         for (let s = 1; s < subTickCount; s++) {
           const subX = (t + s * subInterval) * zoom - scrollX;
@@ -259,7 +259,7 @@ const TimelineRuler = memo<RulerProps>(({ width, zoom, scrollX, currentTime, onS
 
       // Bottom border
       ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+      ctx.strokeStyle = 'rgba(24,35,27,0.12)';
       ctx.lineWidth = 1;
       ctx.moveTo(0, h - 0.5);
       ctx.lineTo(w, h - 0.5);
@@ -269,20 +269,20 @@ const TimelineRuler = memo<RulerProps>(({ width, zoom, scrollX, currentTime, onS
       const phX = currentTime * zoom - scrollX;
       if (phX >= -2 && phX <= w + 2) {
         ctx.beginPath();
-        ctx.strokeStyle = 'rgba(250, 106, 0, 0.3)';
+        ctx.strokeStyle = 'rgba(217, 155, 0, 0.3)';
         ctx.lineWidth = 4;
         ctx.moveTo(phX, 0);
         ctx.lineTo(phX, h);
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.strokeStyle = '#ffb32c';
+        ctx.strokeStyle = '#22a653';
         ctx.lineWidth = 1.5;
         ctx.moveTo(phX, 0);
         ctx.lineTo(phX, h);
         ctx.stroke();
 
-        ctx.fillStyle = '#ffb32c';
+        ctx.fillStyle = '#22a653';
         ctx.beginPath();
         ctx.moveTo(phX, 0);
         ctx.lineTo(phX - 5, 0);
@@ -633,7 +633,7 @@ const TimelineClipComponent = memo<ClipProps>(({
     >
       <div
         className={`relative h-full rounded-sm overflow-hidden cursor-grab active:cursor-grabbing ${isSelected
-          ? 'ring-2 ring-[#ffb32c] ring-offset-1 ring-offset-[#100a2f] shadow-lg shadow-[#ffb32c]/20'
+          ? 'ring-2 ring-[#22a653] ring-offset-1 ring-offset-[#111827] shadow-lg shadow-[#22a653]/20'
           : 'hover:ring-1 hover:ring-white/20'
           } ${activeTool === 'cut' ? 'cursor-crosshair' : ''}`}
         style={{
@@ -712,7 +712,7 @@ const TrackHeader = memo<TrackHeaderProps>(({ trackId }) => {
 
   return (
     <div
-      className="flex h-full flex-shrink-0 select-none items-center gap-1 border-b border-white/10 bg-[#10082c] px-2"
+      className="flex h-full flex-shrink-0 select-none items-center gap-1 border-b border-white/10 bg-[#111827] px-2"
       style={{ width: HEADER_WIDTH, minWidth: HEADER_WIDTH }}
     >
       <div className="flex flex-col gap-0.5">
@@ -723,7 +723,7 @@ const TrackHeader = memo<TrackHeaderProps>(({ trackId }) => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-5 w-5 text-white/80 hover:text-[#ffd36b]"
+                  className="h-5 w-5 text-white/80 hover:text-[#dcfce7]"
                   onClick={() => toggleMute(trackId)}
                 >
                   {muted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
@@ -739,7 +739,7 @@ const TrackHeader = memo<TrackHeaderProps>(({ trackId }) => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-5 w-5 text-white/80 hover:text-[#ffd36b]"
+                  className="h-5 w-5 text-white/80 hover:text-[#dcfce7]"
                   onClick={() => toggleVisibility(trackId)}
                 >
                   {visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
@@ -755,7 +755,7 @@ const TrackHeader = memo<TrackHeaderProps>(({ trackId }) => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-5 w-5 text-white/80 hover:text-[#ffd36b]"
+                  className="h-5 w-5 text-white/80 hover:text-[#dcfce7]"
                   onClick={() => toggleLock(trackId)}
                 >
                   {locked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
@@ -786,7 +786,7 @@ const TrackHeader = memo<TrackHeaderProps>(({ trackId }) => {
       </div>
 
       <div className="flex-1 min-w-0 ml-1">
-        <p className={`truncate text-[10px] font-medium ${muted ? 'text-[#8f7bd6]' : 'text-[#f2c5ff]'}`}>
+        <p className={`truncate text-[10px] font-medium ${muted ? 'text-[#94a3b8]' : 'text-[#e2e8f0]'}`}>
           {name}
         </p>
       </div>
@@ -847,11 +847,11 @@ const EmptyDropZone = memo(() => (
   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
     <div className="text-center animate-pulse">
       <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-dashed border-white/10 bg-white/5">
-        <Upload className="h-7 w-7 text-[#c7b4ff]" />
+        <Upload className="h-7 w-7 text-[#cbd5e1]" />
       </div>
-      <p className="text-sm font-medium text-[#f2c5ff]">Drop media files here</p>
-      <p className="mt-1.5 text-xs text-[#c7b4ff]">Drag video, audio, or image files from your desktop</p>
-      <p className="mt-3 text-[10px] text-[#8f7bd6]">Or drag clips from the media panel to begin editing</p>
+      <p className="text-sm font-medium text-[#e2e8f0]">Drop media files here</p>
+      <p className="mt-1.5 text-xs text-[#cbd5e1]">Drag video, audio, or image files from your desktop</p>
+      <p className="mt-3 text-[10px] text-[#94a3b8]">Or drag clips from the media panel to begin editing</p>
     </div>
   </div>
 ));
@@ -865,14 +865,14 @@ const TrackAddButtons = memo(() => {
   const addTrack = useEditorStore((s) => s.addTrack);
 
   return (
-    <div className="flex items-center gap-1 border-t border-white/10 bg-[#10082c] px-2 py-1">
+    <div className="flex items-center gap-1 border-t border-white/10 bg-[#111827] px-2 py-1">
       <TooltipProvider delayDuration={500}>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 gap-1 text-[10px] text-white/80 hover:bg-white/10 hover:text-[#ffd36b]"
+              className="h-6 gap-1 text-[10px] text-white/80 hover:bg-white/10 hover:text-[#dcfce7]"
               onClick={() => addTrack('video')}
             >
               <Plus className="w-3 h-3" /><Film className="w-3 h-3" />Video
@@ -888,7 +888,7 @@ const TrackAddButtons = memo(() => {
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 gap-1 text-[10px] text-white/80 hover:bg-white/10 hover:text-[#ffd36b]"
+              className="h-6 gap-1 text-[10px] text-white/80 hover:bg-white/10 hover:text-[#dcfce7]"
               onClick={() => addTrack('audio')}
             >
               <Plus className="w-3 h-3" /><Music className="w-3 h-3" />Audio
@@ -933,7 +933,7 @@ const GridCanvas = memo<GridCanvasProps>(({ width, height, zoom, scrollX }) => {
 
       // Minor grid
       const startX = scrollX % zoom;
-      ctx.strokeStyle = 'rgba(255,255,255,0.031)';
+      ctx.strokeStyle = 'rgba(21,128,61,0.055)';
       ctx.lineWidth = 1;
       for (let x = -startX; x < width; x += zoom) {
         ctx.beginPath();
@@ -945,7 +945,7 @@ const GridCanvas = memo<GridCanvasProps>(({ width, height, zoom, scrollX }) => {
       // Major grid every 5 beats
       const majorZoom = zoom * 5;
       const majorStartX = scrollX % majorZoom;
-      ctx.strokeStyle = 'rgba(255,255,255,0.047)';
+      ctx.strokeStyle = 'rgba(21,128,61,0.09)';
       for (let x = -majorStartX; x < width; x += majorZoom) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
@@ -1174,19 +1174,19 @@ const Timeline: React.FC = () => {
   const playheadLeft = currentTime * zoom;
 
   return (
-    <div className="flex h-full select-none flex-col border-t border-white/10 bg-[#100a2f]">
+    <div className="flex h-full select-none flex-col border-t border-white/10 bg-[#111827]">
       {/* Header bar */}
-      <div className="flex items-center justify-between border-b border-white/10 bg-[#10082c] px-3 py-1">
+      <div className="flex items-center justify-between border-b border-white/10 bg-[#111827] px-3 py-1">
         <div className="flex items-center gap-2">
           <h3 className="text-xs font-bold text-white uppercase tracking-wider">Timeline</h3>
-          <span className="text-[10px] text-[#c7b4ff]">
+          <span className="text-[10px] text-[#cbd5e1]">
             {tracks.length} tracks · {zoom.toFixed(0)}px/s
           </span>
         </div>
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6 text-white/80 hover:text-[#ffd36b]"
+          className="h-6 w-6 text-white/80 hover:text-[#dcfce7]"
           onClick={() => setShowTrackHeaders((v) => !v)}
         >
           {showTrackHeaders ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -1197,10 +1197,10 @@ const Timeline: React.FC = () => {
       <div className="flex flex-shrink-0">
         {showTrackHeaders && (
           <div
-            className="flex flex-shrink-0 items-center border-b border-r border-white/10 bg-[#10082c] px-2"
+            className="flex flex-shrink-0 items-center border-b border-r border-white/10 bg-[#111827] px-2"
             style={{ width: HEADER_WIDTH, minWidth: HEADER_WIDTH, height: RULER_HEIGHT }}
           >
-            <span className="text-[9px] uppercase tracking-wider text-[#c7b4ff]">Tracks</span>
+            <span className="text-[9px] uppercase tracking-wider text-[#cbd5e1]">Tracks</span>
           </div>
         )}
         <div className="flex-1 overflow-hidden">
@@ -1220,7 +1220,7 @@ const Timeline: React.FC = () => {
         {showTrackHeaders && (
           <div
             ref={headerScrollRef}
-            className="flex-shrink-0 overflow-hidden border-r border-white/10 bg-[#10082c]"
+            className="flex-shrink-0 overflow-hidden border-r border-white/10 bg-[#111827]"
             style={{ width: HEADER_WIDTH, minWidth: HEADER_WIDTH }}
           >
             {tracks.map((track, index) => (
@@ -1301,15 +1301,15 @@ const Timeline: React.FC = () => {
                   top: 0,
                   borderLeft: '5px solid transparent',
                   borderRight: '5px solid transparent',
-                  borderTop: '7px solid #ffb32c',
+                  borderTop: '7px solid #22a653',
                   transform: 'translateX(-5px)',
                 }}
               />
               <div
                 className="absolute top-1 bottom-0 w-px"
                 style={{
-                  backgroundColor: '#ffb32c',
-                  boxShadow: '0 0 4px rgba(250,106,0,0.4)',
+                  backgroundColor: '#22a653',
+                  boxShadow: '0 0 4px rgba(217,155,0,0.4)',
                   transform: 'translateX(-0.5px)',
                 }}
               />

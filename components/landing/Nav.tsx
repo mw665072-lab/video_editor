@@ -10,10 +10,7 @@ import { CmsNavItem, getPublicCms } from "@/lib/api";
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState<boolean>(() => {
-    if (typeof window === "undefined") return true;
-    return window.matchMedia("(min-width: 768px)").matches;
-  });
+  const [isDesktop, setIsDesktop] = useState(false);
   const [siteName, setSiteName] = useState("CLIPAI");
   const [links, setLinks] = useState<CmsNavItem[]>([
     { id: "features", label: "Features", href: "/#features", location: "navbar", audience: "public", icon: "", order: 10, isActive: true, external: false },
@@ -69,7 +66,7 @@ export default function Nav() {
     >
       <Link href="/" style={S.navLogo}>
         <div style={S.logoMark}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5A2BB8" strokeWidth="2.5">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5">
             <path d="M12 3v18" />
             <path d="M6.2 6.2l11.6 11.6" />
             <path d="M17.8 6.2L6.2 17.8" />
@@ -88,8 +85,8 @@ export default function Nav() {
                 e.preventDefault();
                 navigate(item);
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#FFD36B")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.84)")}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#15803d")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#465267")}
             >{item.label}</a>
           </li>
         ))}
@@ -124,9 +121,9 @@ export default function Nav() {
       {mobileOpen && !isDesktop && (
         <div style={{
           position: "absolute", left: 0, right: 0, top: "100%", marginTop: 8, zIndex: 50,
-          borderRadius: 20, background: "rgba(22, 12, 59, 0.96)",
-          border: "1px solid rgba(255,255,255,0.12)", padding: 16,
-          boxShadow: "0 22px 70px rgba(12,2,32,0.52)",
+          borderRadius: 20, background: "rgba(255,255,255,0.97)",
+          border: "1px solid rgba(23,32,51,0.10)", padding: 16,
+          boxShadow: "0 22px 70px rgba(38,49,72,0.16)",
           backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)",
         }}>
           {links.map((item) => (
@@ -136,7 +133,7 @@ export default function Nav() {
                 setMobileOpen(false);
                 navigate(item);
               }}
-              style={{ display: "block", padding: "12px 16px", fontSize: 15, color: "rgba(255,255,255,0.94)", borderRadius: 14, textDecoration: "none", marginBottom: 6, background: "rgba(255,255,255,0.03)" }}
+              style={{ display: "block", padding: "12px 16px", fontSize: 15, color: "#263148", borderRadius: 14, textDecoration: "none", marginBottom: 6, background: "#f7f8fb" }}
             >{item.label}</a>
           ))}
           <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>

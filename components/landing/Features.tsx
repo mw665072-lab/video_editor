@@ -10,15 +10,15 @@ const FEATURE_CSS = `
 .feature-tools-section {
   position: relative;
   overflow: hidden;
-  background: #f8f7ff;
+  background: #f7f8f2;
 }
 .feature-tools-bg {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: radial-gradient(circle at 16% 18%, rgba(167,139,250,0.16), transparent 20%),
-              radial-gradient(circle at 85% 20%, rgba(139,92,246,0.12), transparent 18%),
-              radial-gradient(circle at 70% 80%, rgba(124,58,237,0.08), transparent 24%),
+  background: radial-gradient(circle at 16% 18%, rgba(134,201,149,0.16), transparent 20%),
+              radial-gradient(circle at 85% 20%, rgba(34,163,83,0.12), transparent 18%),
+              radial-gradient(circle at 70% 80%, rgba(21,128,61,0.08), transparent 24%),
               linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   background-size: 240% 240%;
   animation: feature-bg-pan 20s ease infinite;
@@ -33,11 +33,11 @@ const FEATURE_CSS = `
   overflow: hidden;
   padding: 28px;
   border-radius: 1.7rem;
-  border: 1px solid rgba(124,58,237,0.18);
-  background: linear-gradient(180deg, rgba(124,58,237,0.15), rgba(167,139,250,0.12));
+  border: 1px solid rgba(21,128,61,0.18);
+  background: linear-gradient(180deg, rgba(21,128,61,0.15), rgba(134,201,149,0.12));
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  box-shadow: 0 24px 80px rgba(124, 58, 237, 0.12);
+  box-shadow: 0 24px 80px rgba(21, 128, 61, 0.12);
   transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   cursor: default;
 }
@@ -45,8 +45,8 @@ const FEATURE_CSS = `
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at top left, rgba(167,139,250,0.22), transparent 30%),
-              radial-gradient(circle at bottom right, rgba(192,132,252,0.16), transparent 30%);
+  background: radial-gradient(circle at top left, rgba(134,201,149,0.22), transparent 30%),
+              radial-gradient(circle at bottom right, rgba(250,204,21,0.14), transparent 30%);
   opacity: 0;
   transition: opacity 0.35s ease;
   pointer-events: none;
@@ -56,8 +56,8 @@ const FEATURE_CSS = `
 }
 .feature-tools-card:hover {
   transform: translateY(-6px);
-  border-color: rgba(124,58,237,0.35);
-  box-shadow: 0 28px 90px rgba(124,58,237,0.18);
+  border-color: rgba(21,128,61,0.35);
+  box-shadow: 0 28px 90px rgba(21,128,61,0.18);
 }
 .feature-tools-icon {
   width: 50px;
@@ -69,7 +69,7 @@ const FEATURE_CSS = `
   justify-content: center;
   background: linear-gradient(135deg, rgba(255,211,107,0.22), rgba(255,255,255,0.08));
   border: 1px solid rgba(255,255,255,0.18);
-  color: #7c3aed;
+  color: #15803d;
   transition: transform 0.3s ease;
 }
 .feature-tools-card:hover .feature-tools-icon {
@@ -80,11 +80,11 @@ const FEATURE_CSS = `
   font-size: 17px;
   font-weight: 700;
   margin-bottom: 10px;
-  color: #2e1065;
+  color: #18231b;
 }
 .feature-tools-text {
   font-size: 14px;
-  color: rgba(46,16,101,0.78);
+  color: rgba(77,93,81,0.88);
   line-height: 1.75;
 }
 `;
@@ -98,16 +98,16 @@ export default function Features() {
         <div style={{ textAlign: "center", marginBottom: 64 }}>
           <span style={{
             ...S.sectionTagCenter,
-            color: "#7c3aed",
-            background: "rgba(124,58,237,0.1)",
-            borderColor: "rgba(124,58,237,0.18)",
+            color: "#15803d",
+            background: "rgba(21,128,61,0.1)",
+            borderColor: "rgba(21,128,61,0.18)",
           }}>
             What You Can Do
           </span>
-          <h2 style={{ ...S.sectionTitle, marginTop: 16, marginBottom: 12, color: "#2e1065" }}>
+          <h2 style={{ ...S.sectionTitle, marginTop: 16, marginBottom: 12, color: "#18231b" }}>
             Everything Your Video<br />Clips Need
           </h2>
-          <p style={{ ...S.sectionSub, margin: "0 auto", color: "#4b2cbf" }}>
+          <p style={{ ...S.sectionSub, margin: "0 auto", color: "#5d6a60" }}>
             From import to publish — all in one place. No extra apps, no friction.
           </p>
         </div>

@@ -12,9 +12,9 @@ const VisualEditor = dynamic(() => import('@/components/VisualEditor'), {
     <div
       className="min-h-screen p-6 lg:p-8 flex items-center justify-center"
       style={{
-        backgroundColor: '#05070C',
+        backgroundColor: '#f6f7fb',
         backgroundImage:
-          'radial-gradient(ellipse at 50% 0%, rgba(249,115,22,0.13) 0%, transparent 65%), repeating-linear-gradient(0deg, rgba(249,115,22,0.06) 0px, rgba(249,115,22,0.06) 1px, transparent 1px, transparent 48px), repeating-linear-gradient(90deg, rgba(249,115,22,0.06) 0px, rgba(249,115,22,0.06) 1px, transparent 1px, transparent 48px)',
+          'radial-gradient(ellipse at 50% 0%, rgba(21,128,61,0.13) 0%, transparent 65%), repeating-linear-gradient(0deg, rgba(21,128,61,0.06) 0px, rgba(21,128,61,0.06) 1px, transparent 1px, transparent 48px), repeating-linear-gradient(90deg, rgba(21,128,61,0.06) 0px, rgba(21,128,61,0.06) 1px, transparent 1px, transparent 48px)',
       }}
     >
       <Spinner />
@@ -41,9 +41,9 @@ export default function VisualEditorPage() {
       <main
         className="min-h-screen p-6 lg:p-8 flex items-center justify-center"
         style={{
-          backgroundColor: '#05070C',
+          backgroundColor: '#f6f7fb',
           backgroundImage:
-            'radial-gradient(ellipse at 50% 0%, rgba(249,115,22,0.13) 0%, transparent 65%), repeating-linear-gradient(0deg, rgba(249,115,22,0.06) 0px, rgba(249,115,22,0.06) 1px, transparent 1px, transparent 48px), repeating-linear-gradient(90deg, rgba(249,115,22,0.06) 0px, rgba(249,115,22,0.06) 1px, transparent 1px, transparent 48px)',
+            'radial-gradient(ellipse at 50% 0%, rgba(21,128,61,0.13) 0%, transparent 65%), repeating-linear-gradient(0deg, rgba(21,128,61,0.06) 0px, rgba(21,128,61,0.06) 1px, transparent 1px, transparent 48px), repeating-linear-gradient(90deg, rgba(21,128,61,0.06) 0px, rgba(21,128,61,0.06) 1px, transparent 1px, transparent 48px)',
         }}
       >
         <Spinner />
@@ -58,7 +58,7 @@ export default function VisualEditorPage() {
   return (
     <ErrorBoundary>
       <PageShell title="" subtitle="">
-        <div className="h-[calc(100svh-10rem)] min-h-[640px] overflow-hidden rounded-2xl border border-slate-800 shadow-[0_20px_45px_rgba(3,17,37,.55)] backdrop-blur-xl sm:min-h-[680px] sm:rounded-3xl lg:h-[calc(100svh-8rem)] xl:h-[calc(100svh-7rem)]">
+        <div className="h-[calc(100svh-10rem)] min-h-[640px] overflow-hidden rounded-2xl border border-[#dce5dc] bg-white shadow-[0_22px_60px_rgba(31,52,36,0.12)] sm:min-h-[680px] sm:rounded-3xl lg:h-[calc(100svh-8rem)] xl:h-[calc(100svh-7rem)]">
           <VisualEditor />
         </div>
         <Toaster position="top-right" />

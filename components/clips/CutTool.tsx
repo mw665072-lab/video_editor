@@ -41,19 +41,19 @@ export interface CutSegmentItem {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SEG_GRADIENTS = [
-  'from-violet-600 to-indigo-600',
+  'from-green-600 to-emerald-600',
   'from-cyan-500 to-teal-600',
   'from-orange-500 to-amber-600',
   'from-rose-500 to-pink-600',
   'from-green-500 to-emerald-600',
-  'from-blue-500 to-sky-600',
-  'from-fuchsia-600 to-purple-600',
+  'from-green-600 to-emerald-600',
+  'from-green-600 to-emerald-600',
   'from-yellow-500 to-orange-500',
 ]
 
 const SEG_SOLID = [
-  '#7c3aed', '#0891b2', '#ea580c', '#e11d48',
-  '#16a34a', '#2563eb', '#a21caf', '#d97706',
+  '#15803d', '#0891b2', '#ea580c', '#e11d48',
+  '#16a34a', '#0f766e', '#65a30d', '#d97706',
 ]
 
 const QUICK_DURATIONS = [1, 2, 3, 5, 10, 15, 30, 60]
@@ -150,7 +150,7 @@ function SegmentCard({
       className={[
         'relative rounded-xl border cursor-pointer select-none overflow-hidden group transition-all duration-150',
         isSelected
-          ? 'border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/10'
+          ? 'border-emerald-500 bg-emerald-500/10 shadow-lg shadow-emerald-500/10'
           : 'border-slate-700 bg-slate-800/60 hover:border-slate-500 hover:bg-slate-800/80',
         isDragOver ? 'border-cyan-400 scale-[0.97] opacity-60' : '',
       ].join(' ')}
@@ -183,7 +183,7 @@ function SegmentCard({
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold text-white truncate">{seg.label}</p>
           <p className="text-[10px] text-slate-500 truncate leading-tight">{seg.file.name}</p>
-          <p className="text-[10px] font-mono text-indigo-300 mt-0.5 leading-tight">
+          <p className="text-[10px] font-mono text-emerald-300 mt-0.5 leading-tight">
             {fmtTimecode(seg.startTime)}
             {' + '}
             <span className="text-cyan-300">{seg.trimDuration.toFixed(1)}s</span>
@@ -192,7 +192,7 @@ function SegmentCard({
 
         {/* Status / Remove */}
         <div className="flex items-center gap-1 flex-shrink-0">
-          {seg.status === 'processing' && <Loader2 className="w-3.5 h-3.5 text-indigo-400 animate-spin" />}
+          {seg.status === 'processing' && <Loader2 className="w-3.5 h-3.5 text-emerald-400 animate-spin" />}
           {seg.status === 'done'       && <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />}
           {seg.status === 'error'      && <AlertCircle  className="w-3.5 h-3.5 text-red-400" />}
           <button
@@ -206,8 +206,8 @@ function SegmentCard({
 
       {/* Processing overlay */}
       {seg.status === 'processing' && (
-        <div className="absolute inset-0 bg-indigo-900/20 backdrop-blur-[1px] flex items-center justify-center rounded-xl pointer-events-none">
-          <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
+        <div className="absolute inset-0 bg-emerald-900/20 backdrop-blur-[1px] flex items-center justify-center rounded-xl pointer-events-none">
+          <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
         </div>
       )}
     </div>
@@ -234,7 +234,7 @@ function EmptyDropZone({ isDraggingOver, onDrop, onDragOver, onDragLeave, onClic
       className={[
         'flex flex-col items-center justify-center min-h-[55vh] rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer',
         isDraggingOver
-          ? 'border-indigo-400 bg-indigo-500/10 scale-[1.01]'
+          ? 'border-emerald-400 bg-emerald-500/10 scale-[1.01]'
           : 'border-slate-700 bg-slate-900/40 hover:border-slate-600 hover:bg-slate-900/60',
       ].join(' ')}
     >
@@ -243,10 +243,10 @@ function EmptyDropZone({ isDraggingOver, onDrop, onDragOver, onDragLeave, onClic
         <div className={[
           'w-20 h-20 rounded-2xl mx-auto flex items-center justify-center transition-all',
           isDraggingOver
-            ? 'bg-indigo-500/25 border-2 border-indigo-400'
-            : 'bg-gradient-to-br from-indigo-500/20 to-cyan-500/15 border border-slate-700',
+            ? 'bg-emerald-500/25 border-2 border-emerald-400'
+            : 'bg-gradient-to-br from-emerald-500/20 to-cyan-500/15 border border-slate-700',
         ].join(' ')}>
-          <Scissors className={`w-9 h-9 transition-all ${isDraggingOver ? 'text-indigo-300 scale-110' : 'text-indigo-400'}`} />
+          <Scissors className={`w-9 h-9 transition-all ${isDraggingOver ? 'text-emerald-300 scale-110' : 'text-emerald-400'}`} />
         </div>
 
         <div>
@@ -259,7 +259,7 @@ function EmptyDropZone({ isDraggingOver, onDrop, onDragOver, onDragLeave, onClic
 
         <div className="flex flex-col items-center gap-2 pointer-events-auto">
           <Button
-            className="bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold gap-2 hover:opacity-90 px-6"
+            className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-semibold gap-2 hover:opacity-90 px-6"
             onClick={e => { e.stopPropagation(); onClickAdd() }}
           >
             <Plus className="w-4 h-4" /> Add Videos
@@ -582,7 +582,7 @@ export function CutTool() {
               <Button
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
-                className="h-6 px-2 text-[11px] bg-indigo-600/80 hover:bg-indigo-600 text-white gap-1 rounded-lg"
+                className="h-6 px-2 text-[11px] bg-emerald-600/80 hover:bg-emerald-600 text-white gap-1 rounded-lg"
               >
                 <Plus className="w-3 h-3" /> Add
               </Button>
@@ -616,7 +616,7 @@ export function CutTool() {
               className={[
                 'h-10 rounded-xl border border-dashed flex items-center justify-center text-xs transition-all cursor-pointer gap-1',
                 isDropZoneDragging
-                  ? 'border-indigo-400 bg-indigo-500/10 text-indigo-300'
+                  ? 'border-emerald-400 bg-emerald-500/10 text-emerald-300'
                   : 'border-slate-700 text-slate-600 hover:border-slate-500 hover:text-slate-400',
               ].join(' ')}
             >
@@ -663,14 +663,14 @@ export function CutTool() {
                     >
                       {/* Trim region */}
                       <div
-                        className="absolute top-0 bottom-0 bg-indigo-400/30 border-x border-indigo-400/60"
+                        className="absolute top-0 bottom-0 bg-emerald-400/30 border-x border-emerald-400/60"
                         style={{
                           left:  `${selectedSegment.duration > 0 ? (selectedSegment.startTime / selectedSegment.duration) * 100 : 0}%`,
                           width: `${selectedSegment.duration > 0 ? (selectedSegment.trimDuration / selectedSegment.duration) * 100 : 0}%`,
                         }}
                       />
                       {/* Trim start / end markers */}
-                      <div className="absolute top-[-2px] bottom-[-2px] w-0.5 bg-indigo-400 rounded-full"
+                      <div className="absolute top-[-2px] bottom-[-2px] w-0.5 bg-emerald-400 rounded-full"
                         style={{ left: `${selectedSegment.duration > 0 ? (selectedSegment.startTime / selectedSegment.duration) * 100 : 0}%` }}
                       />
                       <div className="absolute top-[-2px] bottom-[-2px] w-0.5 bg-cyan-400 rounded-full"
@@ -678,7 +678,7 @@ export function CutTool() {
                       />
                       {/* Progress fill */}
                       <div
-                        className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-full"
+                        className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full"
                         style={{ width: `${selectedSegment.duration > 0 ? (currentTime / selectedSegment.duration) * 100 : 0}%` }}
                       />
                       {/* Playhead dot */}
@@ -695,7 +695,7 @@ export function CutTool() {
                     <div className="flex items-center gap-3">
                       <button
                         onClick={togglePlay}
-                        className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center hover:bg-indigo-500 transition-colors flex-shrink-0"
+                        className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center hover:bg-emerald-500 transition-colors flex-shrink-0"
                       >
                         {isPlaying
                           ? <Pause className="w-3.5 h-3.5 text-white" />
@@ -721,7 +721,7 @@ export function CutTool() {
                 {/* ── Trim controls card ── */}
                 <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 space-y-5">
                   <div className="flex items-center gap-2">
-                    <Scissors className="w-4 h-4 text-indigo-400" />
+                    <Scissors className="w-4 h-4 text-emerald-400" />
                     <span className="text-sm font-bold text-white">Trim Controls</span>
                     <span className="text-xs text-slate-500">· {selectedSegment.label}</span>
                     <Button
@@ -752,7 +752,7 @@ export function CutTool() {
                           max={Math.max(0, selectedSegment.duration - 0.1)}
                           step={0.1}
                           onChange={e => handleSetStart(parseFloat(e.target.value) || 0)}
-                          className="w-16 bg-slate-800 border border-slate-700 rounded-lg text-xs text-center text-white py-1 px-1 focus:border-indigo-500 outline-none"
+                          className="w-16 bg-slate-800 border border-slate-700 rounded-lg text-xs text-center text-white py-1 px-1 focus:border-emerald-500 outline-none"
                         />
                         <span className="text-slate-500 text-[10px] w-3">s</span>
                         <button
@@ -833,7 +833,7 @@ export function CutTool() {
                             onClick={() => handleSetDuration(d)}
                             className={[
                               'h-7 px-2.5 rounded-lg text-[11px] font-semibold border transition-all',
-                              isActive  ? 'border-indigo-500 bg-indigo-500/20 text-indigo-300'
+                              isActive  ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300'
                               : disabled ? 'border-slate-800 bg-slate-900/50 text-slate-700 cursor-not-allowed'
                               :            'border-slate-700 bg-slate-800/60 text-slate-300 hover:border-slate-500 hover:text-white',
                             ].join(' ')}
@@ -925,7 +925,7 @@ export function CutTool() {
                     className={[
                       'w-full flex items-center gap-2 text-left text-xs rounded-lg px-2 py-1.5 transition-all',
                       seg.id === selectedId
-                        ? 'bg-indigo-500/10 text-white'
+                        ? 'bg-emerald-500/10 text-white'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60',
                     ].join(' ')}
                   >
@@ -937,7 +937,7 @@ export function CutTool() {
                     <span className="tabular-nums text-slate-600 font-mono text-[10px]">
                       {seg.trimDuration.toFixed(1)}s
                     </span>
-                    {seg.status === 'processing' && <Loader2    className="w-3 h-3 text-indigo-400 animate-spin" />}
+                    {seg.status === 'processing' && <Loader2    className="w-3 h-3 text-emerald-400 animate-spin" />}
                     {seg.status === 'done'       && <CheckCircle2 className="w-3 h-3 text-green-400" />}
                     {seg.status === 'error'      && <AlertCircle  className="w-3 h-3 text-red-400" />}
                   </button>
@@ -948,7 +948,7 @@ export function CutTool() {
             {/* ── Export panel ── */}
             <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 space-y-3">
               <div className="flex items-center gap-2">
-                <Download className="w-4 h-4 text-indigo-400" />
+                <Download className="w-4 h-4 text-emerald-400" />
                 <span className="text-sm font-bold text-white">Export</span>
               </div>
 
@@ -963,7 +963,7 @@ export function CutTool() {
                       className={[
                         'py-1.5 rounded-lg text-[11px] font-semibold border transition-all capitalize',
                         quality === q
-                          ? 'border-indigo-500 bg-indigo-500/20 text-indigo-300'
+                          ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300'
                           : 'border-slate-700 bg-slate-800/60 text-slate-400 hover:text-slate-200',
                       ].join(' ')}
                     >
@@ -978,11 +978,11 @@ export function CutTool() {
                 <div>
                   <div className="flex justify-between text-xs mb-1">
                     <span className="text-slate-300 truncate">{exportStep}</span>
-                    <span className="text-indigo-400 font-bold ml-2 tabular-nums">{exportProgress}%</span>
+                    <span className="text-emerald-400 font-bold ml-2 tabular-nums">{exportProgress}%</span>
                   </div>
                   <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-full transition-all duration-300"
+                      className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full transition-all duration-300"
                       style={{ width: `${exportProgress}%` }}
                     />
                   </div>
@@ -1001,7 +1001,7 @@ export function CutTool() {
               <Button
                 onClick={handleExport}
                 disabled={isExporting || segments.length === 0 || !ffmpegReady}
-                className="w-full bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold hover:opacity-90 disabled:opacity-40 transition-opacity gap-2"
+                className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold hover:opacity-90 disabled:opacity-40 transition-opacity gap-2"
               >
                 {isExporting
                   ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>

@@ -147,10 +147,10 @@ function ActionButton({
 }) {
   const toneClass =
     tone === 'primary'
-      ? 'border-[#ffb32c]/50 bg-gradient-to-br from-[#ffcf5a] to-[#ffb32c] text-[#3b1769] hover:from-[#ffd36b] hover:to-[#ffb32c]'
+      ? 'border-[#22a653]/50 bg-gradient-to-br from-[#ffcf5a] to-[#22a653] text-[#18231b] hover:from-[#dcfce7] hover:to-[#22a653]'
       : tone === 'danger'
         ? 'border-red-500/30 bg-red-500/10 text-red-200 hover:bg-red-500/15'
-        : 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-[#ffd36b]';
+        : 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-[#dcfce7]';
 
   return (
     <Button
@@ -522,15 +522,15 @@ const ProductionBlueprintPanel = () => {
 
   return (
     <section
-      className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#100a2f]/80 text-white shadow-[0_20px_60px_rgba(12,2,32,0.35)]"
+      className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#111827]/80 text-white shadow-[0_20px_60px_rgba(31,52,36,0.35)]"
     >
-      <div className="border-b border-white/10 bg-[#140932]/80 px-3 py-3 sm:px-4">
+      <div className="border-b border-white/10 bg-[#182236]/80 px-3 py-3 sm:px-4">
         <div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0">
             <Input
               value={projectTitle}
               onChange={(event) => setProjectTitle(event.target.value)}
-              className="h-8 max-w-xl rounded-xl border-white/10 bg-white/5 text-sm font-semibold text-white focus-visible:border-[#ffb32c]"
+              className="h-8 max-w-xl rounded-xl border-white/10 bg-white/5 text-sm font-semibold text-white focus-visible:border-[#22a653]"
               aria-label="Project title"
             />
           </div>
@@ -553,13 +553,13 @@ const ProductionBlueprintPanel = () => {
                 className="h-10 w-full justify-between rounded-2xl border-white/10 bg-white/5 px-3 text-sm font-bold text-white hover:bg-white/10 sm:w-56"
               >
                 <span className="flex min-w-0 items-center gap-2">
-                  <ActiveTabIcon className="h-4 w-4 text-[#ffd36b]" />
+                  <ActiveTabIcon className="h-4 w-4 text-[#dcfce7]" />
                   <span className="truncate">{activeTabMeta.label}</span>
                 </span>
                 <ChevronDown className="h-4 w-4 text-white/60" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56 border-white/10 bg-[#100a2f] text-white">
+            <DropdownMenuContent align="start" className="w-56 border-white/10 bg-[#111827] text-white">
               {STUDIO_TOOL_TABS.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = tab.value === activeTab;
@@ -568,7 +568,7 @@ const ProductionBlueprintPanel = () => {
                     key={tab.value}
                     onClick={() => setActiveTab(tab.value)}
                     className={`cursor-pointer gap-2 text-sm focus:bg-white/10 focus:text-white ${
-                      isActive ? 'bg-white/10 text-[#ffd36b]' : 'text-white/80'
+                      isActive ? 'bg-white/10 text-[#dcfce7]' : 'text-white/80'
                     }`}
                   >
                     <Icon className="h-4 w-4" />
@@ -591,7 +591,7 @@ const ProductionBlueprintPanel = () => {
 
             <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
               <div className="text-xs font-bold text-white">Assets live in Media Browser</div>
-              <div className="mt-1 text-[11px] leading-5 text-[#c7b4ff]">
+              <div className="mt-1 text-[11px] leading-5 text-[#cbd5e1]">
                 Use the left Media Browser to import and drag assets. This panel stays focused on arranging, cutting, captions, effects, and export.
               </div>
             </div>
@@ -613,16 +613,16 @@ const ProductionBlueprintPanel = () => {
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-              <div className="mb-2 flex items-center justify-between text-[11px] text-[#c7b4ff]">
+              <div className="mb-2 flex items-center justify-between text-[11px] text-[#cbd5e1]">
                 <span>Gap between clips</span>
-                <span className="font-mono text-[#ffd36b]">{clipGap.toFixed(1)}s</span>
+                <span className="font-mono text-[#dcfce7]">{clipGap.toFixed(1)}s</span>
               </div>
               <Slider value={[clipGap]} min={0} max={2} step={0.1} onValueChange={([value]) => setClipGap(value)} />
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
               <div className="mb-2 text-xs font-bold text-white">Selection</div>
-              <div className="grid gap-2 text-[11px] text-[#c7b4ff] sm:grid-cols-2">
+              <div className="grid gap-2 text-[11px] text-[#cbd5e1] sm:grid-cols-2">
                 <div>Selected clips: <span className="text-white">{selectedClips.length}</span></div>
                 <div>Current media: <span className="text-white">{selectedMedia?.name ?? 'None'}</span></div>
               </div>
@@ -639,7 +639,7 @@ const ProductionBlueprintPanel = () => {
             <Textarea
               value={captionText}
               onChange={(event) => setCaptionText(event.target.value)}
-              className="min-h-24 rounded-2xl border-white/10 bg-white/5 text-xs text-white focus-visible:border-[#ffb32c]"
+              className="min-h-24 rounded-2xl border-white/10 bg-white/5 text-xs text-white focus-visible:border-[#22a653]"
               placeholder="Paste caption lines here..."
             />
 
@@ -650,7 +650,7 @@ const ProductionBlueprintPanel = () => {
                   variant="outline"
                   onClick={() => updateBrandKit({ captionStyle: style })}
                   className={`h-9 rounded-xl text-[11px] ${
-                    brandKit.captionStyle === style ? 'border-[#ffb32c]/40 bg-[#ffb32c]/15 text-[#ffd36b]' : 'border-white/10 bg-white/5 text-white/80'
+                    brandKit.captionStyle === style ? 'border-[#22a653]/40 bg-[#22a653]/15 text-[#dcfce7]' : 'border-white/10 bg-white/5 text-white/80'
                   }`}
                 >
                   {brandKit.captionStyle === style && <Check className="mr-1 h-3.5 w-3.5" />}
@@ -667,13 +667,13 @@ const ProductionBlueprintPanel = () => {
               <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
                   <div className="text-xs font-bold text-white">Brand Kit</div>
-                  <div className="text-[11px] text-[#c7b4ff]">Saved locally and reused for titles, captions, intro, outro, and preview watermark.</div>
+                  <div className="text-[11px] text-[#cbd5e1]">Saved locally and reused for titles, captions, intro, outro, and preview watermark.</div>
                 </div>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={resetBrandKit}
-                  className="h-8 rounded-xl border-white/10 bg-white/5 px-2 text-[11px] text-white/80 hover:bg-white/10 hover:text-[#ffd36b]"
+                  className="h-8 rounded-xl border-white/10 bg-white/5 px-2 text-[11px] text-white/80 hover:bg-white/10 hover:text-[#dcfce7]"
                 >
                   <RotateCcw className="mr-1 h-3.5 w-3.5" />
                   Reset
@@ -681,7 +681,7 @@ const ProductionBlueprintPanel = () => {
               </div>
 
               <div className="grid gap-3 lg:grid-cols-[120px_1fr]">
-                <div className="rounded-2xl border border-dashed border-white/10 bg-[#10082c] p-3">
+                <div className="rounded-2xl border border-dashed border-white/10 bg-[#111827] p-3">
                   {brandKit.logoUrl ? (
                     <div className="space-y-2">
                       <img src={brandKit.logoUrl} alt="Brand logo" className="h-20 w-full rounded-xl object-contain" />
@@ -696,12 +696,12 @@ const ProductionBlueprintPanel = () => {
                       </Button>
                     </div>
                   ) : (
-                    <div className="flex h-28 flex-col items-center justify-center text-center text-[11px] text-[#c7b4ff]">
-                      <ImageIcon className="mb-2 h-6 w-6 text-[#ffd36b]" />
+                    <div className="flex h-28 flex-col items-center justify-center text-center text-[11px] text-[#cbd5e1]">
+                      <ImageIcon className="mb-2 h-6 w-6 text-[#dcfce7]" />
                       Logo watermark
                     </div>
                   )}
-                  <label className="mt-2 flex h-8 cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-[#ffd36b]">
+                  <label className="mt-2 flex h-8 cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[11px] font-semibold text-white/80 hover:bg-white/10 hover:text-[#dcfce7]">
                     <Upload className="mr-1 h-3.5 w-3.5" />
                     Upload
                     <input type="file" accept="image/*" onChange={uploadBrandLogo} className="sr-only" />
@@ -712,7 +712,7 @@ const ProductionBlueprintPanel = () => {
                   <Input
                     value={brandKit.name}
                     onChange={(event) => updateBrandKit({ name: event.target.value })}
-                    className="h-9 rounded-xl border-white/10 bg-white/5 text-xs text-white focus-visible:border-[#ffb32c]"
+                    className="h-9 rounded-xl border-white/10 bg-white/5 text-xs text-white focus-visible:border-[#22a653]"
                     placeholder="Brand name"
                   />
                   <div className="grid gap-2 sm:grid-cols-3">
@@ -721,7 +721,7 @@ const ProductionBlueprintPanel = () => {
                       ['secondaryColor', 'Panels'],
                       ['accentColor', 'Accent'],
                     ] as const).map(([key, label]) => (
-                      <label key={key} className="rounded-xl border border-white/10 bg-[#10082c] p-2 text-[10px] uppercase tracking-widest text-[#c7b4ff]">
+                      <label key={key} className="rounded-xl border border-white/10 bg-[#111827] p-2 text-[10px] uppercase tracking-widest text-[#cbd5e1]">
                         {label}
                         <input
                           type="color"
@@ -736,13 +736,13 @@ const ProductionBlueprintPanel = () => {
                     <Input
                       value={brandKit.headingFontFamily}
                       onChange={(event) => updateBrandKit({ headingFontFamily: event.target.value })}
-                      className="h-9 rounded-xl border-white/10 bg-white/5 text-xs text-white focus-visible:border-[#ffb32c]"
+                      className="h-9 rounded-xl border-white/10 bg-white/5 text-xs text-white focus-visible:border-[#22a653]"
                       placeholder="Heading font"
                     />
                     <Input
                       value={brandKit.fontFamily}
                       onChange={(event) => updateBrandKit({ fontFamily: event.target.value })}
-                      className="h-9 rounded-xl border-white/10 bg-white/5 text-xs text-white focus-visible:border-[#ffb32c]"
+                      className="h-9 rounded-xl border-white/10 bg-white/5 text-xs text-white focus-visible:border-[#22a653]"
                       placeholder="Caption/body font"
                     />
                   </div>
@@ -751,9 +751,9 @@ const ProductionBlueprintPanel = () => {
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-              <div className="mb-3 flex items-center justify-between text-[11px] text-[#c7b4ff]">
+              <div className="mb-3 flex items-center justify-between text-[11px] text-[#cbd5e1]">
                 <span>Caption size</span>
-                <span className="font-mono text-[#ffd36b]">{brandKit.captionFontSize}px</span>
+                <span className="font-mono text-[#dcfce7]">{brandKit.captionFontSize}px</span>
               </div>
               <Slider value={[brandKit.captionFontSize]} min={18} max={56} step={1} onValueChange={([value]) => updateBrandKit({ captionFontSize: value })} />
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
@@ -764,7 +764,7 @@ const ProductionBlueprintPanel = () => {
                     variant="outline"
                     onClick={() => updateBrandKit({ captionPosition: position })}
                     className={`h-8 rounded-xl text-[11px] ${
-                      brandKit.captionPosition === position ? 'border-[#ffb32c]/40 bg-[#ffb32c]/15 text-[#ffd36b]' : 'border-white/10 bg-white/5 text-white/80'
+                      brandKit.captionPosition === position ? 'border-[#22a653]/40 bg-[#22a653]/15 text-[#dcfce7]' : 'border-white/10 bg-white/5 text-white/80'
                     }`}
                   >
                     {position}
@@ -777,13 +777,13 @@ const ProductionBlueprintPanel = () => {
               <Textarea
                 value={brandKit.introText}
                 onChange={(event) => updateBrandKit({ introText: event.target.value })}
-                className="min-h-20 rounded-2xl border-white/10 bg-white/5 text-xs text-white focus-visible:border-[#ffb32c]"
+                className="min-h-20 rounded-2xl border-white/10 bg-white/5 text-xs text-white focus-visible:border-[#22a653]"
                 placeholder="Intro text"
               />
               <Textarea
                 value={brandKit.outroText}
                 onChange={(event) => updateBrandKit({ outroText: event.target.value })}
-                className="min-h-20 rounded-2xl border-white/10 bg-white/5 text-xs text-white focus-visible:border-[#ffb32c]"
+                className="min-h-20 rounded-2xl border-white/10 bg-white/5 text-xs text-white focus-visible:border-[#22a653]"
                 placeholder="Outro text"
               />
             </div>
@@ -794,7 +794,7 @@ const ProductionBlueprintPanel = () => {
               <ActionButton icon={<Wand2 className="h-4 w-4" />} label="Apply to Text" onClick={applyBrandToExistingText} disabled={!textOverlayCount} />
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-[#10082c] p-3">
+            <div className="rounded-2xl border border-white/10 bg-[#111827] p-3">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <span className="text-xs font-bold text-white">Watermark</span>
                 <Button
@@ -802,7 +802,7 @@ const ProductionBlueprintPanel = () => {
                   variant="outline"
                   onClick={() => updateBrandKit({ watermarkEnabled: !brandKit.watermarkEnabled })}
                   className={`h-8 rounded-xl px-3 text-[11px] ${
-                    brandKit.watermarkEnabled ? 'border-[#ffb32c]/40 bg-[#ffb32c]/15 text-[#ffd36b]' : 'border-white/10 bg-white/5 text-white/80'
+                    brandKit.watermarkEnabled ? 'border-[#22a653]/40 bg-[#22a653]/15 text-[#dcfce7]' : 'border-white/10 bg-white/5 text-white/80'
                   }`}
                 >
                   {brandKit.watermarkEnabled ? 'Enabled' : 'Disabled'}
@@ -816,7 +816,7 @@ const ProductionBlueprintPanel = () => {
                     variant="outline"
                     onClick={() => updateBrandKit({ watermarkPosition: position })}
                     className={`h-8 rounded-xl text-[10px] ${
-                      brandKit.watermarkPosition === position ? 'border-[#ffb32c]/40 bg-[#ffb32c]/15 text-[#ffd36b]' : 'border-white/10 bg-white/5 text-white/80'
+                      brandKit.watermarkPosition === position ? 'border-[#22a653]/40 bg-[#22a653]/15 text-[#dcfce7]' : 'border-white/10 bg-white/5 text-white/80'
                     }`}
                   >
                     {position.replace('-', ' ')}
@@ -844,7 +844,7 @@ const ProductionBlueprintPanel = () => {
           <TabsContent value="audio" className="m-0 space-y-4 p-3 sm:p-4">
             <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
               <div className="text-xs font-bold text-white">Replace video music</div>
-              <div className="mt-1 text-[11px] leading-5 text-[#c7b4ff]">
+              <div className="mt-1 text-[11px] leading-5 text-[#cbd5e1]">
                 Select a video clip, mute its original sound, then upload or drag a music/audio file onto an audio track. Preview will play the audio track with the video.
               </div>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -857,7 +857,7 @@ const ProductionBlueprintPanel = () => {
               <ActionButton icon={<Music className="h-4 w-4" />} label="Music Bed" onClick={() => applyAudioPreset('music')} disabled={!canEdit} />
               <ActionButton icon={<AudioLines className="h-4 w-4" />} label="Mute Clip" onClick={() => applyAudioPreset('mute')} disabled={!canEdit} />
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-[11px] leading-5 text-[#c7b4ff]">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-[11px] leading-5 text-[#cbd5e1]">
               Applies real timeline audio values now: volume and fades.
             </div>
           </TabsContent>
@@ -869,13 +869,13 @@ const ProductionBlueprintPanel = () => {
                   key={preset.id}
                   variant="outline"
                   onClick={() => openExport(preset.label)}
-                  className="h-auto justify-between rounded-xl border-white/10 bg-white/5 px-3 py-3 text-left hover:bg-white/10 hover:text-[#ffd36b]"
+                  className="h-auto justify-between rounded-xl border-white/10 bg-white/5 px-3 py-3 text-left hover:bg-white/10 hover:text-[#dcfce7]"
                 >
                   <span>
                     <span className="block text-xs font-bold text-white">{preset.label}</span>
-                    <span className="text-[10px] text-[#c7b4ff]">{preset.size}</span>
+                    <span className="text-[10px] text-[#cbd5e1]">{preset.size}</span>
                   </span>
-                  <Badge className="rounded-full border border-white/10 bg-[#10082c] text-[10px] text-[#c7b4ff]">{preset.badge}</Badge>
+                  <Badge className="rounded-full border border-white/10 bg-[#111827] text-[10px] text-[#cbd5e1]">{preset.badge}</Badge>
                 </Button>
               ))}
             </div>
