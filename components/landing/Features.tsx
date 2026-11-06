@@ -1,130 +1,196 @@
+"use client";
+
 import { motion } from "framer-motion";
+import {
+  Scissors,
+  Layers,
+  Sparkles,
+  Subtitles,
+  Maximize2,
+  FileText,
+  AlignLeft,
+  Image as ImageIcon,
+  Video,
+} from "lucide-react";
 import { S } from "./landingStyles";
-import { features } from "./landingData";
 
 const FEATURE_CSS = `
-@keyframes feature-bg-pan {
-  0%,100% { background-position: 0% 40%; }
-  50% { background-position: 100% 60%; }
-}
 .feature-tools-section {
   position: relative;
   overflow: hidden;
-  background: #f7f8f2;
+  background: #f8f9fd;
 }
 .feature-tools-bg {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: radial-gradient(circle at 16% 18%, rgba(134,201,149,0.16), transparent 20%),
-              radial-gradient(circle at 85% 20%, rgba(34,163,83,0.12), transparent 18%),
-              radial-gradient(circle at 70% 80%, rgba(21,128,61,0.08), transparent 24%),
-              linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  background-size: 240% 240%;
-  animation: feature-bg-pan 20s ease infinite;
+  background: radial-gradient(circle at 16% 18%, rgba(88,66,237,0.06), transparent 25%),
+              radial-gradient(circle at 85% 20%, rgba(124,58,237,0.06), transparent 22%),
+              linear-gradient(180deg, #fbfbfe 0%, #f6f7fc 100%);
 }
 .feature-tools-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+@media (max-width: 1024px) {
+  .feature-tools-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .feature-tools-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .feature-tools-card {
   position: relative;
   overflow: hidden;
-  padding: 28px;
-  border-radius: 1.7rem;
-  border: 1px solid rgba(21,128,61,0.18);
-  background: linear-gradient(180deg, rgba(21,128,61,0.15), rgba(134,201,149,0.12));
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  box-shadow: 0 24px 80px rgba(21, 128, 61, 0.12);
-  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  padding: 30px;
+  border-radius: 1.5rem;
+  border: 1px solid #e4e6f2;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(88, 66, 237, 0.04);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
   cursor: default;
 }
-.feature-tools-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at top left, rgba(134,201,149,0.22), transparent 30%),
-              radial-gradient(circle at bottom right, rgba(250,204,21,0.14), transparent 30%);
-  opacity: 0;
-  transition: opacity 0.35s ease;
-  pointer-events: none;
-}
-.feature-tools-card:hover::before {
-  opacity: 1;
-}
 .feature-tools-card:hover {
-  transform: translateY(-6px);
-  border-color: rgba(21,128,61,0.35);
-  box-shadow: 0 28px 90px rgba(21,128,61,0.18);
+  transform: translateY(-4px);
+  border-color: rgba(88,66,237,0.35);
+  box-shadow: 0 20px 48px rgba(88,66,237,0.09);
 }
 .feature-tools-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 13px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   margin-bottom: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(255,211,107,0.22), rgba(255,255,255,0.08));
-  border: 1px solid rgba(255,255,255,0.18);
-  color: #15803d;
-  transition: transform 0.3s ease;
+  background: #f0eeff;
+  border: 1px solid #ded7fb;
+  color: #5842ed;
+  transition: transform 0.25s ease;
 }
 .feature-tools-card:hover .feature-tools-icon {
-  transform: scale(1.06);
+  transform: scale(1.08);
 }
 .feature-tools-title {
-  font-family: 'Sora', sans-serif;
-  font-size: 17px;
-  font-weight: 700;
-  margin-bottom: 10px;
-  color: #18231b;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: #110d2e;
+  letter-spacing: -0.02em;
 }
 .feature-tools-text {
   font-size: 14px;
-  color: rgba(77,93,81,0.88);
-  line-height: 1.75;
+  color: #5e6578;
+  line-height: 1.7;
 }
 `;
 
+const toolsList = [
+  {
+    icon: <Scissors size={22} />,
+    title: "Clip Editor",
+    description: "Set exact start and end points on a timeline, preview the cut and fine-tune it before export.",
+  },
+  {
+    icon: <Layers size={22} />,
+    title: "AI Clipping",
+    description: "Turn a long video into several short clips, each with its own start and end time.",
+  },
+  {
+    icon: <Sparkles size={22} />,
+    title: "Find Moments",
+    description: "Scans a video for strong hooks, key points and high-interest segments that could work as Shorts.",
+  },
+  {
+    icon: <Subtitles size={22} />,
+    title: "AI Subtitles",
+    description: "Generates captions from speech. Edit the text, then burn it into your clip.",
+  },
+  {
+    icon: <Maximize2 size={22} />,
+    title: "AI Reframe",
+    description: "Converts landscape video to 9:16, 1:1 or 16:9 and keeps the speaker in frame.",
+  },
+  {
+    icon: <FileText size={22} />,
+    title: "Video Transcript",
+    description: "Converts speech to searchable text with timestamps.",
+  },
+  {
+    icon: <AlignLeft size={22} />,
+    title: "Video Summary",
+    description: "Condenses a long video into key points so you can decide what’s worth clipping.",
+  },
+  {
+    icon: <ImageIcon size={22} />,
+    title: "AI Thumbnail",
+    description: "Creates thumbnail options for your clips and uploads.",
+  },
+  {
+    icon: <Video size={22} />,
+    title: "AI Video",
+    description: "Additional generation and editing tools in the same editor.",
+  },
+];
+
 export default function Features() {
   return (
-    <section id="features" className="feature-tools-section" style={{ ...S.section, padding: "120px 0" }}>
+    <section id="features" className="feature-tools-section" style={{ ...S.section, padding: "100px 0" }}>
       <style>{FEATURE_CSS}</style>
       <div className="feature-tools-bg" />
       <div style={{ ...S.container, position: "relative", zIndex: 1 }}>
-        <div style={{ textAlign: "center", marginBottom: 64 }}>
-          <span style={{
-            ...S.sectionTagCenter,
-            color: "#15803d",
-            background: "rgba(21,128,61,0.1)",
-            borderColor: "rgba(21,128,61,0.18)",
-          }}>
-            What You Can Do
+        <div style={{ textAlign: "center", marginBottom: 56 }}>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "6px 16px",
+              borderRadius: 9999,
+              background: "#f0eeff",
+              border: "1px solid #ded7fb",
+              color: "#5842ed",
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              marginBottom: 16,
+            }}
+          >
+            Features
           </span>
-          <h2 style={{ ...S.sectionTitle, marginTop: 16, marginBottom: 12, color: "#18231b" }}>
-            Everything Your Video<br />Clips Need
+          <h2
+            style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: "clamp(2rem, 3.8vw, 3.2rem)",
+              fontWeight: 800,
+              color: "#110d2e",
+              lineHeight: 1.15,
+              letterSpacing: "-0.04em",
+            }}
+          >
+            Tools for Trimming, Clipping and Repurposing Video
           </h2>
-          <p style={{ ...S.sectionSub, margin: "0 auto", color: "#5d6a60" }}>
-            From import to publish — all in one place. No extra apps, no friction.
-          </p>
         </div>
+
         <div className="feature-tools-grid">
-          {features.map((f, i) => (
+          {toolsList.map((item, index) => (
             <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
+              key={item.title}
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: i * 0.08 }}
               viewport={{ once: true }}
+              transition={{ delay: index * 0.05, duration: 0.35 }}
+              className="feature-tools-card"
             >
-              <div className="feature-tools-card">
-                <div className="feature-tools-icon">{f.icon}</div>
-                <div className="feature-tools-title">{f.title}</div>
-                <div className="feature-tools-text">{f.description}</div>
-              </div>
+              <div className="feature-tools-icon">{item.icon}</div>
+              <h3 className="feature-tools-title">{item.title}</h3>
+              <p className="feature-tools-text">{item.description}</p>
             </motion.div>
           ))}
         </div>

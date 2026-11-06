@@ -96,7 +96,7 @@ export function ClipVideoForm() {
             href={clipUrl}
             download={fileName}
             onClick={handleDownloadRecord}
-            className="block rounded-lg bg-emerald-600 px-4 py-2 text-center text-sm font-semibold text-white"
+            className="block rounded-xl bg-[#5842ed] px-4 py-2.5 text-center text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#4730df]"
           >
             Download Clipped Video
           </a>

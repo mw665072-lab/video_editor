@@ -98,11 +98,11 @@ function formatResolution(w: number, h: number): string {
 function getTypeBadge(type: MediaFile['type']): { label: string; color: string; canvasColor: string } {
   switch (type) {
     case 'video':
-      return { label: 'VID', color: 'bg-[#22a653]/90 text-[#18231b]', canvasColor: '#22a653' };
+      return { label: 'VID', color: 'bg-[#5842ed]/90 text-white', canvasColor: '#5842ed' };
     case 'audio':
-      return { label: 'AUD', color: 'bg-[#15803d]/90', canvasColor: '#15803d' };
+      return { label: 'AUD', color: 'bg-[#5842ed]/90', canvasColor: '#5842ed' };
     case 'image':
-      return { label: 'IMG', color: 'bg-[#22a653]/90 text-[#18231b]', canvasColor: '#22a653' };
+      return { label: 'IMG', color: 'bg-[#5842ed]/90 text-white', canvasColor: '#5842ed' };
     default:
       return { label: 'FILE', color: 'bg-[#94a3b8]/90', canvasColor: '#94a3b8' };
   }
@@ -111,11 +111,11 @@ function getTypeBadge(type: MediaFile['type']): { label: string; color: string; 
 function getTypeIcon(type: MediaFile['type']) {
   switch (type) {
     case 'video':
-      return <Film className="h-3.5 w-3.5 text-[#dcfce7]" />;
+      return <Film className="h-3.5 w-3.5 text-[#f0eeff]" />;
     case 'audio':
       return <Music className="w-3.5 h-3.5 text-[#cbd5e1]" />;
     case 'image':
-      return <ImageIcon className="w-3.5 h-3.5 text-[#22a653]" />;
+      return <ImageIcon className="w-3.5 h-3.5 text-[#5842ed]" />;
     default:
       return <Film className="w-3.5 h-3.5 text-[#cbd5e1]" />;
   }
@@ -124,11 +124,11 @@ function getTypeIcon(type: MediaFile['type']) {
 function getTypeFileIcon(type: MediaFile['type']) {
   switch (type) {
     case 'video':
-      return <FileVideo className="h-4 w-4 text-[#dcfce7]" />;
+      return <FileVideo className="h-4 w-4 text-[#f0eeff]" />;
     case 'audio':
       return <FileAudio className="w-4 h-4 text-[#cbd5e1]" />;
     case 'image':
-      return <FileImage className="w-4 h-4 text-[#22a653]" />;
+      return <FileImage className="w-4 h-4 text-[#5842ed]" />;
     default:
       return <Film className="w-4 h-4 text-[#cbd5e1]" />;
   }
@@ -238,10 +238,10 @@ function MediaGridCard({
         <div
           draggable
           onDragStart={(e) => onDragStart(e, media)}
-          className="group relative cursor-grab overflow-hidden rounded-xl border border-white/10 bg-white/5 transition-all hover:border-[#15803d]/50 hover:bg-white/10 active:cursor-grabbing"
+          className="group relative cursor-grab overflow-hidden rounded-xl border border-[#e4e6f2] bg-white transition-all hover:border-[#5842ed]/50 hover:shadow-md active:cursor-grabbing"
         >
           {/* Thumbnail */}
-          <div className="relative aspect-video overflow-hidden bg-[#111827]">
+          <div className="relative aspect-video overflow-hidden bg-slate-900">
             {(media.type === 'video' || media.type === 'image') && !imgError ? (
               <img
                 src={media.thumbnailUrl}
@@ -251,7 +251,7 @@ function MediaGridCard({
                 draggable={false}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center">
+              <div className="w-full h-full flex items-center justify-center text-white/70">
                 {getTypeFileIcon(media.type)}
               </div>
             )}
@@ -271,69 +271,69 @@ function MediaGridCard({
             )}
 
             {/* Hover Overlay with Add to Timeline */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+            <div className="absolute inset-0 bg-black/30 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
               <Button
                 size="sm"
-                className="h-7 gap-1.5 border border-[#22a653]/30 bg-[#111827]/90 text-xs text-white shadow-lg backdrop-blur-sm hover:bg-white/10"
+                className="h-7 gap-1.5 bg-[#5842ed] text-xs font-semibold text-white shadow-lg hover:bg-[#4730df]"
                 onClick={(e) => {
                   e.stopPropagation();
                   onAddToTimeline(media, 'default');
                 }}
               >
-                <Plus className="w-3 h-3" />
+                <Plus className="w-3.5 h-3.5 text-white" />
                 Add to Timeline
               </Button>
             </div>
           </div>
 
           {/* Info Footer */}
-          <div className="p-2">
+          <div className="p-2 bg-white">
             <div className="flex items-center gap-1.5">
               {getTypeIcon(media.type)}
-              <p className="flex-1 truncate text-xs font-medium text-white" title={media.name}>
+              <p className="flex-1 truncate text-xs font-semibold text-[#110d2e]" title={media.name}>
                 {media.name}
               </p>
             </div>
             <div className="flex items-center gap-2 mt-1">
               {media.type === 'video' && media.width > 0 && (
-                <span className="font-mono text-[10px] text-[#cbd5e1]">
+                <span className="font-mono text-[10px] text-[#5e6578]">
                   {formatResolution(media.width, media.height)}
                 </span>
               )}
               <span className="text-[10px] text-[#94a3b8]">·</span>
-              <span className="text-[10px] text-[#cbd5e1]">
+              <span className="text-[10px] text-[#5e6578]">
                 {formatFileSize(media.file.size)}
               </span>
             </div>
           </div>
         </div>
       </ContextMenuTrigger>
-      <ContextMenuContent className="w-52 border-white/10 bg-[#111827] text-white">
+      <ContextMenuContent className="w-52 rounded-xl border border-[#e4e6f2] bg-white p-1 text-[#110d2e] shadow-xl">
         <ContextMenuItem
-          className="text-white focus:bg-white/10 focus:text-white"
+          className="cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-xs text-[#110d2e] hover:bg-[#f0eeff] hover:text-[#5842ed]"
           onClick={() => onAddToTimeline(media, 'default')}
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-4 h-4 text-[#5842ed]" />
           Add to Timeline
         </ContextMenuItem>
         <ContextMenuItem
-          className="text-white focus:bg-white/10 focus:text-white"
+          className="cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-xs text-[#110d2e] hover:bg-[#f0eeff] hover:text-[#5842ed]"
           onClick={() => onAddToTimeline(media, 'start')}
         >
-          <ArrowUpToLine className="w-4 h-4" />
+          <ArrowUpToLine className="w-4 h-4 text-[#5842ed]" />
           Add to Start of Timeline
         </ContextMenuItem>
         <ContextMenuItem
-          className="text-white focus:bg-white/10 focus:text-white"
+          className="cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-xs text-[#110d2e] hover:bg-[#f0eeff] hover:text-[#5842ed]"
           onClick={() => onAddToTimeline(media, 'end')}
         >
-          <ArrowDownToLine className="w-4 h-4" />
+          <ArrowDownToLine className="w-4 h-4 text-[#5842ed]" />
           Add to End of Timeline
         </ContextMenuItem>
-        <ContextMenuSeparator className="bg-white/10" />
+        <ContextMenuSeparator className="bg-[#e4e6f2]" />
         <ContextMenuItem
           variant="destructive"
-          className="text-red-400 focus:bg-red-500/10 focus:text-red-400"
+          className="cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700"
           onClick={() => {
             const store = useEditorStore.getState();
             store.removeMediaFile(media.id);
@@ -371,13 +371,13 @@ function MediaListRow({
         <div
           draggable
           onDragStart={(e) => onDragStart(e, media)}
-          className="group relative flex cursor-grab items-center gap-2.5 rounded-xl border border-transparent bg-white/5 px-2 py-1.5 transition-colors hover:border-white/10 hover:bg-white/10 active:cursor-grabbing"
+          className="group relative flex cursor-grab items-center gap-2.5 rounded-xl border border-[#e4e6f2] bg-white px-2 py-1.5 transition-all hover:border-[#5842ed]/40 hover:bg-[#f8f9fd] hover:shadow-sm active:cursor-grabbing"
         >
           {/* Grip Handle */}
           <GripVertical className="h-3 w-3 flex-shrink-0 text-[#94a3b8] opacity-0 transition-opacity group-hover:opacity-100" />
 
           {/* Thumbnail */}
-          <div className="relative h-11 w-20 flex-shrink-0 overflow-hidden rounded-lg border border-white/10 bg-[#111827]">
+          <div className="relative h-11 w-20 flex-shrink-0 overflow-hidden rounded-lg border border-[#e4e6f2] bg-slate-900">
             {(media.type === 'video' || media.type === 'image') && !imgError ? (
               <img
                 src={media.thumbnailUrl}
@@ -388,7 +388,7 @@ function MediaListRow({
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <Music className="h-4 w-4 text-[#cbd5e1]/60" />
+                <Music className="h-4 w-4 text-white/70" />
               </div>
             )}
             {/* Type Badge */}
@@ -409,20 +409,20 @@ function MediaListRow({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
               {getTypeIcon(media.type)}
-              <p className="truncate text-xs font-medium text-white" title={media.name}>
+              <p className="truncate text-xs font-semibold text-[#110d2e]" title={media.name}>
                 {media.name}
               </p>
             </div>
             <div className="flex items-center gap-1.5 mt-0.5">
               {media.type === 'video' && media.width > 0 && (
-                <span className="font-mono text-[10px] text-[#cbd5e1]">
+                <span className="font-mono text-[10px] text-[#5e6578]">
                   {formatResolution(media.width, media.height)}
                 </span>
               )}
               {(media.type === 'video' && media.width > 0) && (
                 <span className="text-[10px] text-[#94a3b8]">·</span>
               )}
-              <span className="text-[10px] text-[#cbd5e1]">
+              <span className="text-[10px] text-[#5e6578]">
                 {formatFileSize(media.file.size)}
               </span>
             </div>
@@ -435,16 +435,16 @@ function MediaListRow({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 text-white/80 hover:text-[#dcfce7]"
+                  className="h-6 w-6 text-[#5e6578] hover:bg-[#f0eeff] hover:text-[#5842ed]"
                   onClick={(e) => {
                     e.stopPropagation();
                     onAddToTimeline(media, 'default');
                   }}
                 >
-                  <Plus className="w-3 h-3" />
+                  <Plus className="w-3.5 h-3.5 text-[#5842ed]" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="left" className="border-white/10 bg-[#111827] text-xs text-white">
+              <TooltipContent side="left" className="border border-[#e4e6f2] bg-white text-xs text-[#110d2e]">
                 Add to Timeline
               </TooltipContent>
             </Tooltip>
@@ -453,16 +453,16 @@ function MediaListRow({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 text-white/80 hover:text-[#dcfce7]"
+                  className="h-6 w-6 text-[#5e6578] hover:bg-[#f0eeff] hover:text-[#5842ed]"
                   onClick={(e) => {
                     e.stopPropagation();
                     onShowProperties(media);
                   }}
                 >
-                  <Info className="w-3 h-3" />
+                  <Info className="w-3.5 h-3.5" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="left" className="border-white/10 bg-[#111827] text-xs text-white">
+              <TooltipContent side="left" className="border border-[#e4e6f2] bg-white text-xs text-[#110d2e]">
                 Properties
               </TooltipContent>
             </Tooltip>
@@ -471,58 +471,58 @@ function MediaListRow({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 text-[#cbd5e1] hover:text-red-400"
+                  className="h-6 w-6 text-[#5e6578] hover:bg-rose-50 hover:text-rose-600"
                   onClick={(e) => {
                     e.stopPropagation();
                     useEditorStore.getState().removeMediaFile(media.id);
                   }}
                 >
-                  <Trash2 className="w-3 h-3" />
+                  <Trash2 className="w-3.5 h-3.5" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="left" className="border-white/10 bg-[#111827] text-xs text-white">
+              <TooltipContent side="left" className="border border-[#e4e6f2] bg-white text-xs text-[#110d2e]">
                 Remove
               </TooltipContent>
             </Tooltip>
           </div>
         </div>
       </ContextMenuTrigger>
-      <ContextMenuContent className="w-52 border-white/10 bg-[#111827] text-white">
+      <ContextMenuContent className="w-52 rounded-xl border border-[#e4e6f2] bg-white p-1 text-[#110d2e] shadow-xl">
         <ContextMenuItem
-          className="text-white focus:bg-white/10 focus:text-white"
+          className="cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-xs text-[#110d2e] hover:bg-[#f0eeff] hover:text-[#5842ed]"
           onClick={() => onAddToTimeline(media, 'default')}
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-4 h-4 text-[#5842ed]" />
           Add to Timeline
         </ContextMenuItem>
         <ContextMenuItem
-          className="text-white focus:bg-white/10 focus:text-white"
+          className="cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-xs text-[#110d2e] hover:bg-[#f0eeff] hover:text-[#5842ed]"
           onClick={() => onAddToTimeline(media, 'start')}
         >
-          <ArrowUpToLine className="w-4 h-4" />
+          <ArrowUpToLine className="w-4 h-4 text-[#5842ed]" />
           Add to Start of Timeline
         </ContextMenuItem>
         <ContextMenuItem
-          className="text-white focus:bg-white/10 focus:text-white"
+          className="cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-xs text-[#110d2e] hover:bg-[#f0eeff] hover:text-[#5842ed]"
           onClick={() => onAddToTimeline(media, 'end')}
         >
-          <ArrowDownToLine className="w-4 h-4" />
+          <ArrowDownToLine className="w-4 h-4 text-[#5842ed]" />
           Add to End of Timeline
         </ContextMenuItem>
-        <ContextMenuSeparator className="bg-white/10" />
         <ContextMenuItem
-          className="text-white focus:bg-white/10 focus:text-white"
+          className="cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-xs text-[#110d2e] hover:bg-[#f0eeff] hover:text-[#5842ed]"
           onClick={() => onShowProperties(media)}
         >
-          <Info className="w-4 h-4" />
+          <Info className="w-4 h-4 text-[#5842ed]" />
           Properties
         </ContextMenuItem>
-        <ContextMenuSeparator className="bg-white/10" />
+        <ContextMenuSeparator className="bg-[#e4e6f2]" />
         <ContextMenuItem
           variant="destructive"
-          className="text-red-400 focus:bg-red-500/10 focus:text-red-400"
+          className="cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700"
           onClick={() => {
-            useEditorStore.getState().removeMediaFile(media.id);
+            const store = useEditorStore.getState();
+            store.removeMediaFile(media.id);
           }}
         >
           <Trash2 className="w-4 h-4" />
@@ -868,7 +868,7 @@ const MediaBrowser: React.FC = () => {
 
   return (
     <div
-      className="relative flex h-full flex-col bg-[#111827]/90"
+      className="relative flex h-full flex-col bg-white text-[#110d2e]"
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -876,21 +876,20 @@ const MediaBrowser: React.FC = () => {
       {/* ========================================
           HEADER
           ======================================== */}
-      <div className="flex flex-col space-y-2 border-b border-white/10 px-3 pt-2 pb-2">
+      <div className="flex flex-col space-y-2 border-b border-[#e4e6f2] px-3 pt-2.5 pb-2.5 bg-white">
         {/* Title Row */}
         <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+          <h3 className="text-xs font-bold text-[#110d2e] uppercase tracking-wider">
             Media
           </h3>
           <div className="flex items-center gap-1">
-            {/* FIX #7: Replace tiny icon with a visible "Browse" text button */}
             <Button
               variant="outline"
               size="sm"
-              className="h-7 gap-1.5 rounded-xl border-white/10 bg-white/5 px-2.5 text-[11px] text-white/80 hover:border-[#22a653]/50 hover:bg-white/10 hover:text-[#dcfce7]"
+              className="h-7 gap-1.5 rounded-lg border-[#e4e6f2] bg-white px-2.5 text-[11px] font-semibold text-[#5e6578] hover:border-[#5842ed]/40 hover:bg-[#f0eeff] hover:text-[#5842ed]"
               onClick={openFilePicker}
             >
-              <FolderOpen className="w-3 h-3" />
+              <FolderOpen className="w-3 h-3 text-[#5842ed]" />
               Browse
             </Button>
           </div>
@@ -898,25 +897,25 @@ const MediaBrowser: React.FC = () => {
 
         {/* Search Input */}
         <div className="relative">
-          <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-[#94a3b8]" />
+          <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#94a3b8]" />
           <Input
             placeholder="Search media..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-8 rounded-xl border-white/10 bg-white/5 pl-7 pr-2 text-xs text-white placeholder:text-[#94a3b8] focus-visible:border-[#22a653] focus-visible:ring-[#22a653]/20"
+            className="h-8 rounded-lg border-[#e4e6f2] bg-[#f8f9fd] pl-8 pr-7 text-xs text-[#110d2e] placeholder:text-[#94a3b8] focus-visible:border-[#5842ed] focus-visible:ring-[#5842ed]/20"
           />
           {search && (
             <button
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#dcfce7]"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#110d2e]"
               onClick={() => setSearch('')}
             >
-              <X className="w-3 h-3" />
+              <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
 
         {/* Filter + Sort + View Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {/* Filter Toggle Group */}
           <ToggleGroup
             type="single"
@@ -927,34 +926,34 @@ const MediaBrowser: React.FC = () => {
             <ToggleGroupItem
               value="all"
               size="sm"
-              className="h-7 gap-1 rounded-lg px-2 text-[10px] text-white/75 data-[state=on]:bg-[#22a653]/18 data-[state=on]:text-[#dcfce7]"
+              className="h-7 gap-1 rounded-lg px-2 text-[10px] font-semibold text-[#5e6578] border border-[#e4e6f2] bg-[#f8f9fd] data-[state=on]:bg-[#5842ed] data-[state=on]:text-white data-[state=on]:border-[#5842ed] hover:text-[#5842ed] hover:bg-[#f0eeff]"
             >
               All
-              <span className="text-[9px] opacity-60">{mediaCounts.all}</span>
+              <span className="text-[9px] opacity-75">{mediaCounts.all}</span>
             </ToggleGroupItem>
             <ToggleGroupItem
               value="video"
               size="sm"
-              className="h-7 gap-1 rounded-lg px-2 text-[10px] text-white/75 data-[state=on]:bg-[#22a653]/18 data-[state=on]:text-[#dcfce7]"
+              className="h-7 gap-1 rounded-lg px-2 text-[10px] font-semibold text-[#5e6578] border border-[#e4e6f2] bg-[#f8f9fd] data-[state=on]:bg-[#5842ed] data-[state=on]:text-white data-[state=on]:border-[#5842ed] hover:text-[#5842ed] hover:bg-[#f0eeff]"
             >
               <Film className="w-3 h-3" />
-              <span className="text-[9px] opacity-60">{mediaCounts.video}</span>
+              <span className="text-[9px] opacity-75">{mediaCounts.video}</span>
             </ToggleGroupItem>
             <ToggleGroupItem
               value="audio"
               size="sm"
-              className="h-7 gap-1 rounded-lg px-2 text-[10px] text-white/75 data-[state=on]:bg-[#22a653]/18 data-[state=on]:text-[#dcfce7]"
+              className="h-7 gap-1 rounded-lg px-2 text-[10px] font-semibold text-[#5e6578] border border-[#e4e6f2] bg-[#f8f9fd] data-[state=on]:bg-[#5842ed] data-[state=on]:text-white data-[state=on]:border-[#5842ed] hover:text-[#5842ed] hover:bg-[#f0eeff]"
             >
               <Music className="w-3 h-3" />
-              <span className="text-[9px] opacity-60">{mediaCounts.audio}</span>
+              <span className="text-[9px] opacity-75">{mediaCounts.audio}</span>
             </ToggleGroupItem>
             <ToggleGroupItem
               value="image"
               size="sm"
-              className="h-7 gap-1 rounded-lg px-2 text-[10px] text-white/75 data-[state=on]:bg-[#22a653]/18 data-[state=on]:text-[#dcfce7]"
+              className="h-7 gap-1 rounded-lg px-2 text-[10px] font-semibold text-[#5e6578] border border-[#e4e6f2] bg-[#f8f9fd] data-[state=on]:bg-[#5842ed] data-[state=on]:text-white data-[state=on]:border-[#5842ed] hover:text-[#5842ed] hover:bg-[#f0eeff]"
             >
               <ImageIcon className="w-3 h-3" />
-              <span className="text-[9px] opacity-60">{mediaCounts.image}</span>
+              <span className="text-[9px] opacity-75">{mediaCounts.image}</span>
             </ToggleGroupItem>
           </ToggleGroup>
 
@@ -965,16 +964,16 @@ const MediaBrowser: React.FC = () => {
           <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
             <SelectTrigger
               size="sm"
-              className="h-7 w-auto min-w-0 rounded-lg border-white/10 bg-white/5 px-2 text-[10px] text-[#cbd5e1]"
+              className="h-7 w-auto min-w-0 rounded-lg border-[#e4e6f2] bg-[#f8f9fd] px-2 text-[10px] text-[#5e6578]"
             >
-              <SortAsc className="w-3 h-3 mr-1" />
+              <SortAsc className="w-3 h-3 mr-1 text-[#5842ed]" />
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="border-white/10 bg-[#111827]">
-              <SelectItem value="dateAdded" className="text-xs text-[#f8fafc] focus:bg-white/10 focus:text-white">Date Added</SelectItem>
-              <SelectItem value="name" className="text-xs text-[#f8fafc] focus:bg-white/10 focus:text-white">Name</SelectItem>
-              <SelectItem value="duration" className="text-xs text-[#f8fafc] focus:bg-white/10 focus:text-white">Duration</SelectItem>
-              <SelectItem value="size" className="text-xs text-[#f8fafc] focus:bg-white/10 focus:text-white">Size</SelectItem>
+            <SelectContent className="border-[#e4e6f2] bg-white text-[#110d2e] shadow-xl">
+              <SelectItem value="dateAdded" className="text-xs text-[#110d2e] focus:bg-[#f0eeff] focus:text-[#5842ed]">Date Added</SelectItem>
+              <SelectItem value="name" className="text-xs text-[#110d2e] focus:bg-[#f0eeff] focus:text-[#5842ed]">Name</SelectItem>
+              <SelectItem value="duration" className="text-xs text-[#110d2e] focus:bg-[#f0eeff] focus:text-[#5842ed]">Duration</SelectItem>
+              <SelectItem value="size" className="text-xs text-[#110d2e] focus:bg-[#f0eeff] focus:text-[#5842ed]">Size</SelectItem>
             </SelectContent>
           </Select>
 
@@ -988,14 +987,14 @@ const MediaBrowser: React.FC = () => {
             <ToggleGroupItem
               value="grid"
               size="sm"
-              className="h-7 rounded-lg px-2 text-[#cbd5e1] data-[state=on]:bg-white/10 data-[state=on]:text-white"
+              className="h-7 rounded-lg px-2 text-[#5e6578] data-[state=on]:bg-[#f0eeff] data-[state=on]:text-[#5842ed]"
             >
               <LayoutGrid className="w-3.5 h-3.5" />
             </ToggleGroupItem>
             <ToggleGroupItem
               value="list"
               size="sm"
-              className="h-7 rounded-lg px-2 text-[#cbd5e1] data-[state=on]:bg-white/10 data-[state=on]:text-white"
+              className="h-7 rounded-lg px-2 text-[#5e6578] data-[state=on]:bg-[#f0eeff] data-[state=on]:text-[#5842ed]"
             >
               <List className="w-3.5 h-3.5" />
             </ToggleGroupItem>
@@ -1007,18 +1006,18 @@ const MediaBrowser: React.FC = () => {
           IMPORT PROGRESS PANEL
           ======================================== */}
       {hasActiveImport && (
-        <div className="space-y-1.5 border-b border-white/10 bg-white/5 px-3 py-2">
+        <div className="space-y-1.5 border-b border-[#e4e6f2] bg-[#f8f9fd] px-3 py-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <Loader2 className="h-3 w-3 animate-spin text-[#22a653]" />
-              <span className="text-[10px] font-medium text-[#e2e8f0]">
+              <Loader2 className="h-3 w-3 animate-spin text-[#5842ed]" />
+              <span className="text-[10px] font-semibold text-[#110d2e]">
                 Importing {importProgress.length} file{importProgress.length > 1 ? 's' : ''}...
               </span>
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="h-5 w-5 text-white/75 hover:text-[#dcfce7]"
+              className="h-5 w-5 text-[#5e6578] hover:text-[#110d2e]"
               onClick={clearImportProgress}
             >
               <X className="w-3 h-3" />
@@ -1028,28 +1027,28 @@ const MediaBrowser: React.FC = () => {
             {importProgress.map((item, idx) => (
               <div key={idx} className="flex items-center gap-2">
                 {item.status === 'done' ? (
-                  <Check className="h-3 w-3 flex-shrink-0 text-[#dcfce7]" />
+                  <Check className="h-3 w-3 flex-shrink-0 text-[#5842ed]" />
                 ) : item.status === 'error' ? (
-                  <X className="w-3 h-3 text-red-400 flex-shrink-0" />
+                  <X className="w-3 h-3 text-rose-500 flex-shrink-0" />
                 ) : (
-                  <Loader2 className="w-3 h-3 flex-shrink-0 animate-spin text-[#cbd5e1]" />
+                  <Loader2 className="w-3 h-3 flex-shrink-0 animate-spin text-[#5842ed]" />
                 )}
-                <span className="flex-1 truncate text-[10px] text-[#cbd5e1]">
+                <span className="flex-1 truncate text-[10px] text-[#5e6578]">
                   {item.fileName}
                 </span>
                 {item.status !== 'done' && item.status !== 'error' && (
                   <div className="w-16 flex-shrink-0">
                     <Progress
                       value={item.progress}
-                      className="h-1 bg-white/10 [&>[data-slot=progress-indicator]]:bg-[#22a653]"
+                      className="h-1 bg-[#e4e6f2] [&>[data-slot=progress-indicator]]:bg-[#5842ed]"
                     />
                   </div>
                 )}
                 {item.status === 'done' && (
-                  <span className="flex-shrink-0 text-[9px] text-[#dcfce7]">Done</span>
+                  <span className="flex-shrink-0 text-[9px] font-semibold text-[#5842ed]">Done</span>
                 )}
                 {item.status === 'error' && (
-                  <span className="text-[9px] text-red-400 flex-shrink-0">Failed</span>
+                  <span className="text-[9px] text-rose-500 flex-shrink-0">Failed</span>
                 )}
               </div>
             ))}
@@ -1064,7 +1063,7 @@ const MediaBrowser: React.FC = () => {
                     100
                   : 0
               }
-              className="h-1 bg-white/10 [&>[data-slot=progress-indicator]]:bg-[#22a653]"
+              className="h-1 bg-[#e4e6f2] [&>[data-slot=progress-indicator]]:bg-[#5842ed]"
             />
           </div>
         </div>
@@ -1077,37 +1076,36 @@ const MediaBrowser: React.FC = () => {
         <div className="relative min-h-[120px]">
           {/* Drag Overlay */}
           {isDragOver && (
-            <div className="absolute inset-0 z-20 m-2 flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#22a653]/40 bg-[#22a653]/5 backdrop-blur-[1px]">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#22a653]/10">
-                <Upload className="h-5 w-5 text-[#dcfce7]" />
+            <div className="absolute inset-0 z-20 m-2 flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#5842ed] bg-[#f0eeff]/80 backdrop-blur-[1px]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm">
+                <Upload className="h-5 w-5 text-[#5842ed]" />
               </div>
-              <p className="text-xs font-medium text-[#dcfce7]">Drop files to import</p>
-              <p className="text-[10px] text-[#22a653]/70">Video, Audio, or Images</p>
+              <p className="text-xs font-semibold text-[#5842ed]">Drop files to import</p>
+              <p className="text-[10px] text-[#5e6578]">Video, Audio, or Images</p>
             </div>
           )}
 
           {/* Empty State */}
           {!isDragOver && filteredMedia.length === 0 && !hasActiveImport && (
             <div className="flex flex-col items-center justify-center py-16 px-4">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
-                <FolderOpen className="h-7 w-7 text-[#cbd5e1]" />
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#e4e6f2] bg-[#f0eeff]">
+                <FolderOpen className="h-7 w-7 text-[#5842ed]" />
               </div>
-              <p className="mb-1 text-center text-xs font-medium text-[#e2e8f0]">
+              <p className="mb-1 text-center text-xs font-bold text-[#110d2e]">
                 {search || filter !== 'all' ? 'No matching media' : 'No media files yet'}
               </p>
-              <p className="mb-4 text-center text-[10px] text-[#94a3b8]">
+              <p className="mb-4 text-center text-[11px] text-[#5e6578]">
                 {search || filter !== 'all'
                   ? 'Try adjusting your search or filters'
                   : 'Drag & drop files or browse to get started'}
               </p>
               {!search && filter === 'all' && (
                 <Button
-                  variant="ghost"
                   size="sm"
-                  className="h-8 gap-1.5 rounded-xl border border-[#22a653]/25 bg-[#22a653]/10 text-xs text-[#dcfce7] hover:bg-[#22a653]/15 hover:text-white"
+                  className="h-8 gap-1.5 rounded-xl bg-[#5842ed] px-3.5 text-xs font-semibold text-white shadow-sm hover:bg-[#4730df]"
                   onClick={openFilePicker}
                 >
-                  <Upload className="w-3 h-3" />
+                  <Upload className="w-3 h-3 text-white" />
                   Browse Files
                 </Button>
               )}
@@ -1129,11 +1127,11 @@ const MediaBrowser: React.FC = () => {
               ======================================== */}
           {!isDragOver && filteredMedia.length > 0 && !hasActiveImport && (
             <button
-              className="group mx-2 mb-1 mt-2 flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-white/10 py-3 transition-all hover:border-[#22a653]/50 hover:bg-white/10"
+              className="group mx-2 mb-1 mt-2 flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-white/10 py-3 transition-all hover:border-[#5842ed]/50 hover:bg-white/10"
               onClick={openFilePicker}
             >
-              <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-white/5 transition-colors group-hover:bg-[#22a653]/10">
-                <Upload className="h-3.5 w-3.5 text-white/75 transition-colors group-hover:text-[#dcfce7]" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-white/5 transition-colors group-hover:bg-[#5842ed]/10">
+                <Upload className="h-3.5 w-3.5 text-white/75 transition-colors group-hover:text-[#f0eeff]" />
               </div>
               <div className="text-left">
                 <p className="text-[11px] font-medium text-[#e2e8f0] transition-colors group-hover:text-white">
@@ -1198,7 +1196,7 @@ const MediaBrowser: React.FC = () => {
           {/* FIX #1: Always-visible "Import Media" button in footer */}
           <Button
             size="sm"
-            className="h-6 gap-1 rounded-lg bg-gradient-to-br from-[#ffcf5a] to-[#22a653] px-2.5 text-[10px] font-bold text-[#18231b] shadow-sm hover:from-[#dcfce7] hover:to-[#22a653]"
+            className="h-6 gap-1 rounded-lg bg-gradient-to-br from-[#5842ed] to-[#7c3aed] px-2.5 text-[10px] font-bold text-white shadow-sm hover:from-[#7c3aed] hover:to-[#5842ed]"
             onClick={openFilePicker}
           >
             <Plus className="w-3 h-3" />

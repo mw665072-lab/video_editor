@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Captions, Download, FileText, ImagePlus, Loader2, Scan, Scissors, Search, ScrollText, Sparkles, Video } from 'lucide-react'
+import { Captions, Download, FileText, ImagePlus, Loader2, Scan, Scissors, Search, ScrollText, Sparkles, Video, X } from 'lucide-react'
 import { VideoUpload } from '@/components/upload/VideoUpload'
 import { generateAiThumbnail, generateUploadedVideoSubtitles, generateUploadedVideoSummary, generateVideoSubtitles, generateVideoSummary, suggestClips, ClipSuggestionResponse, VideoSubtitlesResponse, VideoSummaryResponse } from '@/lib/api'
 
@@ -112,13 +112,13 @@ export function EditorAiTools({
   }
 
   return (
-    <section className="w-full rounded-3xl border border-white/10 bg-[#111827]/95 p-4 text-left shadow-[0_16px_60px_rgba(15,23,42,0.45)] sm:p-5">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+    <section className="w-full rounded-3xl border border-[#e4e6f2] bg-white p-5 text-left shadow-[0_10px_30px_rgba(88,66,237,0.04)] sm:p-6">
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-200">AI Tools</p>
-          <h2 className="mt-1 text-xl font-black text-white">Create faster from this video</h2>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-[#5842ed]">AI Creator Tools</p>
+          <h2 className="mt-1 text-xl font-bold tracking-tight text-[#110d2e]">Create faster from this video</h2>
         </div>
-        <p className="max-w-xl text-sm text-emerald-200/80">
+        <p className="max-w-xl text-xs leading-relaxed text-[#5e6578]">
           Jump into clipping, subtitles, transcripts, thumbnails, summaries, and reframing before loading your source.
         </p>
       </div>
@@ -131,13 +131,13 @@ export function EditorAiTools({
               key={tool.slug}
               type="button"
               onClick={() => setSelectedTool(tool)}
-            className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-[#0f172a]/90 p-4 transition hover:-translate-y-0.5 hover:border-[#22a653]/50 hover:bg-[#172033]"
-          >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-200 transition group-hover:bg-emerald-500/20">
-                <Icon size={20} strokeWidth={2.4} />
+              className="group flex items-center gap-3.5 rounded-2xl border border-[#e4e6f2] bg-[#f8f9fd] p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#5842ed]/40 hover:bg-white hover:shadow-md"
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#ded7fb] bg-[#f0eeff] text-[#5842ed] transition group-hover:bg-[#5842ed] group-hover:text-white">
+                <Icon size={20} strokeWidth={2.2} />
               </span>
-              <span className="text-sm font-black text-white">{tool.label}</span>
-              <Sparkles className="ml-auto text-emerald-400 transition group-hover:text-emerald-200" size={15} />
+              <span className="text-sm font-bold text-[#110d2e]">{tool.label}</span>
+              <Sparkles className="ml-auto text-[#5842ed] transition group-hover:scale-110" size={15} />
             </button>
           )
         })}
@@ -379,47 +379,55 @@ function EditorToolModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#e9f1e8]/90 p-4 backdrop-blur-sm" role="dialog" aria-modal="true">
-      <div className="w-full max-w-3xl overflow-hidden rounded-[2rem] border border-white/10 bg-[#0f172a] shadow-[0_30px_120px_rgba(15,23,42,0.35)]">
-        <div className="flex items-start justify-between gap-4 border-b border-white/10 bg-[#172033] p-5">
-          <div className="flex gap-3">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-200">
-              <Icon size={22} strokeWidth={2.4} />
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-[#110d2e]/45 p-4 backdrop-blur-md animate-in fade-in duration-200"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="w-full max-w-2xl overflow-hidden rounded-[1.75rem] border border-[#e4e6f2] bg-white shadow-[0_24px_70px_rgba(88,66,237,0.14)] animate-in zoom-in-95 duration-200">
+        {/* Modal Header */}
+        <div className="flex items-start justify-between gap-4 border-b border-[#e4e6f2] bg-[#f8f9fd] px-6 py-5">
+          <div className="flex items-center gap-3.5">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#ded7fb] bg-[#f0eeff] text-[#5842ed] shadow-sm">
+              <Icon size={22} strokeWidth={2.2} />
             </span>
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-200">Start {tool.label}</p>
-              <h3 className="mt-1 text-2xl font-black text-white">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[#5842ed]">Start {tool.label}</p>
+              <h3 className="mt-0.5 text-xl font-bold tracking-tight text-[#110d2e]">
                 {isThumbnailTool ? 'Generate thumbnail from prompt' : 'Upload video or paste URL'}
               </h3>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-emerald-200/80">{tool.description}</p>
+              <p className="mt-1 max-w-md text-xs leading-relaxed text-[#5e6578]">{tool.description}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-white/10 bg-[#172033] px-3 py-2 text-sm font-black text-emerald-200 hover:border-[#22a653]/50 hover:text-emerald-100"
+            aria-label="Close"
+            className="flex items-center gap-1 rounded-xl border border-[#e4e6f2] bg-white px-3 py-1.5 text-xs font-semibold text-[#5e6578] transition hover:border-[#5842ed]/40 hover:bg-[#f0eeff] hover:text-[#5842ed]"
           >
+            <X className="h-3.5 w-3.5" />
             Close
           </button>
         </div>
 
-        <div className="max-h-[72vh] overflow-y-auto p-5">
+        {/* Modal Body */}
+        <div className="max-h-[75vh] overflow-y-auto p-6 space-y-5 bg-white">
           {isThumbnailTool ? (
-            <div className="space-y-5">
-              <div className="rounded-2xl border border-white/10 bg-[#172033] p-4 text-sm leading-6 text-emerald-200">
-                Describe the thumbnail you want. The generator will act like a professional photographer and editor, create a high-quality 16:9 image, and avoid unrelated details.
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-[#ded7fb] bg-[#f0eeff]/70 p-4 text-xs font-medium leading-relaxed text-[#5842ed]">
+                Describe the thumbnail you want. The AI generator will act like a professional photographer and editor, create a high-quality 16:9 image, and avoid unrelated details.
               </div>
 
-              <div className="space-y-3">
-                <label className="text-sm font-black text-white">Thumbnail prompt</label>
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-[#110d2e]">Thumbnail prompt</label>
                 <textarea
                   value={thumbnailPrompt}
                   onChange={(event) => setThumbnailPrompt(event.target.value)}
                   placeholder="Example: A cinematic tech YouTube thumbnail showing a focused creator at a desk, dramatic blue-orange lighting, clean background, high contrast, premium camera look, no text."
-                  className="min-h-36 w-full resize-y rounded-2xl border border-white/10 bg-[#111827] p-4 text-sm leading-6 text-white outline-none transition focus:border-emerald-400/60"
+                  className="min-h-32 w-full resize-y rounded-2xl border border-[#e4e6f2] bg-[#f8f9fd] p-4 text-sm leading-relaxed text-[#110d2e] placeholder:text-[#94a3b8] outline-none transition focus:border-[#5842ed] focus:bg-white focus:ring-2 focus:ring-[#5842ed]/10"
                   disabled={isGeneratingThumbnail}
                 />
-                <p className="text-xs text-emerald-200/60">
+                <p className="text-[11px] text-[#5e6578]">
                   Include subject, mood, lighting, camera style, background, colors, and whether text should appear.
                 </p>
               </div>
@@ -428,32 +436,32 @@ function EditorToolModal({
                 type="button"
                 onClick={handleGenerateThumbnail}
                 disabled={isGeneratingThumbnail || thumbnailPrompt.trim().length < 8}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-green-500 px-5 py-3 text-sm font-black text-white shadow-[0_16px_40px_rgba(21,128,61,0.35)] transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#5842ed] px-5 py-3.5 text-sm font-semibold text-white shadow-md shadow-[#5842ed]/25 transition hover:bg-[#4730df] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isGeneratingThumbnail ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
+                {isGeneratingThumbnail ? <Loader2 className="h-4 w-4 animate-spin text-white" /> : <Sparkles className="h-4 w-4 text-white" />}
                 {isGeneratingThumbnail ? 'Generating high-quality thumbnail...' : 'Generate Thumbnail'}
               </button>
 
               {thumbnailError && (
-                <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm leading-6 text-red-100">
+                <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium leading-relaxed text-rose-600">
                   {thumbnailError}
                 </div>
               )}
 
               {thumbnailImage && (
-                <div className="rounded-3xl border border-white/10 bg-[#172033]/80 p-4">
-                  <div className="overflow-hidden rounded-2xl border border-white/10 bg-black">
+                <div className="rounded-2xl border border-[#e4e6f2] bg-[#f8f9fd] p-4">
+                  <div className="overflow-hidden rounded-xl border border-[#e4e6f2] bg-black shadow-sm">
                     <img
                       src={thumbnailImage}
                       alt="Generated AI thumbnail"
                       className="aspect-video w-full object-cover"
                     />
                   </div>
-                  <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                  <div className="mt-4 flex flex-col gap-2.5 sm:flex-row">
                     <button
                       type="button"
                       onClick={handleDownloadThumbnail}
-                      className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-black text-white transition hover:bg-emerald-400"
+                      className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#5842ed] px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#4730df]"
                     >
                       <Download className="h-4 w-4" />
                       Download Image
@@ -461,7 +469,7 @@ function EditorToolModal({
                     <button
                       type="button"
                       onClick={onClose}
-                      className="rounded-2xl border border-white/10 bg-[#111827] px-5 py-3 text-sm font-black text-emerald-100 transition hover:border-emerald-400/50 hover:text-white"
+                      className="rounded-xl border border-[#e4e6f2] bg-white px-5 py-2.5 text-xs font-semibold text-[#5e6578] transition hover:border-[#5842ed]/40 hover:bg-[#f0eeff] hover:text-[#5842ed]"
                     >
                       Close
                     </button>
@@ -471,7 +479,7 @@ function EditorToolModal({
             </div>
           ) : (
             <>
-              <div className="mb-4 rounded-2xl border border-white/10 bg-[#172033] p-4 text-sm leading-6 text-emerald-200">
+              <div className="rounded-2xl border border-[#ded7fb] bg-[#f0eeff]/70 p-4 text-xs font-medium leading-relaxed text-[#5842ed]">
                 {isSummaryTool
                   ? 'Paste a supported video URL to load it into the editor and generate a summary, key points, and chapters from the transcript.'
                   : isSubtitleTool
@@ -486,74 +494,75 @@ function EditorToolModal({
                         ? 'Choose a video or paste a supported URL. The editor will open reframing controls for vertical, horizontal, square, and fit/crop modes.'
                     : 'Choose a local video file or paste a supported URL. Once it loads, the source is placed into the editor and this modal closes.'}
               </div>
+
               <VideoUpload
                 onVideoLoaded={handleVideoLoaded}
                 onDurationResolved={onDurationResolved}
               />
 
               {(isAiClippingTool || isFindMomentsTool || isSummaryTool || isSubtitleTool || isTranscriptTool) && (
-                <div className="mt-5 rounded-3xl border border-white/10 bg-[#172033]/80 p-4 text-left">
+                <div className="space-y-3">
                   {isGeneratingAiClips && (
-                    <div className="flex items-center gap-3 text-sm font-bold text-emerald-100">
-                      <Loader2 className="h-5 w-5 animate-spin text-emerald-300" />
+                    <div className="flex items-center gap-3 rounded-2xl border border-[#ded7fb] bg-[#f0eeff] p-4 text-xs font-semibold text-[#5842ed]">
+                      <Loader2 className="h-4 w-4 animate-spin text-[#5842ed]" />
                       Generating AI clip candidates...
                     </div>
                   )}
 
                   {isFindingMoments && (
-                    <div className="flex items-center gap-3 text-sm font-bold text-emerald-100">
-                      <Loader2 className="h-5 w-5 animate-spin text-emerald-300" />
+                    <div className="flex items-center gap-3 rounded-2xl border border-[#ded7fb] bg-[#f0eeff] p-4 text-xs font-semibold text-[#5842ed]">
+                      <Loader2 className="h-4 w-4 animate-spin text-[#5842ed]" />
                       Finding viral moments and clip candidates...
                     </div>
                   )}
 
                   {isSummarizing && (
-                    <div className="flex items-center gap-3 text-sm font-bold text-emerald-100">
-                      <Loader2 className="h-5 w-5 animate-spin text-emerald-300" />
+                    <div className="flex items-center gap-3 rounded-2xl border border-[#ded7fb] bg-[#f0eeff] p-4 text-xs font-semibold text-[#5842ed]">
+                      <Loader2 className="h-4 w-4 animate-spin text-[#5842ed]" />
                       Generating video summary from transcript and key moments...
                     </div>
                   )}
 
                   {isGeneratingSubtitles && (
-                    <div className="flex items-center gap-3 text-sm font-bold text-emerald-100">
-                      <Loader2 className="h-5 w-5 animate-spin text-emerald-300" />
+                    <div className="flex items-center gap-3 rounded-2xl border border-[#ded7fb] bg-[#f0eeff] p-4 text-xs font-semibold text-[#5842ed]">
+                      <Loader2 className="h-4 w-4 animate-spin text-[#5842ed]" />
                       Generating editable subtitles from the video transcript...
                     </div>
                   )}
 
                   {isGeneratingTranscript && (
-                    <div className="flex items-center gap-3 text-sm font-bold text-emerald-100">
-                      <Loader2 className="h-5 w-5 animate-spin text-emerald-300" />
+                    <div className="flex items-center gap-3 rounded-2xl border border-[#ded7fb] bg-[#f0eeff] p-4 text-xs font-semibold text-[#5842ed]">
+                      <Loader2 className="h-4 w-4 animate-spin text-[#5842ed]" />
                       Generating full video transcript...
                     </div>
                   )}
 
                   {summaryError && (
-                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm leading-6 text-red-100">
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-600">
                       {summaryError}
                     </div>
                   )}
 
                   {subtitleError && (
-                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm leading-6 text-red-100">
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-600">
                       {subtitleError}
                     </div>
                   )}
 
                   {transcriptError && (
-                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm leading-6 text-red-100">
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-600">
                       {transcriptError}
                     </div>
                   )}
 
                   {momentsError && (
-                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm leading-6 text-red-100">
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-600">
                       {momentsError}
                     </div>
                   )}
 
                   {aiClipsError && (
-                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm leading-6 text-red-100">
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-600">
                       {aiClipsError}
                     </div>
                   )}

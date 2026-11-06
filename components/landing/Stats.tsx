@@ -6,9 +6,9 @@ export default function Stats() {
   return (
     <section style={{
       ...S.section,
-      borderTop: "1px solid rgba(23,32,51,0.08)",
-      borderBottom: "1px solid rgba(23,32,51,0.08)",
-      background: "rgba(255,255,255,0.66)",
+      borderTop: "1px solid #e4e6f2",
+      borderBottom: "1px solid #e4e6f2",
+      background: "rgba(255,255,255,0.72)",
     }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))" }}>
         {stats.map((s, i) => (
@@ -20,17 +20,17 @@ export default function Stats() {
             viewport={{ once: true }}
             style={{
               padding: "48px 32px", background: "transparent", textAlign: "center",
-              borderRight: i < 3 ? "1px solid rgba(23,32,51,0.08)" : "none",
+              borderRight: i < 3 ? "1px solid #e4e6f2" : "none",
               backdropFilter: "blur(18px)",
             }}
           >
             <div style={{
               fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 38, fontWeight: 800,
-              background: "linear-gradient(135deg,#172033,#15803d)",
+              background: "linear-gradient(135deg, #110d2e, #5842ed)",
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
               marginBottom: 8,
             }}>{s.num}</div>
-            <div style={{ fontSize: 13, color: "#687386" }}>{s.label}</div>
+            <div style={{ fontSize: 13, color: "#5e6578" }}>{s.label}</div>
           </motion.div>
         ))}
       </div>

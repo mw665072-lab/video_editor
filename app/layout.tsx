@@ -3,8 +3,8 @@ import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Multi-Clip Video Editor',
-  description: 'Professional video editor for creating multi-clip videos with instant export',
+  title: 'YouTube Video Trimmer & Cutter – Free Online Clip Maker',
+  description: 'Trim and cut YouTube videos online for free. Paste a link, set start and end times, find top moments, add subtitles and export clips for Shorts and Reels.',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -34,11 +34,11 @@ export default function RootLayout({
     <html
       lang="en"
       className="h-full"
-      style={{ backgroundColor: '#f6f7fb', color: '#172033' }}
+      style={{ backgroundColor: '#f8f9fd', color: '#110d2e' }}
     >
       <body
         className="h-full font-sans antialiased"
-        style={{ backgroundColor: '#f6f7fb', color: '#172033' }}
+        style={{ backgroundColor: '#f8f9fd', color: '#110d2e' }}
       >
         <div className="min-h-full">
           {children}

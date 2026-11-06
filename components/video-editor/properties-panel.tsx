@@ -186,7 +186,7 @@ function ToggleButton({ checked, onChange }: ToggleButtonProps) {
     <button
       type="button"
       className={`w-7 h-4 rounded-full transition-colors relative ${
-        checked ? 'bg-emerald-600' : 'bg-zinc-700'
+        checked ? 'bg-[#5842ed]' : 'bg-slate-300'
       }`}
       onClick={() => onChange(!checked)}
     >
@@ -911,7 +911,7 @@ const PropertiesPanel: React.FC = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-5 px-1.5 text-[9px] text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/30"
+                className="h-5 px-1.5 text-[9px] font-semibold text-[#5842ed] hover:text-[#4730df] hover:bg-[#f0eeff]"
                 onClick={handleAddTextOverlay}
               >
                 <Plus className="w-2.5 h-2.5 mr-0.5" />

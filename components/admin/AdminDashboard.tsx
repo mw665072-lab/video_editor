@@ -150,14 +150,14 @@ export function AdminDashboard() {
               <MiniStat label="GB / Success" value={`${getOverallGbPerSuccess(proxyPool).toFixed(3)} GB`} />
             </div>
 
-            <div className="mb-5 rounded-3xl border border-slate-200 bg-[#ffffff]/70 p-4 shadow-[0_16px_50px_rgba(31,52,36,0.28)]">
+            <div className="mb-5 rounded-3xl border border-slate-200 bg-[#ffffff]/70 p-4 shadow-[0_16px_50px_rgba(88,66,237,0.28)]">
               <div className="mb-3 grid gap-3 md:grid-cols-[1fr_120px_120px]">
                 <label className="block">
                   <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Provider</span>
                   <input
                     value={proxyProvider}
                     onChange={(event) => setProxyProvider(event.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-3 py-2 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#15803d]/70"
+                    className="w-full rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-3 py-2 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#5842ed]/70"
                   />
                 </label>
                 <label className="block">
@@ -166,7 +166,7 @@ export function AdminDashboard() {
                     value={proxyCountry}
                     onChange={(event) => setProxyCountry(event.target.value)}
                     placeholder="US"
-                    className="w-full rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-3 py-2 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#15803d]/70"
+                    className="w-full rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-3 py-2 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#5842ed]/70"
                   />
                 </label>
                 <label className="block">
@@ -175,7 +175,7 @@ export function AdminDashboard() {
                     value={proxyCostPerGb}
                     onChange={(event) => setProxyCostPerGb(event.target.value)}
                     inputMode="decimal"
-                    className="w-full rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-3 py-2 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#15803d]/70"
+                    className="w-full rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-3 py-2 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#5842ed]/70"
                   />
                 </label>
               </div>
@@ -185,7 +185,7 @@ export function AdminDashboard() {
                 onChange={(event) => setProxyImportText(event.target.value)}
                 rows={4}
                 placeholder="host:port:user:pass, one per line"
-                className="mb-3 w-full resize-y rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-3 py-2 font-mono text-xs text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#15803d]/70"
+                className="mb-3 w-full resize-y rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-3 py-2 font-mono text-xs text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#5842ed]/70"
               />
               <div className="flex flex-wrap items-center gap-3">
                 <label className="inline-flex items-center gap-2 text-xs font-bold text-slate-700">
@@ -193,7 +193,7 @@ export function AdminDashboard() {
                     type="checkbox"
                     checked={replaceProvider}
                     onChange={(event) => setReplaceProvider(event.target.checked)}
-                    className="h-4 w-4 accent-[#15803d]"
+                    className="h-4 w-4 accent-[#5842ed]"
                   />
                   Disable old proxies for this provider
                 </label>
@@ -209,7 +209,7 @@ export function AdminDashboard() {
                 <button
                   type="button"
                   onClick={refreshProxyPool}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-black text-slate-700 transition hover:border-[#15803d]/50 hover:bg-slate-100"
+                  className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-black text-slate-700 transition hover:border-[#5842ed]/50 hover:bg-slate-100"
                 >
                   Refresh
                 </button>
@@ -217,12 +217,12 @@ export function AdminDashboard() {
                   type="button"
                   onClick={() => validateProxies()}
                   disabled={proxyValidating}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-emerald-300/20 bg-emerald-400/10 px-4 py-2 text-xs font-black text-emerald-200 transition hover:border-emerald-300/50 hover:bg-emerald-400/15 disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-[#ded7fb] bg-[#f0eeff] px-4 py-2 text-xs font-black text-[#5842ed] transition hover:border-[#5842ed]/50 hover:bg-[#ded7fb] disabled:opacity-60"
                 >
                   <RefreshCw className={`h-4 w-4 ${proxyValidating ? 'animate-spin' : ''}`} />
                   {proxyValidating ? 'Validating...' : 'Validate 5'}
                 </button>
-                {proxyMessage && <span className="text-xs text-[#15803d]">{proxyMessage}</span>}
+                {proxyMessage && <span className="text-xs text-[#5842ed]">{proxyMessage}</span>}
               </div>
               <p className="mt-3 text-xs text-slate-500">
                 Validator {proxyPool.validator.enabled ? 'enabled' : 'disabled'} · max {proxyPool.maxUsesPerHour} uses/proxy/hour · health TTL {Math.round(proxyPool.validator.healthTtlMs / 60000)}m · quarantine {Math.round(proxyPool.validator.quarantineMs / 3600000)}h · test URL {proxyPool.validator.testUrl}
@@ -250,8 +250,8 @@ export function AdminDashboard() {
                       <tr key={provider.provider} className="border-b border-slate-200 text-slate-700 last:border-0">
                         <td className="py-3 pr-3 font-bold">{provider.provider}</td>
                         <td className="py-3 pr-3">{provider.usableProxies}/{provider.totalProxies}</td>
-                        <td className="py-3 pr-3 text-emerald-300">{formatPercent(provider.successRate)}</td>
-                        <td className="py-3 pr-3 text-[#15803d]">{formatPercent(provider.botBlockRate)}</td>
+                        <td className="py-3 pr-3 text-[#5842ed]">{formatPercent(provider.successRate)}</td>
+                        <td className="py-3 pr-3 text-[#5842ed]">{formatPercent(provider.botBlockRate)}</td>
                         <td className="py-3 pr-3 text-red-300">{formatPercent(provider.proxyAuthRate)}</td>
                         <td className="py-3 pr-3">{provider.downloads}</td>
                         <td className="py-3 pr-3">{provider.gbPerSuccessfulImport.toFixed(3)}</td>
@@ -296,12 +296,12 @@ export function AdminDashboard() {
                       <td className="py-3 pr-3">{proxy.errors}</td>
                       <td className="py-3 pr-3">{proxy.gb.toFixed(3)}</td>
                       <td className="py-3 pr-3">${proxy.estimatedCost.toFixed(2)}</td>
-                      <td className="max-w-[220px] truncate py-3 pr-3 text-[#15803d]">{proxy.lastError || '-'}</td>
+                      <td className="max-w-[220px] truncate py-3 pr-3 text-[#5842ed]">{proxy.lastError || '-'}</td>
                       <td className="py-3 pr-3">
                         <button
                           type="button"
                           onClick={() => toggleProxy(proxy.id, proxy.active)}
-                          className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-black uppercase text-slate-700 transition hover:border-[#15803d]/60 hover:bg-slate-100"
+                          className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] font-black uppercase text-slate-700 transition hover:border-[#5842ed]/60 hover:bg-slate-100"
                         >
                           {proxy.active ? 'Disable' : 'Enable'}
                         </button>
@@ -310,7 +310,7 @@ export function AdminDashboard() {
                             type="button"
                             onClick={() => validateProxies(proxy.id)}
                             disabled={proxyValidating}
-                            className="ml-2 rounded-xl border border-emerald-300/20 bg-emerald-400/10 px-3 py-1 text-[10px] font-black uppercase text-emerald-200 transition hover:border-emerald-300/50 hover:bg-emerald-400/15 disabled:opacity-60"
+                            className="ml-2 rounded-xl border border-[#ded7fb] bg-[#f0eeff] px-3 py-1 text-[10px] font-black uppercase text-[#5842ed] transition hover:border-[#5842ed]/50 hover:bg-[#ded7fb] disabled:opacity-60"
                           >
                             Test
                           </button>
@@ -334,7 +334,7 @@ export function AdminDashboard() {
                     <p className="text-xs text-slate-500">{user.email}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs font-black text-[#15803d]">{user.subscriptionPlan}</p>
+                    <p className="text-xs font-black text-[#5842ed]">{user.subscriptionPlan}</p>
                     <p className="text-[11px] text-slate-500">{user.role}</p>
                   </div>
                 </div>
@@ -345,13 +345,13 @@ export function AdminDashboard() {
           <Panel title="Recent Blogs">
             <div className="space-y-2">
               {stats.recentBlogs.map((blog) => (
-                <Link key={blog.id} href={`/admin/blogs`} className="block rounded-2xl border border-slate-200 bg-[#ffffff]/70 p-3 transition hover:border-[#15803d]/40 hover:bg-[#edf7ef]/80">
+                <Link key={blog.id} href={`/admin/blogs`} className="block rounded-2xl border border-slate-200 bg-[#ffffff]/70 p-3 transition hover:border-[#5842ed]/40 hover:bg-[#f0eeff]/80">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="line-clamp-1 text-sm font-bold text-slate-950">{blog.title}</p>
                       <p className="text-xs capitalize text-slate-500">{blog.category}</p>
                     </div>
-                    <span className={`rounded-full px-2 py-1 text-[10px] font-black uppercase ${blog.status === 'published' ? 'bg-emerald-500/10 text-emerald-300' : 'bg-[#15803d]/10 text-[#15803d]'}`}>
+                    <span className={`rounded-full px-2 py-1 text-[10px] font-black uppercase ${blog.status === 'published' ? 'bg-emerald-500/10 text-[#5842ed]' : 'bg-[#5842ed]/10 text-[#5842ed]'}`}>
                       {blog.status}
                     </span>
                   </div>
@@ -367,7 +367,7 @@ export function AdminDashboard() {
 
 function MiniStat({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-[#ffffff]/70 p-3 shadow-[0_12px_34px_rgba(31,52,36,0.22)]">
+    <div className="rounded-2xl border border-slate-200 bg-[#ffffff]/70 p-3 shadow-[0_12px_34px_rgba(88,66,237,0.22)]">
       <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">{label}</p>
       <p className="mt-1 text-2xl font-black text-slate-950">{value}</p>
     </div>
@@ -376,8 +376,8 @@ function MiniStat({ label, value }: { label: string; value: number | string }) {
 
 function StatCard({ icon, label, value, detail }: { icon: React.ReactNode; label: string; value: number | string; detail: string }) {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-[#ffffff]/90 p-5 shadow-[0_16px_60px_rgba(31,52,36,0.32)]">
-      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-[#15803d]/10 text-[#15803d] [&_svg]:h-5 [&_svg]:w-5">{icon}</div>
+    <div className="rounded-3xl border border-slate-200 bg-[#ffffff]/90 p-5 shadow-[0_16px_60px_rgba(88,66,237,0.32)]">
+      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-[#5842ed]/10 text-[#5842ed] [&_svg]:h-5 [&_svg]:w-5">{icon}</div>
       <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">{label}</p>
       <p className="mt-2 text-4xl font-black text-slate-950">{value}</p>
       <p className="mt-2 text-xs text-slate-500">{detail}</p>
@@ -387,16 +387,16 @@ function StatCard({ icon, label, value, detail }: { icon: React.ReactNode; label
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-[#ffffff]/90 p-5 shadow-[0_16px_60px_rgba(31,52,36,0.32)]">
-      <h2 className="mb-4 text-sm font-black uppercase tracking-[0.2em] text-[#15803d]">{title}</h2>
+    <section className="rounded-3xl border border-slate-200 bg-[#ffffff]/90 p-5 shadow-[0_16px_60px_rgba(88,66,237,0.32)]">
+      <h2 className="mb-4 text-sm font-black uppercase tracking-[0.2em] text-[#5842ed]">{title}</h2>
       {children}
     </section>
   )
 }
 
 function getProxyStatusClass(status: ProxyPoolStatus['proxies'][number]['status']) {
-  if (status === 'healthy') return 'bg-emerald-500/10 text-emerald-300'
-  if (status === 'untested') return 'bg-[#15803d]/10 text-[#15803d]'
+  if (status === 'healthy') return 'bg-emerald-500/10 text-[#5842ed]'
+  if (status === 'untested') return 'bg-[#5842ed]/10 text-[#5842ed]'
   if (status === 'cooldown') return 'bg-sky-500/10 text-sky-300'
   if (status === 'quarantined') return 'bg-fuchsia-500/10 text-fuchsia-300'
   if (status === 'disabled') return 'bg-slate-100 text-slate-500'

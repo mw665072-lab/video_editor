@@ -5,7 +5,7 @@ import { VideoClip } from '@/lib/types'
 import { formatTime, getClipDuration, calculateTotalDuration } from '@/lib/videoUtils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Trash2, GripVertical } from 'lucide-react'
+import { Trash2, GripVertical, Scissors } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface ClipListProps {
@@ -108,28 +108,28 @@ export function ClipList({
 
   if (clips.length === 0) {
     return (
-      <div className="flex h-full min-h-[220px] flex-col items-center justify-center rounded-2xl border border-dashed border-[#c8d8ca] bg-[#f8fbf6] p-6 text-center">
-        <p className="text-lg font-bold text-[#18231b]">No clips selected yet</p>
-        <p className="mt-2 max-w-[300px] text-sm text-[#5e6d63]">
-          Select clips on the timeline to get started or use the Add Clip button.
-        </p>
-        <p className="mt-3 text-xs text-[#7a887f]">
-          This area will show your selected clips, durations, and reorder controls.
+      <div className="flex min-h-[220px] flex-col items-center justify-center rounded-2xl border border-dashed border-[#ded7fb] bg-[#f8f9fd] p-6 text-center">
+        <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl border border-[#ded7fb] bg-[#f0eeff] text-[#5842ed]">
+          <Scissors className="h-5 w-5" />
+        </div>
+        <p className="text-sm font-bold text-[#110d2e]">No clips selected yet</p>
+        <p className="mt-1 max-w-[240px] text-xs leading-relaxed text-[#5e6578]">
+          Click <strong className="text-[#5842ed]">&quot;+ Add Clip&quot;</strong> or drag handles on the timeline to trim a moment.
         </p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-4 rounded-2xl border border-[#dce5dc] bg-[#f8fbf6] p-3 shadow-sm">
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-bold text-[#18231b]">Selected Clips ({clips.length})</h3>
-        <div className="text-sm text-[#667069]">
-          Total: {formatTime(totalDuration)}
+    <div className="space-y-3 rounded-2xl border border-[#e4e6f2] bg-[#f8f9fd] p-3 shadow-xs">
+      <div className="flex items-center justify-between px-1">
+        <h3 className="text-sm font-bold text-[#110d2e]">Selected Clips ({clips.length})</h3>
+        <div className="text-xs font-semibold text-[#5e6578]">
+          Total: <span className="text-[#5842ed] font-bold">{formatTime(totalDuration)}</span>
         </div>
       </div>
 
-      <div className="space-y-2 max-h-96 overflow-y-auto">
+      <div className="space-y-2 max-h-96 overflow-y-auto pr-0.5">
         {clips.map((clip, index) => (
           <div
             key={clip.id}
@@ -137,18 +137,18 @@ export function ClipList({
             onDragStart={(e) => handleDragStart(e, clip.id)}
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, clip.id)}
-            className={`p-3 rounded-xl border transition-all cursor-move min-h-[104px] ${
+            className={`p-3 rounded-xl border transition-all cursor-move min-h-[96px] ${
               selectedClipId === clip.id
-                ? 'border-[#15803d] bg-[#edf7ef] ring-1 ring-[#15803d]/25'
+                ? 'border-[#5842ed] bg-[#f0eeff] ring-1 ring-[#5842ed]/25'
                 : draggedId === clip.id
-                  ? 'border-[#86b38e] opacity-70'
-                  : 'border-[#dce5dc] bg-white hover:border-[#86b38e]'
+                  ? 'border-[#ded7fb] opacity-70'
+                  : 'border-[#e4e6f2] bg-white hover:border-[#5842ed]/50'
             }`}
             onClick={() => onClipSelect?.(clip.id)}
           >
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between min-w-0">
               <div className="flex items-start gap-3 min-w-0 flex-1">
-                <div className="text-muted-foreground mt-1 shrink-0">
+                <div className="text-[#94a3b8] mt-1 shrink-0">
                   <GripVertical className="w-4 h-4" />
                 </div>
 
@@ -158,16 +158,19 @@ export function ClipList({
                       <img
                         src={clip.thumbnailUrl}
                         alt={`Clip ${index + 1} thumbnail`}
-                        className="w-20 h-12 rounded-lg border border-slate-600 object-cover shrink-0"
+                        className="w-16 h-10 rounded-lg border border-[#e4e6f2] object-cover shrink-0"
                       />
                     ) : (
-                      <div className="w-20 h-12 rounded-lg border border-slate-600 bg-slate-900/25 flex items-center justify-center text-[10px] text-slate-400 shrink-0">
-                        No thumbnail
+                      <div className="w-16 h-10 rounded-lg border border-[#e4e6f2] bg-[#f8f9fd] flex items-center justify-center text-[9px] text-[#94a3b8] shrink-0">
+                        Clip {index + 1}
                       </div>
                     )}
                     <div className="min-w-0">
-                      <p className="text-xs text-slate-300 truncate">
-                        {clip.startTime.toFixed(2)}s - {clip.endTime.toFixed(2)}s
+                      <p className="text-xs font-bold text-[#110d2e] truncate">
+                        Clip {index + 1}
+                      </p>
+                      <p className="text-[11px] text-[#5e6578] truncate">
+                        {clip.startTime.toFixed(2)}s – {clip.endTime.toFixed(2)}s
                       </p>
                     </div>
                   </div>
@@ -181,20 +184,20 @@ export function ClipList({
                             setEditValues(v => ({ ...v, start: e.target.value }))
                           }
                           placeholder="00:00"
-                          className="h-8 text-sm w-[120px] flex-1 min-w-[90px]"
+                          className="h-8 text-xs w-[100px] flex-1 min-w-[80px] rounded-lg border-[#e4e6f2] bg-white text-[#110d2e]"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') handleEditSave(clip)
                             if (e.key === 'Escape') setEditingId(null)
                           }}
                         />
-                        <span className="text-muted-foreground text-sm mt-1">→</span>
+                        <span className="text-[#5e6578] text-xs mt-1.5">→</span>
                         <Input
                           value={editValues.end}
                           onChange={(e) =>
                             setEditValues(v => ({ ...v, end: e.target.value }))
                           }
                           placeholder="00:00"
-                          className="h-8 text-sm w-[120px] flex-1 min-w-[90px]"
+                          className="h-8 text-xs w-[100px] flex-1 min-w-[80px] rounded-lg border-[#e4e6f2] bg-white text-[#110d2e]"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') handleEditSave(clip)
                             if (e.key === 'Escape') setEditingId(null)
@@ -204,9 +207,8 @@ export function ClipList({
                       <div className="flex flex-wrap gap-2">
                         <Button
                           size="sm"
-                          variant="default"
                           onClick={() => handleEditSave(clip)}
-                          className="h-8 text-xs"
+                          className="h-7 px-3 text-xs bg-[#5842ed] hover:bg-[#4730df] text-white"
                         >
                           Save
                         </Button>
@@ -214,7 +216,7 @@ export function ClipList({
                           size="sm"
                           variant="outline"
                           onClick={() => setEditingId(null)}
-                          className="h-8 text-xs"
+                          className="h-7 px-3 text-xs border-[#e4e6f2] text-[#5e6578] hover:bg-white"
                         >
                           Cancel
                         </Button>
@@ -222,37 +224,34 @@ export function ClipList({
                     </div>
                   ) : (
                     <div
-                      className="cursor-pointer hover:opacity-70 min-w-0"
+                      className="cursor-pointer hover:opacity-80 min-w-0"
                       onClick={() => handleEditStart(clip)}
                     >
-                      <div className="flex flex-wrap items-center justify-between gap-2 md:gap-4">
-                        <div className="min-w-0">
-                          <p className="font-medium truncate">Clip {index + 1}</p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {formatTime(clip.startTime)} → {formatTime(clip.endTime)}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-semibold">{formatTime(getClipDuration(clip))}</p>
-                        </div>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-xs font-semibold text-[#5e6578] truncate">
+                          {formatTime(clip.startTime)} → {formatTime(clip.endTime)}
+                        </p>
+                        <span className="text-xs font-bold text-[#5842ed] bg-[#f0eeff] px-2 py-0.5 rounded-md border border-[#ded7fb]">
+                          {formatTime(getClipDuration(clip))}
+                        </span>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
 
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation()
                   onClipRemove?.(clip.id)
                   toast.success('Clip removed')
                 }}
-                className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-[#94a3b8] hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                title="Remove clip"
               >
                 <Trash2 className="w-4 h-4" />
-              </Button>
+              </button>
             </div>
           </div>
         ))}

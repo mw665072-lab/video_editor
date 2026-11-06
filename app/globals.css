@@ -4,53 +4,53 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Modern light design system. Keep colors semantic so every shared component
+/* ToolsHub modern lavender-purple design system. Keep colors semantic so every shared component
    follows the same visual language. */
 :root {
-  --background: #f7f8f2;
-  --foreground: #18231b;
+  --background: #f8f9fd;
+  --foreground: #110d2e;
   --card: #ffffff;
-  --card-foreground: #18231b;
+  --card-foreground: #110d2e;
   --popover: #ffffff;
-  --popover-foreground: #18231b;
-  --primary: #15803d;
+  --popover-foreground: #110d2e;
+  --primary: #5842ed;
   --primary-foreground: #ffffff;
-  --secondary: #edf7ef;
-  --secondary-foreground: #14532d;
-  --muted: #eef2ec;
-  --muted-foreground: #667069;
-  --accent: #fff4b8;
-  --accent-foreground: #614f00;
-  --destructive: #dc3545;
+  --secondary: #f0eeff;
+  --secondary-foreground: #5842ed;
+  --muted: #f1f3f9;
+  --muted-foreground: #5e6578;
+  --accent: #ede9fe;
+  --accent-foreground: #4c33db;
+  --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: #dce5dc;
-  --input: #dfe8df;
-  --ring: rgba(21, 128, 61, 0.34);
-  --chart-1: #15803d;
-  --chart-2: #d99b00;
-  --chart-3: #0f766e;
-  --chart-4: #65a30d;
-  --chart-5: #ca8a04;
+  --border: #e4e6f2;
+  --input: #e4e6f2;
+  --ring: rgba(88, 66, 237, 0.28);
+  --chart-1: #5842ed;
+  --chart-2: #8b5cf6;
+  --chart-3: #6366f1;
+  --chart-4: #a855f7;
+  --chart-5: #3b82f6;
   --radius: 1rem;
-  --sidebar: rgba(255, 255, 255, 0.92);
-  --sidebar-foreground: #27342b;
-  --sidebar-primary: #15803d;
+  --sidebar: rgba(255, 255, 255, 0.94);
+  --sidebar-foreground: #110d2e;
+  --sidebar-primary: #5842ed;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #edf7ef;
-  --sidebar-accent-foreground: #166534;
-  --sidebar-border: #dfe6df;
-  --sidebar-ring: rgba(21, 128, 61, 0.34);
-  --page-gradient: radial-gradient(circle at 7% -5%, rgba(34, 197, 94, 0.10), transparent 32%), radial-gradient(circle at 95% 2%, rgba(250, 204, 21, 0.12), transparent 27%), linear-gradient(180deg, #fbfcf7 0%, #f5f7f1 52%, #f8f9f4 100%);
-  --surface-glass: rgba(255, 255, 255, 0.8);
+  --sidebar-accent: #f0eeff;
+  --sidebar-accent-foreground: #5842ed;
+  --sidebar-border: #e4e6f2;
+  --sidebar-ring: rgba(88, 66, 237, 0.28);
+  --page-gradient: radial-gradient(circle at 10% 0%, rgba(88, 66, 237, 0.08), transparent 35%), radial-gradient(circle at 90% 10%, rgba(139, 92, 246, 0.08), transparent 30%), linear-gradient(180deg, #fbfbfe 0%, #f6f7fc 45%, #f8f9fe 100%);
+  --surface-glass: rgba(255, 255, 255, 0.92);
   --surface-strong: #ffffff;
-  --surface-border: rgba(24, 35, 27, 0.09);
-  --surface-shadow: 0 18px 55px rgba(31, 52, 36, 0.10);
-  --brand: #15803d;
-  --brand-hover: #166534;
-  --brand-soft: #eaf7ed;
-  --creator: #d99b00;
-  --ink: #18231b;
-  --ink-muted: #667069;
+  --surface-border: rgba(88, 66, 237, 0.08);
+  --surface-shadow: 0 16px 48px rgba(88, 66, 237, 0.06);
+  --brand: #5842ed;
+  --brand-hover: #4730df;
+  --brand-soft: #f0eeff;
+  --creator: #8b5cf6;
+  --ink: #110d2e;
+  --ink-muted: #5e6578;
 }
 
 /* Kept for third-party components that may add .dark. The product now uses
@@ -130,11 +130,11 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #c3cad6;
+    background: #cdd1e2;
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #9aa5b5;
+    background: #aab0cc;
   }
 
   input, textarea, select {
@@ -142,8 +142,8 @@
   }
 
   ::selection {
-    background: rgba(250, 204, 21, 0.34);
-    color: #27432f;
+    background: rgba(88, 66, 237, 0.18);
+    color: #110d2e;
   }
 
   a,
@@ -167,14 +167,14 @@
 }
 
 .cms-prose {
-  color: #4d5d51;
+  color: #5e6578;
 }
 
 .cms-prose h1,
 .cms-prose h2,
 .cms-prose h3,
 .cms-prose h4 {
-  color: #18231b;
+  color: #110d2e;
   font-weight: 900;
   line-height: 1.15;
   margin: 1.5em 0 0.6em;
@@ -194,7 +194,7 @@
 }
 
 .cms-prose a {
-  color: #166534;
+  color: #5842ed;
   font-weight: 800;
   text-decoration: underline;
   text-underline-offset: 4px;
@@ -210,26 +210,26 @@
 }
 
 .cms-prose blockquote {
-  border-left: 4px solid #15803d;
+  border-left: 4px solid #5842ed;
   border-radius: 0.75rem;
-  background: #edf7ef;
+  background: #f0eeff;
   padding: 1rem 1.25rem;
-  color: #31533b;
+  color: #3b28b5;
 }
 
 .cms-prose img {
   max-width: 100%;
   height: auto;
   border-radius: 1.25rem;
-  border: 1px solid #dce5dc;
+  border: 1px solid #e4e6f2;
   margin: 1rem 0;
 }
 
 .cms-prose pre,
 .cms-prose code {
   border-radius: 0.75rem;
-  background: #edf7ef;
-  color: #31533b;
+  background: #f0eeff;
+  color: #3b28b5;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -253,10 +253,8 @@
 }
 
 /* Editor workspace theme --------------------------------------------------
-   The editor historically shipped with its own navy/purple palette. These
-   scoped rules keep media canvases dark where that improves contrast while
-   moving the surrounding workspace, controls, timelines, and AI panels onto
-   the same light green/yellow system as the rest of the product. */
+   ToolsHub light lavender/purple palette for workspace controls, panels,
+   and media chrome. */
 .clip-editor-theme {
   color-scheme: light;
   color: var(--ink);
@@ -265,8 +263,8 @@
 .clip-editor-theme .editor-surface,
 .clip-editor-theme div.rounded-2xl[style*='background'] {
   border-color: var(--surface-border) !important;
-  background: rgba(255, 255, 255, 0.94) !important;
-  box-shadow: 0 14px 38px rgba(31, 52, 36, 0.08) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  box-shadow: 0 14px 38px rgba(88, 66, 237, 0.06) !important;
 }
 
 .clip-editor-theme [class*='bg-[#0f172a]'],
@@ -278,29 +276,26 @@
 
 .clip-editor-theme [class*='border-white/'],
 .clip-editor-theme [class*='border-slate-'] {
-  border-color: #dce5dc !important;
+  border-color: #e4e6f2 !important;
 }
 
-.clip-editor-theme [class*='text-white']:not([class*='bg-emerald']):not([class*='from-emerald']),
-.clip-editor-theme [class*='text-slate-1'],
-.clip-editor-theme [class*='text-slate-2'] {
-  color: #18231b !important;
+/* Ensure buttons with solid purple/gradient backgrounds ALWAYS have crisp white text */
+.clip-editor-theme button[class*='bg-[#5842ed]'],
+.clip-editor-theme button[class*='from-[#5842ed]'],
+.clip-editor-theme [class*='bg-[#5842ed]'] {
+  color: #ffffff !important;
 }
 
 .clip-editor-theme [class*='text-slate-3'],
 .clip-editor-theme [class*='text-slate-4'],
 .clip-editor-theme [class*='text-slate-5'] {
-  color: #667069 !important;
-}
-
-.clip-editor-theme [class*='text-emerald-100'],
-.clip-editor-theme [class*='text-emerald-200'] {
-  color: #31533b !important;
+  color: #5e6578 !important;
 }
 
 .clip-editor-theme button[style*='linear-gradient'] {
-  background: linear-gradient(135deg, #15803d 0%, #eab308 100%) !important;
-  box-shadow: 0 10px 28px rgba(21, 128, 61, 0.22) !important;
+  background: linear-gradient(135deg, #5842ed 0%, #7c3aed 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 28px rgba(88, 66, 237, 0.25) !important;
 }
 
 .clip-editor-theme input[type='url'],
@@ -309,85 +304,56 @@
 .clip-editor-theme textarea,
 .editor-dialog-theme input,
 .editor-dialog-theme textarea {
-  border-color: #cfdccf !important;
+  border-color: #dcdff0 !important;
   background: #ffffff !important;
-  color: #18231b !important;
+  color: #110d2e !important;
 }
 
 .clip-editor-theme [style*='border-bottom'],
 .clip-editor-theme [style*='border-top'] {
-  border-color: #e1e8df !important;
-}
-
-.clip-editor-theme [class*='bg-cyan-'],
-.clip-editor-theme [class*='from-cyan-'],
-.clip-editor-theme [class*='to-cyan-'] {
-  background-color: rgba(21, 128, 61, 0.12) !important;
-}
-
-.clip-editor-theme [class*='border-cyan-'] {
-  border-color: #15803d !important;
-}
-
-.clip-editor-theme [class*='text-cyan-'] {
-  color: #166534 !important;
+  border-color: #e8eaf4 !important;
 }
 
 .editor-dialog-theme {
-  color: #18231b;
+  color: #110d2e;
 }
 
 /* Visual editor theme -----------------------------------------------------
-   Editing chrome is intentionally light and calm. The actual preview canvas
-   stays dark so video, overlays, and color decisions remain trustworthy. */
+   Light lavender/purple canvas with clean white panels and dark preview monitor. */
 .visual-editor-theme {
   color-scheme: light;
-  color: #18231b;
+  color: #110d2e;
   background:
-    radial-gradient(circle at 12% 6%, rgba(34, 197, 94, 0.10), transparent 30%),
-    radial-gradient(circle at 92% 0%, rgba(250, 204, 21, 0.12), transparent 24%),
-    #f7f8f2;
+    radial-gradient(circle at 12% 6%, rgba(88, 66, 237, 0.08), transparent 30%),
+    radial-gradient(circle at 92% 0%, rgba(139, 92, 246, 0.08), transparent 24%),
+    #f8f9fd;
 }
 
 .visual-editor-theme [class*='bg-[#0f172a]'],
-.visual-editor-theme [class*='bg-[#111827]'],
+.visual-editor-theme [class*='bg-[#111827]']:not(.visual-editor-preview):not(.visual-editor-preview *),
 .visual-editor-theme [class*='bg-[#182236]'],
-.visual-editor-theme [class*='bg-zinc-9'],
-.visual-editor-theme [class*='bg-zinc-8'],
-.visual-editor-theme [class*='bg-slate-9'],
-.visual-editor-theme [class*='bg-slate-8'] {
+.visual-editor-theme [class*='bg-zinc-9']:not(.visual-editor-preview *),
+.visual-editor-theme [class*='bg-zinc-8']:not(.visual-editor-preview *) {
   background-color: #ffffff !important;
 }
 
-.visual-editor-theme [class*='bg-white/5'] {
-  background-color: #f8fbf6 !important;
+.visual-editor-theme [class*='border-white/']:not(.visual-editor-preview *),
+.visual-editor-theme [class*='border-zinc-']:not(.visual-editor-preview *),
+.visual-editor-theme [class*='border-slate-']:not(.visual-editor-preview *) {
+  border-color: #e4e6f2 !important;
 }
 
-.visual-editor-theme [class*='bg-white/10'] {
-  background-color: #edf7ef !important;
+/* Ensure buttons with saturated backgrounds ALWAYS have crisp white text */
+.visual-editor-theme button[class*='bg-[#5842ed]'],
+.visual-editor-theme button[class*='bg-purple'],
+.visual-editor-theme button[class*='bg-indigo'],
+.visual-editor-theme [class*='bg-[#5842ed]'] {
+  color: #ffffff !important;
 }
 
-.visual-editor-theme [class*='border-white/'],
-.visual-editor-theme [class*='border-zinc-'],
-.visual-editor-theme [class*='border-slate-'] {
-  border-color: #dce5dc !important;
-}
-
-.visual-editor-theme [class*='text-white'],
-.visual-editor-theme [class*='text-[#f8fafc]'],
-.visual-editor-theme [class*='text-[#e2e8f0]'] {
-  color: #18231b !important;
-}
-
-.visual-editor-theme [class*='text-[#cbd5e1]'],
-.visual-editor-theme [class*='text-[#94a3b8]'],
-.visual-editor-theme [class*='text-zinc-3'],
-.visual-editor-theme [class*='text-zinc-4'],
-.visual-editor-theme [class*='text-zinc-5'],
-.visual-editor-theme [class*='text-slate-3'],
-.visual-editor-theme [class*='text-slate-4'],
-.visual-editor-theme [class*='text-slate-5'] {
-  color: #667069 !important;
+.visual-editor-theme button[class*='bg-[#5842ed]'] *,
+.visual-editor-theme [class*='bg-[#5842ed]'] * {
+  color: #ffffff !important;
 }
 
 .visual-editor-theme input[type='search'],
@@ -395,23 +361,23 @@
 .visual-editor-theme input[type='number'],
 .visual-editor-theme textarea,
 .visual-editor-theme select {
-  border-color: #cfdccf !important;
+  border-color: #dcdff0 !important;
   background-color: #ffffff !important;
-  color: #18231b !important;
+  color: #110d2e !important;
 }
 
 .visual-editor-theme [data-state='on'],
 .visual-editor-theme [data-state='active'] {
-  border-color: rgba(21, 128, 61, 0.22) !important;
-  background-color: #e7f4e9 !important;
-  color: #14532d !important;
+  border-color: rgba(88, 66, 237, 0.25) !important;
+  background-color: #f0eeff !important;
+  color: #5842ed !important;
 }
 
 .visual-editor-theme button:hover {
-  border-color: rgba(21, 128, 61, 0.28);
+  border-color: rgba(88, 66, 237, 0.32);
 }
 
-/* Preserve the professional dark playback monitor and its transport chrome. */
+/* Preserve the professional dark playback monitor and its transport chrome */
 .visual-editor-theme .visual-editor-preview,
 .visual-editor-theme .visual-editor-preview [class*='bg-[#111827]'] {
   background-color: #111827 !important;
@@ -443,21 +409,21 @@
 .visual-editor-dialog-theme [class*='bg-zinc-9'],
 .visual-editor-dialog-theme [class*='bg-zinc-8'],
 .visual-editor-dialog-theme [class*='bg-zinc-7'] {
-  background-color: #f8fbf6 !important;
+  background-color: #fafbff !important;
 }
 
 .visual-editor-dialog-theme [class*='border-zinc-'] {
-  border-color: #dce5dc !important;
+  border-color: #e4e6f2 !important;
 }
 
 .visual-editor-dialog-theme [class*='text-zinc-1'],
 .visual-editor-dialog-theme [class*='text-zinc-2'],
 .visual-editor-dialog-theme [class*='text-zinc-3'] {
-  color: #18231b !important;
+  color: #110d2e !important;
 }
 
 .visual-editor-dialog-theme [class*='text-zinc-4'],
 .visual-editor-dialog-theme [class*='text-zinc-5'],
 .visual-editor-dialog-theme [class*='text-zinc-6'] {
-  color: #667069 !important;
+  color: #5e6578 !important;
 }

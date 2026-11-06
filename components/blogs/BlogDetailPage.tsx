@@ -70,14 +70,14 @@ export function BlogDetailPage({ slug }: { slug: string }) {
         {/* Back link */}
         <Link
           href="/blogs"
-          className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-[#ffffff] px-4 py-2 text-sm font-semibold text-slate-500 transition hover:border-[#15803d]/60 hover:text-slate-950"
+          className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-[#ffffff] px-4 py-2 text-sm font-semibold text-slate-500 transition hover:border-[#5842ed]/60 hover:text-slate-950"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to blogs
         </Link>
 
         {/* Header card */}
-        <header className="overflow-hidden rounded-2xl border border-slate-200 bg-[#ffffff] shadow-[0_16px_60px_rgba(31,52,36,0.35)]">
+        <header className="overflow-hidden rounded-2xl border border-slate-200 bg-[#ffffff] shadow-[0_16px_60px_rgba(88,66,237,0.35)]">
           {post.coverImageUrl && (
             <div className="relative h-[300px] w-full overflow-hidden sm:h-[380px]">
               <img
@@ -90,7 +90,7 @@ export function BlogDetailPage({ slug }: { slug: string }) {
           )}
           <div className="p-6 lg:p-8">
             <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
-              <span className="rounded-full bg-[#d99b00]/10 px-3 py-1 font-bold capitalize text-[#d99b00]">{post.category}</span>
+              <span className="rounded-full bg-[#5842ed]/10 px-3 py-1 font-bold capitalize text-[#5842ed]">{post.category}</span>
               <span className="flex items-center gap-1 text-slate-500"><Calendar className="h-3 w-3" />{new Date(post.publishedAt || post.createdAt).toLocaleDateString()}</span>
               <span className="flex items-center gap-1 text-slate-500"><User className="h-3 w-3" />{post.authorName}</span>
             </div>
@@ -101,7 +101,7 @@ export function BlogDetailPage({ slug }: { slug: string }) {
 
         {/* Content */}
         <div
-          className="prose prose-invert prose-orange mt-4 max-w-none rounded-2xl border border-slate-200 bg-[#ffffff] p-6 text-slate-700 prose-headings:font-black prose-headings:text-slate-950 prose-a:text-[#d99b00] prose-blockquote:border-l-[#d99b00] prose-blockquote:text-slate-600 prose-code:text-[#d99b00] prose-strong:text-slate-950 lg:p-8"
+          className="prose prose-invert prose-orange mt-4 max-w-none rounded-2xl border border-slate-200 bg-[#ffffff] p-6 text-slate-700 prose-headings:font-black prose-headings:text-slate-950 prose-a:text-[#5842ed] prose-blockquote:border-l-[#5842ed] prose-blockquote:text-slate-600 prose-code:text-[#5842ed] prose-strong:text-slate-950 lg:p-8"
           dangerouslySetInnerHTML={{ __html: post.contentHtml }}
         />
 
@@ -112,14 +112,14 @@ export function BlogDetailPage({ slug }: { slug: string }) {
             <button
               onClick={() => onReaction('like')}
               disabled={busy}
-              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition ${post.userReaction === 'like' ? 'bg-[#d99b00] text-slate-950 shadow-[0_0_16px_rgba(217,155,0,0.4)]' : 'bg-slate-50 text-slate-600 hover:bg-[#d99b00]/10'}`}
+              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition ${post.userReaction === 'like' ? 'bg-[#5842ed] text-white shadow-sm' : 'border border-[#e4e6f2] bg-white text-[#5e6578] hover:bg-[#f0eeff] hover:text-[#5842ed]'}`}
             >
               <ThumbsUp className="h-4 w-4" />{post.likeCount}
             </button>
             <button
               onClick={() => onReaction('dislike')}
               disabled={busy}
-              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition ${post.userReaction === 'dislike' ? 'bg-red-500 text-slate-950' : 'bg-slate-50 text-slate-600 hover:bg-red-500/10'}`}
+              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition ${post.userReaction === 'dislike' ? 'bg-rose-600 text-white shadow-sm' : 'border border-[#e4e6f2] bg-white text-[#5e6578] hover:bg-rose-50 hover:text-rose-600'}`}
             >
               <ThumbsDown className="h-4 w-4" />{post.dislikeCount}
             </button>
@@ -135,12 +135,12 @@ export function BlogDetailPage({ slug }: { slug: string }) {
               onChange={(e) => setComment(e.target.value)}
               placeholder="Share your thoughts..."
               rows={3}
-              className="flex-1 resize-none rounded-xl border border-slate-200 bg-[#f8fafc] p-3 text-sm text-slate-950 outline-none placeholder:text-[#758078] focus:border-[#15803d]/60"
+              className="flex-1 resize-none rounded-xl border border-[#e4e6f2] bg-white p-3 text-sm text-[#110d2e] outline-none placeholder:text-[#94a3b8] focus:border-[#5842ed]"
             />
             <button
               onClick={onComment}
               disabled={busy || !comment.trim()}
-              className="self-stretch rounded-xl bg-[#d99b00] px-4 font-bold text-slate-950 transition hover:bg-[#b77900] disabled:opacity-40"
+              className="self-stretch rounded-xl bg-[#5842ed] px-4 font-semibold text-white transition hover:bg-[#4730df] shadow-sm disabled:opacity-40"
             >
               <Send className="h-4 w-4" />
             </button>
@@ -152,7 +152,7 @@ export function BlogDetailPage({ slug }: { slug: string }) {
               {post.comments.map((item) => (
                 <div key={item.id} className="rounded-xl border border-slate-100 bg-[#f8fafc] p-4">
                   <div className="mb-2 flex items-center justify-between text-xs">
-                    <span className="font-bold text-[#d99b00]">{item.userName}</span>
+                    <span className="font-bold text-[#5842ed]">{item.userName}</span>
                     <span className="text-slate-400">{new Date(item.createdAt).toLocaleString()}</span>
                   </div>
                   <p className="text-sm leading-6 text-slate-700">{item.body}</p>

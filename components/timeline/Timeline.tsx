@@ -217,19 +217,19 @@ function TimelineComponent({
   }
 
   return (
-    <div className="w-full space-y-3 rounded-2xl border border-[#dce5dc] bg-[#f8fbf6] p-3 shadow-sm">
+    <div className="w-full space-y-2.5 rounded-2xl border border-[#e4e6f2] bg-[#f8f9fd] p-3 shadow-xs">
       <div className="flex justify-between items-center px-2">
-        <span className="text-xs font-semibold text-[#526159]">{formatTime(currentTime)}</span>
-        <span className="text-xs font-semibold text-[#526159]">{formatTime(duration)}</span>
+        <span className="text-xs font-bold text-[#5842ed] bg-[#f0eeff] px-2 py-0.5 rounded-md border border-[#ded7fb]">{formatTime(currentTime)}</span>
+        <span className="text-xs font-semibold text-[#5e6578]">Duration: {formatTime(duration)}</span>
       </div>
 
-      <div className="relative overflow-hidden rounded-xl border border-[#dce5dc] bg-white shadow-inner">
+      <div className="relative overflow-hidden rounded-xl border border-[#e4e6f2] bg-white shadow-inner">
         {/* Timeline track */}
         <div
           ref={containerRef}
           onClick={handleContainerClick}
           onWheel={handleZoom}
-          className="relative h-40 cursor-pointer overflow-x-auto overflow-y-hidden pr-1"
+          className="relative h-28 cursor-pointer overflow-x-auto overflow-y-hidden pr-1"
           style={{ width: '100%', scrollBehavior: 'smooth' }}
         >
           <div
@@ -243,66 +243,75 @@ function TimelineComponent({
           >
             {/* Playback cursor */}
             <div
-              className="pointer-events-none absolute bottom-0 top-0 z-30 w-0.5 bg-[#eab308]"
+              className="pointer-events-none absolute bottom-0 top-0 z-30 w-0.5 bg-[#5842ed]"
               style={{
                 left: `${timeToPixels(currentTime, scale)}px`,
               }}
             />
 
-          {/* Clips visualization */}
-          {visibleClips.map((clip) => {
-            const startPixels = timeToPixels(clip.startTime, scale)
-            const endPixels = timeToPixels(clip.endTime, scale)
-            const widthPixels = endPixels - startPixels
-            const isSelected = selectedClipId === clip.id
-
-            return (
-              <div
-                key={clip.id}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onClipSelect?.(clip.id)
-                }}
-                onPointerDown={(e) => handleClipDragStart(e, clip)}
-                className={`absolute top-4 h-20 rounded-2xl border-2 transition-all duration-200 ease-in-out shadow-sm ${
-                  isSelected
-                    ? 'border-[#15803d] bg-[#dcf3df] ring-2 ring-[#15803d]/20'
-                    : 'border-[#a9c8ad] bg-[#edf7ef] hover:border-[#15803d] hover:bg-[#e4f4e7]'
-                }`}
-                style={{
-                  left: `${startPixels}px`,
-                  width: `${Math.max(2, widthPixels)}px`,
-                }}
-              >
-                {/* Start handle */}
-                <div
-                  onMouseDown={(e) => handleMouseDown(e, clip.id, 'start')}
-                  className="absolute left-0 top-0 bottom-0 w-1 bg-primary hover:bg-primary/80 cursor-ew-resize rounded-l"
-                />
-
-                {/* End handle */}
-                <div
-                  onMouseDown={(e) => handleMouseDown(e, clip.id, 'end')}
-                  className="absolute right-0 top-0 bottom-0 w-1 bg-primary hover:bg-primary/80 cursor-ew-resize rounded-r"
-                />
-
-                {/* Clip info */}
-                {widthPixels > 40 && (
-                  <div className="absolute inset-1 flex flex-col justify-center items-center overflow-hidden pointer-events-none">
-                    <p className="text-xs font-semibold text-foreground truncate">
-                      Clip {clip.order + 1}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatTime(clip.endTime - clip.startTime)}
-                    </p>
-                  </div>
-                )}
+            {/* Empty state prompt inside timeline */}
+            {visibleClips.length === 0 && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none pb-5">
+                <p className="text-xs font-medium text-[#94a3b8]">
+                  Click &ldquo;+ Add Clip&rdquo; above or click anywhere on the timeline to create a clip
+                </p>
               </div>
-            )
-          })}
+            )}
 
-          {/* Time markers */}
-          <div className="absolute bottom-0 left-0 right-0 flex h-6 border-t border-[#dce5dc] bg-[#eef4ec]">
+            {/* Clips visualization */}
+            {visibleClips.map((clip) => {
+              const startPixels = timeToPixels(clip.startTime, scale)
+              const endPixels = timeToPixels(clip.endTime, scale)
+              const widthPixels = endPixels - startPixels
+              const isSelected = selectedClipId === clip.id
+
+              return (
+                <div
+                  key={clip.id}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onClipSelect?.(clip.id)
+                  }}
+                  onPointerDown={(e) => handleClipDragStart(e, clip)}
+                  className={`absolute top-2 h-16 rounded-xl border-2 transition-all duration-200 ease-in-out shadow-sm ${
+                    isSelected
+                      ? 'border-[#5842ed] bg-[#f0eeff] ring-2 ring-[#5842ed]/25'
+                      : 'border-[#ded7fb] bg-white hover:border-[#5842ed] hover:bg-[#f0eeff]'
+                  }`}
+                  style={{
+                    left: `${startPixels}px`,
+                    width: `${Math.max(4, widthPixels)}px`,
+                  }}
+                >
+                  {/* Start handle */}
+                  <div
+                    onMouseDown={(e) => handleMouseDown(e, clip.id, 'start')}
+                    className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#5842ed] hover:bg-[#4730df] cursor-ew-resize rounded-l"
+                  />
+
+                  {/* End handle */}
+                  <div
+                    onMouseDown={(e) => handleMouseDown(e, clip.id, 'end')}
+                    className="absolute right-0 top-0 bottom-0 w-1.5 bg-[#5842ed] hover:bg-[#4730df] cursor-ew-resize rounded-r"
+                  />
+
+                  {/* Clip info */}
+                  {widthPixels > 45 && (
+                    <div className="absolute inset-1 flex flex-col justify-center items-center overflow-hidden pointer-events-none">
+                      <p className="text-xs font-bold text-[#110d2e] truncate">
+                        Clip {clip.order + 1}
+                      </p>
+                      <p className="text-[10px] font-semibold text-[#5842ed]">
+                        {formatTime(clip.endTime - clip.startTime)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+
+            {/* Time markers */}
+            <div className="absolute bottom-0 left-0 right-0 flex h-6 border-t border-[#e4e6f2] bg-[#f8f9fd]">
             {Array.from({
               length: Math.floor(duration / 10) + 1,
             }).map((_, i) => {
@@ -311,7 +320,7 @@ function TimelineComponent({
               return (
                 <div
                   key={i}
-                  className="absolute text-[10px] font-medium text-[#526159]"
+                  className="absolute text-[10px] font-medium text-[#5e6578]"
                   style={{
                     left: `${pixels}px`,
                     transform: 'translateX(-50%)',

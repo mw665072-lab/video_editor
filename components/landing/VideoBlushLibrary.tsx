@@ -77,7 +77,7 @@ export default function BlushingVideoPreview() {
     <section className="relative overflow-hidden border-y border-slate-200 bg-white py-12 sm:py-16 lg:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-8 sm:mb-10 lg:mb-12">
-          <span className="rounded-full bg-emerald-50 px-4 py-1.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200 sm:px-5 sm:py-2 sm:text-sm">
+          <span className="rounded-full bg-[#f0eeff] px-4 py-1.5 text-xs font-semibold text-[#5842ed] ring-1 ring-[#5842ed]/20 sm:px-5 sm:py-2 sm:text-sm">
             LIVE PREVIEW
           </span>
           <h2 className="mt-4 px-2 text-3xl font-bold tracking-tighter text-slate-950 sm:mt-6 sm:text-4xl md:text-5xl lg:text-6xl">
@@ -142,8 +142,8 @@ export default function BlushingVideoPreview() {
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
                 onClick={() => handleVideoClick(video.id)}
-                className={`group flex cursor-pointer gap-3 rounded-2xl border bg-white p-3 shadow-sm transition-all hover:border-emerald-300 hover:shadow-lg sm:gap-4 sm:rounded-3xl sm:p-4 md:gap-5 ${
-                  activeVideo === video.id ? "border-emerald-500 ring-2 ring-emerald-100" : "border-slate-200"
+                className={`group flex cursor-pointer gap-3 rounded-2xl border bg-white p-3 shadow-sm transition-all hover:border-[#5842ed]/40 hover:shadow-lg sm:gap-4 sm:rounded-3xl sm:p-4 md:gap-5 ${
+                  activeVideo === video.id ? "border-[#5842ed] ring-2 ring-[#5842ed]/20" : "border-slate-200"
                 }`}
               >
                 <div className="relative w-32 sm:w-40 md:w-48 lg:w-56 aspect-video rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0">
@@ -158,7 +158,7 @@ export default function BlushingVideoPreview() {
                 </div>
 
                 <div className="flex-1 py-1 sm:py-2 min-w-0">
-                  <h4 className="line-clamp-2 text-sm font-semibold leading-tight text-slate-900 transition-colors group-hover:text-emerald-600 sm:text-base md:text-[17px]">
+                  <h4 className="line-clamp-2 text-sm font-semibold leading-tight text-slate-900 transition-colors group-hover:text-[#5842ed] sm:text-base md:text-[17px]">
                     {video.title}
                   </h4>
                   <p className="mt-2 text-xs text-slate-500 sm:mt-3 sm:text-sm">{video.creator}</p>
@@ -175,7 +175,7 @@ export default function BlushingVideoPreview() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => router.push("/editor")}
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 py-4 text-base font-semibold text-white shadow-lg shadow-emerald-200 transition-all hover:brightness-105 sm:mt-8 sm:gap-3 sm:rounded-3xl sm:py-5 sm:text-lg"
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#5842ed] to-[#7c3aed] py-4 text-base font-semibold text-white shadow-lg shadow-[#5842ed]/25 transition-all hover:brightness-105 sm:mt-8 sm:gap-3 sm:rounded-3xl sm:py-5 sm:text-lg"
             >
               Start Editing Now
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />

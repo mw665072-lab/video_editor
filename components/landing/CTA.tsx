@@ -2,62 +2,86 @@
 
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { S } from "./landingStyles";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 export default function CTA() {
   const router = useRouter();
+
   return (
-    <section style={{ ...S.section, padding: "120px 0", background: "#f8fafc", color: "#111827", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", bottom: -100, left: "20%", width: 680, height: 420, borderRadius: "50%", background: "rgba(21,128,61,0.14)", filter: "blur(120px)", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", top: 40, right: 36, width: 420, height: 420, borderRadius: "50%", background: "rgba(34,197,94,0.08)", filter: "blur(100px)", pointerEvents: "none" }} />
-      <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }}>
-        <div style={{ maxWidth: 960, margin: "0 auto", padding: "60px 42px", borderRadius: 32, background: "rgba(255,255,255,0.95)", boxShadow: "0 40px 120px rgba(15,23,42,0.08)" }}>
-          <span style={{ ...S.sectionTagCenter, color: "#15803d", background: "rgba(21,128,61,0.1)", borderColor: "rgba(21,128,61,0.16)", display: "inline-flex" }}>Get Started Free</span>
-          <h2 style={{
-            fontFamily: "'Syne',sans-serif",
-            fontSize: "clamp(36px,5vw,68px)",
-            fontWeight: 800, marginBottom: 20, letterSpacing: "-0.02em", lineHeight: 1.05, marginTop: 16, color: "#111827",
-          }}>
-            Ready to Ship Your<br />
-            <span style={{ color: "#166534", textDecoration: "underline", textDecorationColor: "#facc15", textDecorationThickness: "0.22em", textUnderlineOffset: "0.08em" }}>First Viral Clip?</span>
-          </h2>
-          <p style={{ fontSize: 18, color: "rgba(17,24,39,0.72)", maxWidth: 640, margin: "0 auto 40px", lineHeight: 1.75 }}>
-            Paste a link, pick your moment, and publish to YouTube or Facebook fast. Clean, bright design with clear actions for every creator.
-          </p>
-          <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-            <button
-              style={{
-                ...S.btnPrimaryLg,
-                padding: "16px 26px",
-                borderRadius: 999,
-                background: "linear-gradient(135deg, #f59e0b, #facc15)",
-                color: "#111827",
-                boxShadow: "0 18px 40px rgba(202,138,4,0.22)",
-              }}
-              onClick={() => router.push("/editor")}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              Start Clipping — It&apos;s Free
-            </button>
-            <button
-              style={{
-                ...S.btnGhostLg,
-                padding: "16px 24px",
-                borderRadius: 999,
-                background: "rgba(15,23,42,0.04)",
-                color: "#111827",
-                border: "1px solid rgba(15,23,42,0.12)",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(15,23,42,0.08)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(15,23,42,0.04)"; }}
-            >
-              See How It Works →
-            </button>
+    <section className="relative overflow-hidden bg-[#f8f9fd] py-20 lg:py-28">
+      {/* Background ambient lighting */}
+      <div className="pointer-events-none absolute -bottom-24 left-1/4 h-[450px] w-[650px] rounded-full bg-[#5842ed]/12 blur-[120px]" />
+      <div className="pointer-events-none absolute right-12 top-10 h-[400px] w-[400px] rounded-full bg-[#7c3aed]/10 blur-[100px]" />
+
+      <div className="relative mx-auto max-w-[1140px] px-5 sm:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-r from-[#0c0a1e] via-[#16123a] to-[#0d0a22] p-8 sm:p-12 lg:p-16 shadow-[0_40px_100px_rgba(12,10,30,0.32)]"
+        >
+          {/* Subtle glowing wave overlay */}
+          <div className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full bg-[#5842ed]/25 blur-[90px]" />
+
+          <div className="relative z-10 grid grid-cols-1 items-center gap-10 lg:grid-cols-12">
+            
+            {/* Left Column: Copy & Button */}
+            <div className="text-left lg:col-span-8">
+              <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-[#5842ed]/30 px-4 py-1.5 text-xs font-extrabold text-violet-200">
+                <Sparkles size={13} />
+                Get Started
+              </div>
+
+              <h2 className="mt-4 font-['Plus_Jakarta_Sans'] text-[clamp(2rem,3.8vw,3.2rem)] font-extrabold leading-[1.15] tracking-[-0.03em] text-white">
+                Cut Your Next Clip in Under a Minute
+              </h2>
+
+              <p className="mt-4 max-w-xl text-base sm:text-lg leading-relaxed text-slate-300 font-medium">
+                Paste a link, choose your moment and export. Trimming and creator tools are free during launch.
+              </p>
+
+              <div className="mt-8">
+                <button
+                  type="button"
+                  onClick={() => router.push("/editor")}
+                  className="inline-flex cursor-pointer items-center gap-2.5 rounded-full bg-white px-8 py-4 text-sm sm:text-base font-extrabold text-[#110d2e] shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition duration-200 hover:-translate-y-0.5 hover:bg-slate-100"
+                >
+                  Try YouTube Video Trimmer Free
+                  <ArrowRight size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Right Column: 3D Play button with orbital planet ring */}
+            <div className="hidden lg:flex lg:col-span-4 items-center justify-center">
+              <div className="relative flex h-48 w-48 items-center justify-center">
+                {/* Orbital tilted ring */}
+                <div
+                  className="absolute inset-0 rounded-full border-2 border-violet-400/40"
+                  style={{
+                    transform: "rotateX(70deg) rotateZ(-25deg) scale(1.3)",
+                    boxShadow: "0 0 30px rgba(139,92,246,0.3)",
+                  }}
+                />
+
+                {/* 3D Play Cube/Tile */}
+                <motion.div
+                  animate={{ y: [-8, 8, -8], rotate: [-4, 4, -4] }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                  className="relative flex h-28 w-28 items-center justify-center rounded-3xl bg-gradient-to-br from-[#7c3aed] to-[#5842ed] p-1 shadow-[0_20px_50px_rgba(88,66,237,0.5)] ring-1 ring-white/30 backdrop-blur-md"
+                >
+                  <div className="absolute inset-1 rounded-[22px] bg-gradient-to-t from-transparent via-white/10 to-white/30" />
+                  <svg width="44" height="44" viewBox="0 0 24 24" fill="#ffffff" className="ml-1">
+                    <polygon points="6 3 20 12 6 21 6 3" />
+                  </svg>
+                </motion.div>
+              </div>
+            </div>
+
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </section>
   );
 }

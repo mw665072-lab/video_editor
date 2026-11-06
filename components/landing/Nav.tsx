@@ -11,11 +11,14 @@ export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
-  const [siteName, setSiteName] = useState("CLIPAI");
+  const [siteName, setSiteName] = useState("YouTubeVideoTrimmer");
   const [links, setLinks] = useState<CmsNavItem[]>([
-    { id: "features", label: "Features", href: "/#features", location: "navbar", audience: "public", icon: "", order: 10, isActive: true, external: false },
-    { id: "how", label: "How it works", href: "/#howitworks", location: "navbar", audience: "public", icon: "", order: 20, isActive: true, external: false },
-    { id: "pricing", label: "Pricing", href: "/price", location: "navbar", audience: "public", icon: "", order: 30, isActive: true, external: false },
+    { id: "about", label: "About", href: "/#about", location: "navbar", audience: "public", icon: "", order: 10, isActive: true, external: false },
+    { id: "features", label: "Features", href: "/#features", location: "navbar", audience: "public", icon: "", order: 20, isActive: true, external: false },
+    { id: "benefits", label: "Why Use It", href: "/#why-use-it", location: "navbar", audience: "public", icon: "", order: 30, isActive: true, external: false },
+    { id: "use-cases", label: "Use Cases", href: "/#use-cases", location: "navbar", audience: "public", icon: "", order: 40, isActive: true, external: false },
+    { id: "how", label: "How It Works", href: "/#how-it-works", location: "navbar", audience: "public", icon: "", order: 50, isActive: true, external: false },
+    { id: "faq", label: "FAQ", href: "/#faq", location: "navbar", audience: "public", icon: "", order: 60, isActive: true, external: false },
   ]);
   const router = useRouter();
 
@@ -85,8 +88,8 @@ export default function Nav() {
                 e.preventDefault();
                 navigate(item);
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#15803d")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#465267")}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#5842ed")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#5e6578")}
             >{item.label}</a>
           </li>
         ))}

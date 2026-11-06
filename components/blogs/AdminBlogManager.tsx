@@ -249,21 +249,21 @@ export function AdminBlogManager() {
       title="Blog Admin"
       subtitle="Write rich posts, upload Cloudinary images, publish categories, and manage creator comments."
       actions={
-        <button onClick={reset} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-bold text-slate-700 backdrop-blur transition hover:border-[#15803d]/50 hover:bg-slate-100 hover:text-[#15803d]">
+        <button onClick={reset} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-bold text-slate-700 backdrop-blur transition hover:border-[#5842ed]/50 hover:bg-slate-100 hover:text-[#5842ed]">
           <Plus className="h-4 w-4" />
           New post
         </button>
       }
     >
       <div className="mx-auto flex h-[calc(100vh-11rem)] max-w-7xl min-h-[680px] flex-col overflow-hidden text-slate-950">
-        {message && <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm text-[#22a653] shadow-[0_16px_50px_rgba(31,52,36,0.2)]">{message}</div>}
+        {message && <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm text-[#5842ed] shadow-[0_16px_50px_rgba(88,66,237,0.2)]">{message}</div>}
 
         <div className="grid min-h-0 flex-1 gap-6 xl:grid-cols-[340px_1fr]">
-          <aside className="flex min-h-0 flex-col rounded-[2rem] border border-slate-200 bg-slate-50 p-4 shadow-[0_24px_80px_rgba(31,52,36,0.28)] backdrop-blur-xl">
+          <aside className="flex min-h-0 flex-col rounded-[2rem] border border-slate-200 bg-slate-50 p-4 shadow-[0_24px_80px_rgba(88,66,237,0.28)] backdrop-blur-xl">
             <h2 className="mb-3 text-sm font-black uppercase tracking-widest text-slate-500">Posts</h2>
             <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
               {posts.map((post) => (
-                <button key={post.id} onClick={() => selectPost(post)} className={`w-full rounded-2xl border p-3 text-left transition ${editingId === post.id ? 'border-[#15803d]/60 bg-[#15803d]/10 shadow-[0_12px_34px_rgba(21,128,61,0.12)]' : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-slate-50'}`}>
+                <button key={post.id} onClick={() => selectPost(post)} className={`w-full rounded-2xl border p-3 text-left transition ${editingId === post.id ? 'border-[#5842ed]/60 bg-[#5842ed]/10 shadow-[0_12px_34px_rgba(88,66,237,0.12)]' : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-slate-50'}`}>
                   <div className="line-clamp-1 text-sm font-bold text-slate-950">{post.title}</div>
                   <div className="mt-1 flex items-center justify-between text-[11px] text-slate-500">
                     <span className="capitalize">{post.status}</span>
@@ -278,15 +278,15 @@ export function AdminBlogManager() {
             </div>
           </aside>
 
-          <section className="flex min-h-0 flex-col rounded-[2rem] border border-slate-200 bg-slate-50 p-4 shadow-[0_24px_80px_rgba(31,52,36,0.28)] backdrop-blur-xl sm:p-5">
+          <section className="flex min-h-0 flex-col rounded-[2rem] border border-slate-200 bg-slate-50 p-4 shadow-[0_24px_80px_rgba(88,66,237,0.28)] backdrop-blur-xl sm:p-5">
             <div className="grid shrink-0 gap-3 md:grid-cols-2">
-              <input value={draft.title} onChange={(event) => setDraft((prev) => ({ ...prev, title: event.target.value }))} placeholder="Blog title" className="rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-4 py-3 text-sm outline-none focus:border-[#15803d]/70" />
-              <input value={draft.slug} onChange={(event) => setDraft((prev) => ({ ...prev, slug: event.target.value }))} placeholder="Custom slug optional" className="rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-4 py-3 text-sm outline-none focus:border-[#15803d]/70" />
-              <input value={draft.category} onChange={(event) => setDraft((prev) => ({ ...prev, category: event.target.value }))} placeholder="Category" className="rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-4 py-3 text-sm outline-none focus:border-[#15803d]/70" />
-              <input value={tagText} onChange={(event) => setTagText(event.target.value)} placeholder="Tags comma separated" className="rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-4 py-3 text-sm outline-none focus:border-[#15803d]/70" />
+              <input value={draft.title} onChange={(event) => setDraft((prev) => ({ ...prev, title: event.target.value }))} placeholder="Blog title" className="rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-4 py-3 text-sm outline-none focus:border-[#5842ed]/70" />
+              <input value={draft.slug} onChange={(event) => setDraft((prev) => ({ ...prev, slug: event.target.value }))} placeholder="Custom slug optional" className="rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-4 py-3 text-sm outline-none focus:border-[#5842ed]/70" />
+              <input value={draft.category} onChange={(event) => setDraft((prev) => ({ ...prev, category: event.target.value }))} placeholder="Category" className="rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-4 py-3 text-sm outline-none focus:border-[#5842ed]/70" />
+              <input value={tagText} onChange={(event) => setTagText(event.target.value)} placeholder="Tags comma separated" className="rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-4 py-3 text-sm outline-none focus:border-[#5842ed]/70" />
             </div>
 
-            <textarea value={draft.excerpt} onChange={(event) => setDraft((prev) => ({ ...prev, excerpt: event.target.value }))} placeholder="SEO excerpt / short summary" className="mt-3 h-20 shrink-0 resize-none rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-4 py-3 text-sm outline-none focus:border-[#15803d]/70" />
+            <textarea value={draft.excerpt} onChange={(event) => setDraft((prev) => ({ ...prev, excerpt: event.target.value }))} placeholder="SEO excerpt / short summary" className="mt-3 h-20 shrink-0 resize-none rounded-2xl border border-slate-200 bg-[#ffffff]/90 px-4 py-3 text-sm outline-none focus:border-[#5842ed]/70" />
 
             <div className="mt-3 grid min-h-0 flex-1 gap-3 lg:grid-cols-[220px_1fr]">
               <div className="rounded-2xl border border-dashed border-slate-200 bg-[#ffffff]/90 p-3">
@@ -340,7 +340,7 @@ export function AdminBlogManager() {
                   </label>
                   <label className="flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-slate-50 px-2 text-xs font-bold text-slate-600" title="Highlight color">
                     <span>Bg</span>
-                    <input type="color" defaultValue="#15803d" onMouseDown={rememberEditorSelection} onChange={(event) => setHighlightColor(event.target.value)} className="h-5 w-6 cursor-pointer border-0 bg-transparent p-0" />
+                    <input type="color" defaultValue="#5842ed" onMouseDown={rememberEditorSelection} onChange={(event) => setHighlightColor(event.target.value)} className="h-5 w-6 cursor-pointer border-0 bg-transparent p-0" />
                   </label>
                   <label className="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">
                     <ImagePlus className="h-4 w-4" />
@@ -355,7 +355,7 @@ export function AdminBlogManager() {
                   onKeyUp={rememberEditorSelection}
                   onMouseUp={rememberEditorSelection}
                   onBlur={rememberEditorSelection}
-                  className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-slate-200 bg-[#ffffff]/90 p-4 text-sm leading-7 text-slate-700 outline-none focus:border-[#15803d]/70 [&_a]:text-[#15803d] [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-[#15803d] [&_blockquote]:pl-4 [&_blockquote]:text-slate-600 [&_figcaption]:mt-1 [&_figcaption]:text-center [&_figcaption]:text-xs [&_figcaption]:text-slate-500 [&_figure]:my-4 [&_h2]:text-2xl [&_h2]:font-black [&_h3]:text-xl [&_h3]:font-black [&_h4]:text-lg [&_h4]:font-bold [&_hr]:my-5 [&_hr]:border-slate-200 [&_img]:max-h-[360px] [&_img]:max-w-full [&_img]:rounded-2xl [&_img]:object-contain [&_ol]:list-decimal [&_ol]:pl-6 [&_pre]:overflow-auto [&_pre]:rounded-2xl [&_pre]:bg-black/40 [&_pre]:p-4 [&_ul]:list-disc [&_ul]:pl-6"
+                  className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-slate-200 bg-[#ffffff]/90 p-4 text-sm leading-7 text-slate-700 outline-none focus:border-[#5842ed]/70 [&_a]:text-[#5842ed] [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-[#5842ed] [&_blockquote]:pl-4 [&_blockquote]:text-slate-600 [&_figcaption]:mt-1 [&_figcaption]:text-center [&_figcaption]:text-xs [&_figcaption]:text-slate-500 [&_figure]:my-4 [&_h2]:text-2xl [&_h2]:font-black [&_h3]:text-xl [&_h3]:font-black [&_h4]:text-lg [&_h4]:font-bold [&_hr]:my-5 [&_hr]:border-slate-200 [&_img]:max-h-[360px] [&_img]:max-w-full [&_img]:rounded-2xl [&_img]:object-contain [&_ol]:list-decimal [&_ol]:pl-6 [&_pre]:overflow-auto [&_pre]:rounded-2xl [&_pre]:bg-black/40 [&_pre]:p-4 [&_ul]:list-disc [&_ul]:pl-6"
                 />
               </div>
             </div>
@@ -366,7 +366,7 @@ export function AdminBlogManager() {
                 <option value="published">Published</option>
                 <option value="archived">Archived</option>
               </select>
-              <button onClick={save} disabled={busy} className="inline-flex items-center justify-center gap-2 rounded-full bg-[#15803d] px-5 py-3 text-sm font-black text-[#ffffff] shadow-[0_16px_40px_rgba(21,128,61,0.24)] transition hover:bg-[#22a653] disabled:opacity-50">
+              <button onClick={save} disabled={busy} className="inline-flex items-center justify-center gap-2 rounded-full bg-[#5842ed] px-5 py-3 text-sm font-black text-[#ffffff] shadow-[0_16px_40px_rgba(88,66,237,0.24)] transition hover:bg-[#5842ed] disabled:opacity-50">
                 <Save className="h-4 w-4" />
                 {editingId ? 'Update blog' : 'Create blog'}
               </button>
@@ -394,7 +394,7 @@ function EditorButton({ label, onClick, children }: { label: string; onClick: ()
       title={label}
       onMouseDown={(event) => event.preventDefault()}
       onClick={onClick}
-      className="rounded-lg bg-slate-50 p-2 text-slate-600 transition hover:bg-[#15803d]/10 hover:text-[#15803d]"
+      className="rounded-lg bg-slate-50 p-2 text-slate-600 transition hover:bg-[#5842ed]/10 hover:text-[#5842ed]"
     >
       {children}
     </button>

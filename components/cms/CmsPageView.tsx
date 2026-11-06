@@ -31,13 +31,13 @@ export function CmsPageView({ slug }: { slug: string }) {
         <div className="rounded-2xl border border-slate-200 bg-[#ffffff] p-8 text-center">
           <p className="text-lg font-black text-slate-950">Page not found</p>
           <p className="mt-2 text-sm text-slate-600">{error}</p>
-          <Link href="/" className="mt-5 inline-flex rounded-xl bg-[#d99b00] px-4 py-2 text-sm font-black text-slate-950">Back home</Link>
+          <Link href="/" className="mt-5 inline-flex rounded-xl bg-[#5842ed] px-4 py-2 text-sm font-black text-slate-950">Back home</Link>
         </div>
       )}
       {page && !loading && (
         <article className="rounded-3xl border border-slate-200 bg-[#ffffff] p-5 shadow-[0_16px_60px_rgba(0,0,0,0.35)] sm:p-8">
           <div className="mb-6 border-b border-slate-200 pb-6">
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#d99b00]">CMS Page</p>
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#5842ed]">CMS Page</p>
             <h1 className="mt-2 text-3xl font-black text-slate-950 sm:text-5xl">{page.title}</h1>
             <p className="mt-3 max-w-3xl text-slate-600">{page.excerpt}</p>
           </div>

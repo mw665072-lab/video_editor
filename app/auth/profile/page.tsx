@@ -65,8 +65,8 @@ export default function ProfilePage() {
     <div
       className="relative min-h-screen overflow-hidden"
       style={{
-        backgroundColor: '#f6f7fb',
-        backgroundImage: 'radial-gradient(circle at 20% 10%, rgba(34,163,83,0.16) 0%, transparent 28%), radial-gradient(circle at 80% 18%, rgba(255,179,44,0.08) 0%, transparent 24%)',
+        backgroundColor: '#f8f9fd',
+        backgroundImage: 'radial-gradient(circle at 20% 10%, rgba(88,66,237,0.08) 0%, transparent 35%), radial-gradient(circle at 80% 18%, rgba(124,58,237,0.06) 0%, transparent 30%)',
       }}
     >
       {/* Grid texture */}
@@ -74,19 +74,19 @@ export default function ProfilePage() {
         className="pointer-events-none fixed inset-0 z-0 opacity-[0.03]"
         style={{
           backgroundImage:
-            'linear-gradient(rgba(34,163,83,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,179,44,0.06) 1px, transparent 1px)',
+            'linear-gradient(rgba(88,66,237,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(88,66,237,0.12) 1px, transparent 1px)',
           backgroundSize: '48px 48px',
         }}
       />
 
       {/* Ambient glow blobs */}
       <div
-        className="pointer-events-none absolute top-[-80px] left-[-80px] w-[300px] h-[300px] rounded-full blur-[120px] opacity-20"
-        style={{ background: '#22a653' }}
+        className="pointer-events-none absolute top-[-80px] left-[-80px] w-[300px] h-[300px] rounded-full blur-[120px] opacity-15"
+        style={{ background: '#5842ed' }}
       />
       <div
         className="pointer-events-none absolute bottom-[-80px] right-[-80px] w-[260px] h-[260px] rounded-full blur-[120px] opacity-10"
-        style={{ background: '#15803d' }}
+        style={{ background: '#7c3aed' }}
       />
 
       <div className="relative z-10">
@@ -97,26 +97,25 @@ export default function ProfilePage() {
             <div
               className="rounded-2xl p-6"
               style={{
-                background: 'rgba(255,255,255,0.95)',
-                border: '1px solid #dce5dc',
-                boxShadow: '0 12px 34px rgba(31,52,36,0.09)',
+                background: '#ffffff',
+                border: '1px solid #e4e6f2',
+                boxShadow: '0 10px 30px rgba(88,66,237,0.04)',
               }}
             >
               {/* Card header */}
-              <div className="flex items-center gap-4 mb-6 pb-5" style={{ borderBottom: '1px solid rgba(34,163,83,0.12)' }}>
+              <div className="flex items-center gap-4 mb-6 pb-5" style={{ borderBottom: '1px solid #e4e6f2' }}>
                 <div
-                  className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 text-2xl font-black text-slate-950"
+                  className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 text-2xl font-black text-white"
                   style={{
-                    background: 'linear-gradient(135deg, #d99b00 0%, #b77900 100%)',
-                    boxShadow: '0 2px 16px rgba(217,155,0,0.4)',
+                    background: 'linear-gradient(135deg, #5842ed 0%, #7c3aed 100%)',
+                    boxShadow: '0 4px 16px rgba(88,66,237,0.25)',
                   }}
                 >
                   {user.name?.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-slate-950 tracking-tight">{user.name}</h2>
-                  <p className="text-xs font-semibold uppercase tracking-wider mt-0.5" 
-                  >
+                  <h2 className="text-xl font-black text-[#110d2e] tracking-tight">{user.name}</h2>
+                  <p className="text-xs font-semibold uppercase tracking-wider mt-0.5 text-[#5e6578]">
                     Account Information
                   </p>
                 </div>
@@ -128,54 +127,51 @@ export default function ProfilePage() {
                 {/* Email */}
                 <div
                   className="flex items-center gap-4 rounded-xl p-4"
-                  style={{ background: 'rgba(255, 255, 255, 0.94)', border: '1px solid rgba(34,163,83,0.12)' }}
+                  style={{ background: '#f8f9fd', border: '1px solid #e4e6f2' }}
                 >
                   <div
                     className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ background: 'rgba(34,163,83,0.16)', border: '1px solid rgba(34,163,83,0.24)' }}
+                    style={{ background: '#f0eeff', border: '1px solid #ded7fb' }}
                   >
-                    <Mail className="w-4 h-4" style={{ color: '#d99b00' }} />
+                    <Mail className="w-4 h-4 text-[#5842ed]" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-bold uppercase tracking-widest mb-1" 
-                    >
+                    <p className="text-xs font-bold uppercase tracking-widest mb-1 text-[#5e6578]">
                       Email
                     </p>
-                    <p className="text-sm font-semibold text-slate-950 break-all">{user.email}</p>
+                    <p className="text-sm font-semibold text-[#110d2e] break-all">{user.email}</p>
                   </div>
                 </div>
 
                 {/* Verification */}
                 <div
                   className="flex items-center gap-4 rounded-xl p-4"
-                  style={{ background: 'rgba(255, 255, 255, 0.94)', border: '1px solid rgba(34,163,83,0.12)' }}
+                  style={{ background: '#f8f9fd', border: '1px solid #e4e6f2' }}
                 >
                   <div
                     className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
                     style={
                       user.emailVerified
-                        ? { background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.2)' }
-                        : { background: 'rgba(217,155,0,0.1)', border: '1px solid rgba(217,155,0,0.2)' }
+                        ? { background: '#f0eeff', border: '1px solid #ded7fb' }
+                        : { background: '#fffbeb', border: '1px solid #fef3c7' }
                     }
                   >
                     <ShieldCheck
                       className="w-4 h-4"
-                      style={{ color: user.emailVerified ? '#4ade80' : '#d99b00' }}
+                      style={{ color: user.emailVerified ? '#5842ed' : '#f59e0b' }}
                     />
                   </div>
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-widest mb-1" 
-                    >
+                    <p className="text-xs font-bold uppercase tracking-widest mb-1 text-[#5e6578]">
                       Verification
                     </p>
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-slate-950">
+                      <p className="text-sm font-semibold text-[#110d2e]">
                         {user.emailVerified ? 'Verified' : 'Not Verified'}
                       </p>
                       {user.emailVerified && (
                         <span
-                          className="inline-flex items-center justify-center w-4 h-4 rounded-full text-xs font-black"
-                          style={{ background: '#4ade80', color: '#0a1a0a' }}
+                          className="inline-flex items-center justify-center w-4 h-4 rounded-full text-xs font-black bg-[#5842ed] text-white"
                         >
                           ✓
                         </span>
@@ -186,34 +182,32 @@ export default function ProfilePage() {
               </div>
 
               {/* Divider */}
-              <div className="my-4" style={{ borderTop: '1px solid rgba(34,163,83,0.12)' }} />
+              <div className="my-4" style={{ borderTop: '1px solid #e4e6f2' }} />
 
               {/* Plan */}
               <div
                 className="flex items-center gap-4 rounded-xl p-4"
-                style={{ background: 'rgba(255, 255, 255, 0.94)', border: '1px solid rgba(34,163,83,0.12)' }}
+                style={{ background: '#f8f9fd', border: '1px solid #e4e6f2' }}
               >
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                  style={{ background: 'rgba(34,163,83,0.16)', border: '1px solid rgba(34,163,83,0.24)' }}
+                  style={{ background: '#f0eeff', border: '1px solid #ded7fb' }}
                 >
-                  <Calendar className="w-4 h-4" style={{ color: '#d99b00' }} />
+                  <Calendar className="w-4 h-4 text-[#5842ed]" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-widest mb-1" 
-                  >
+                  <p className="text-xs font-bold uppercase tracking-widest mb-1 text-[#5e6578]">
                     Current Plan
                   </p>
                   <div className="flex items-center gap-2.5">
-                    <p className="text-lg font-black text-slate-950 capitalize">
+                    <p className="text-lg font-black text-[#110d2e] capitalize">
                       {user.subscriptionPlan || 'Free'}
                     </p>
                     <span
-                      className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider"
+                      className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider text-white"
                       style={{
-                        background: 'linear-gradient(135deg, #d99b00 0%, #b77900 100%)',
-                        color: 'white',
-                        boxShadow: '0 1px 8px rgba(217,155,0,0.35)',
+                        background: 'linear-gradient(135deg, #5842ed 0%, #7c3aed 100%)',
+                        boxShadow: '0 2px 8px rgba(88,66,237,0.3)',
                       }}
                     >
                       {user.subscriptionPlan || 'FREE'}
@@ -227,23 +221,22 @@ export default function ProfilePage() {
             <div
               className="rounded-2xl p-6"
               style={{
-                background: 'rgba(255,255,255,0.95)',
-                border: '1px solid #dce5dc',
-                boxShadow: '0 12px 34px rgba(31,52,36,0.09)',
+                background: '#ffffff',
+                border: '1px solid #e4e6f2',
+                boxShadow: '0 10px 30px rgba(88,66,237,0.04)',
               }}
             >
               {/* Card header */}
-              <div className="flex items-center gap-2.5 mb-5 pb-5" style={{ borderBottom: '1px solid rgba(34,163,83,0.12)' }}>
+              <div className="flex items-center gap-2.5 mb-5 pb-5" style={{ borderBottom: '1px solid #e4e6f2' }}>
                 <div
                   className="w-7 h-7 rounded-lg flex items-center justify-center"
-                  style={{ background: 'rgba(34,163,83,0.14)', border: '1px solid rgba(34,163,83,0.18)' }}
+                  style={{ background: '#f0eeff', border: '1px solid #ded7fb' }}
                 >
-                  <TrendingUp className="w-3.5 h-3.5" style={{ color: '#d99b00' }} />
+                  <TrendingUp className="w-3.5 h-3.5 text-[#5842ed]" />
                 </div>
                 <div>
-                  <h3 className="font-black text-slate-950 text-sm tracking-wide uppercase">Usage This Month</h3>
-                  <p className="text-xs mt-0.5" 
-                  >Track your activity and limits</p>
+                  <h3 className="font-black text-[#110d2e] text-sm tracking-wide uppercase">Usage This Month</h3>
+                  <p className="text-xs mt-0.5 text-[#5e6578]">Track your activity and limits</p>
                 </div>
               </div>
 
@@ -252,65 +245,63 @@ export default function ProfilePage() {
                 {/* Clips Created */}
                 <div
                   className="rounded-xl p-5 transition-all duration-200 group"
-                  style={{ background: 'rgba(255, 255, 255, 0.94)', border: '1px solid rgba(34,163,83,0.12)' }}
+                  style={{ background: '#f8f9fd', border: '1px solid #e4e6f2' }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(34,163,83,0.5)'
+                    e.currentTarget.style.borderColor = 'rgba(88,66,237,0.5)'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(34,163,83,0.12)'
+                    e.currentTarget.style.borderColor = '#e4e6f2'
                   }}
                 >
                   <div className="flex justify-between items-start mb-4">
-                    <p className="text-xs font-bold uppercase tracking-widest" 
-                    >
+                    <p className="text-xs font-bold uppercase tracking-widest text-[#5e6578]">
                       Clips Created
                     </p>
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center"
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
                       style={{
-                        background: 'linear-gradient(135deg, #d99b00 0%, #b77900 100%)',
-                        boxShadow: '0 2px 10px rgba(217,155,0,0.3)',
+                        background: 'linear-gradient(135deg, #5842ed 0%, #7c3aed 100%)',
+                        boxShadow: '0 2px 10px rgba(88,66,237,0.3)',
                       }}
                     >
-                      <Scissors className="w-4 h-4 text-slate-950" />
+                      <Scissors className="w-4 h-4 text-white" />
                     </div>
                   </div>
-                  <p className="text-6xl font-black text-slate-950 leading-none tracking-tighter">
+                  <p className="text-6xl font-black text-[#110d2e] leading-none tracking-tighter">
                     {user.clipsThisMonth || 0}
                   </p>
-                  <p className="text-xs mt-3 font-semibold" >this month</p>
+                  <p className="text-xs mt-3 font-semibold text-[#5e6578]">this month</p>
                 </div>
 
                 {/* Downloads */}
                 <div
                   className="rounded-xl p-5 transition-all duration-200"
-                  style={{ background: 'rgba(255, 255, 255, 0.94)', border: '1px solid rgba(34,163,83,0.12)' }}
+                  style={{ background: '#f8f9fd', border: '1px solid #e4e6f2' }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(34,163,83,0.5)'
+                    e.currentTarget.style.borderColor = 'rgba(88,66,237,0.5)'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(34,163,83,0.12)'
+                    e.currentTarget.style.borderColor = '#e4e6f2'
                   }}
                 >
                   <div className="flex justify-between items-start mb-4">
-                    <p className="text-xs font-bold uppercase tracking-widest" 
-                    >
+                    <p className="text-xs font-bold uppercase tracking-widest text-[#5e6578]">
                       Downloads
                     </p>
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center"
                       style={{
-                        background: 'rgba(255, 255, 255, 0.94)',
-                        border: '1px solid rgba(34,163,83,0.12)',
+                        background: '#f0eeff',
+                        border: '1px solid #ded7fb',
                       }}
                     >
-                      <Download className="w-4 h-4" style={{ color: '#d99b00' }} />
+                      <Download className="w-4 h-4 text-[#5842ed]" />
                     </div>
                   </div>
-                  <p className="text-6xl font-black text-slate-950 leading-none tracking-tighter">
+                  <p className="text-6xl font-black text-[#110d2e] leading-none tracking-tighter">
                     {user.downloadsThisMonth || 0}
                   </p>
-                  <p className="text-xs mt-3 font-semibold" >this month</p>
+                  <p className="text-xs mt-3 font-semibold text-[#5e6578]">this month</p>
                 </div>
 
               </div>

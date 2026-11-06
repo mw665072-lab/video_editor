@@ -61,9 +61,9 @@ export default function RegisterPage() {
       <main
         style={{
           minHeight: '100vh',
-          background: '#f6f7fb',
-          color: '#172033',
-          fontFamily: "'DM Sans', sans-serif",
+          background: '#f8f9fd',
+          color: '#110d2e',
+          fontFamily: "'Manrope', sans-serif",
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -78,7 +78,7 @@ export default function RegisterPage() {
             inset: 0,
             pointerEvents: 'none',
             zIndex: 0,
-            background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(21,128,61,0.13) 0%, transparent 65%)',
+            background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(88,66,237,0.08) 0%, transparent 65%)',
           }}
         />
         <div
@@ -88,7 +88,7 @@ export default function RegisterPage() {
             pointerEvents: 'none',
             zIndex: 0,
             backgroundImage:
-              'repeating-linear-gradient(0deg,rgba(21,128,61,0.06) 0px,rgba(21,128,61,0.06) 1px,transparent 1px,transparent 48px),repeating-linear-gradient(90deg,rgba(21,128,61,0.06) 0px,rgba(21,128,61,0.06) 1px,transparent 1px,transparent 48px)',
+              'repeating-linear-gradient(0deg,rgba(88,66,237,0.025) 0px,rgba(88,66,237,0.025) 1px,transparent 1px,transparent 48px),repeating-linear-gradient(90deg,rgba(88,66,237,0.025) 0px,rgba(88,66,237,0.025) 1px,transparent 1px,transparent 48px)',
           }}
         />
         <div
@@ -99,7 +99,7 @@ export default function RegisterPage() {
             width: 500,
             height: 500,
             borderRadius: '50%',
-            background: 'rgba(21,128,61,0.09)',
+            background: 'rgba(88,66,237,0.07)',
             filter: 'blur(130px)',
             pointerEvents: 'none',
             zIndex: 0,
@@ -113,7 +113,7 @@ export default function RegisterPage() {
             width: 400,
             height: 400,
             borderRadius: '50%',
-            background: 'rgba(21,128,61,0.07)',
+            background: 'rgba(139,92,246,0.06)',
             filter: 'blur(110px)',
             pointerEvents: 'none',
             zIndex: 0,
@@ -126,11 +126,11 @@ export default function RegisterPage() {
             zIndex: 2,
             width: '100%',
             maxWidth: 420,
-            background: 'rgba(255,255,255,0.94)',
-            border: '1px solid rgba(23,32,51,0.10)',
+            background: '#ffffff',
+            border: '1px solid #e4e6f2',
             borderRadius: 24,
             padding: '40px 36px',
-            boxShadow: '0 28px 80px rgba(38,49,72,0.16), 0 0 0 1px rgba(23,32,51,0.04) inset',
+            boxShadow: '0 20px 60px rgba(88,66,237,0.08)',
             backdropFilter: 'blur(24px)',
             WebkitBackdropFilter: 'blur(24px)',
           }}
@@ -141,12 +141,12 @@ export default function RegisterPage() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: 10,
-              fontFamily: "'Syne', sans-serif",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
               fontWeight: 800,
               fontSize: 18,
               letterSpacing: '-0.03em',
               textDecoration: 'none',
-              color: '#172033',
+              color: '#110d2e',
               marginBottom: 32,
             }}
           >
@@ -154,11 +154,12 @@ export default function RegisterPage() {
               style={{
                 width: 32,
                 height: 32,
-                borderRadius: 8,
-                background: 'linear-gradient(135deg, #15803D, #22A653)',
+                borderRadius: 10,
+                background: 'linear-gradient(135deg, #7c3aed, #5842ed)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                boxShadow: '0 6px 18px rgba(88,66,237,0.25)',
               }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5">
@@ -176,15 +177,15 @@ export default function RegisterPage() {
                 gap: 7,
                 padding: '4px 12px 4px 8px',
                 borderRadius: 100,
-                background: 'rgba(21,128,61,0.10)',
-                border: '1px solid rgba(21,128,61,0.22)',
-                fontFamily: "'DM Mono', monospace",
+                background: '#f0eeff',
+                border: '1px solid #ded7fb',
+                fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: 11,
-                color: '#22A653',
+                color: '#5842ed',
                 marginBottom: 16,
               }}
             >
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#15803D' }} />
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#5842ed' }} />
               Create account
             </div>
             <h1
@@ -437,21 +438,21 @@ export default function RegisterPage() {
                 letterSpacing: '0.03em',
                 marginTop: 4,
                 background: loading
-                  ? 'rgba(21,128,61,0.4)'
-                  : 'linear-gradient(135deg, #15803D, #166534)',
+                  ? 'rgba(88,66,237,0.4)'
+                  : 'linear-gradient(135deg, #5842ed 0%, #4730df 100%)',
                 color: '#ffffff',
-                boxShadow: loading ? 'none' : '0 4px 24px rgba(21,128,61,0.4)',
+                boxShadow: loading ? 'none' : '0 10px 28px rgba(88,66,237,0.28)',
                 transition: 'all 0.25s cubic-bezier(0.34,1.56,0.64,1)',
                 opacity: loading ? 0.7 : 1,
               }}
               onMouseEnter={(e) => {
                 if (!loading) {
-                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(21,128,61,0.55)'
+                  e.currentTarget.style.boxShadow = '0 12px 32px rgba(88,66,237,0.36)'
                   e.currentTarget.style.transform = 'translateY(-1px)'
                 }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 4px 24px rgba(21,128,61,0.4)'
+                e.currentTarget.style.boxShadow = '0 10px 28px rgba(88,66,237,0.28)'
                 e.currentTarget.style.transform = 'translateY(0)'
               }}
             >
@@ -472,20 +473,20 @@ export default function RegisterPage() {
           </form>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '24px 0' }}>
-            <div style={{ flex: 1, height: 1, background: 'rgba(23,32,51,0.08)' }} />
-            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#8a94a5' }}>OR</span>
-            <div style={{ flex: 1, height: 1, background: 'rgba(23,32,51,0.08)' }} />
+            <div style={{ flex: 1, height: 1, background: '#e4e6f2' }} />
+            <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: '#8a92a6' }}>OR</span>
+            <div style={{ flex: 1, height: 1, background: '#e4e6f2' }} />
           </div>
 
-          <p style={{ textAlign: 'center', fontSize: 14, color: '#687386' }}>
+          <p style={{ textAlign: 'center', fontSize: 14, color: '#5e6578' }}>
             Already have an account?{' '}
             <Link
               href="/auth/login"
               style={{
-                color: '#22A653',
+                color: '#5842ed',
                 textDecoration: 'none',
                 fontWeight: 600,
-                fontFamily: "'DM Mono', monospace",
+                fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: 13,
                 transition: 'color 0.2s',
               }}

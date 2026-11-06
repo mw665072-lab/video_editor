@@ -28,10 +28,10 @@ const plans = [
 const CheckIcon = () => (
   <span
     className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full"
-    style={{ background: 'rgba(34,163,83,0.16)', border: '1px solid rgba(34,163,83,0.28)' }}
+    style={{ background: '#f0eeff', border: '1px solid #ded7fb' }}
   >
     <svg className="h-2.5 w-2.5" viewBox="0 0 10 8" fill="none">
-      <path d="M1 4l3 3 5-6" stroke="#d99b00" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M1 4l3 3 5-6" stroke="#5842ed" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   </span>
 )
@@ -71,8 +71,8 @@ export default function BillingPage() {
     <div
       className="relative min-h-screen overflow-hidden"
       style={{
-        backgroundColor: '#f6f7fb',
-        backgroundImage: 'radial-gradient(circle at 20% 10%, rgba(34,163,83,0.16) 0%, transparent 28%), radial-gradient(circle at 80% 18%, rgba(255,179,44,0.08) 0%, transparent 24%)',
+        backgroundColor: '#f8f9fd',
+        backgroundImage: 'radial-gradient(circle at 20% 10%, rgba(88,66,237,0.08) 0%, transparent 28%), radial-gradient(circle at 80% 18%, rgba(139,92,246,0.08) 0%, transparent 24%)',
       }}
     >
       {/* Grid texture */}
@@ -80,7 +80,7 @@ export default function BillingPage() {
         className="pointer-events-none fixed inset-0 z-0 opacity-[0.03]"
         style={{
           backgroundImage:
-            'linear-gradient(rgba(34,163,83,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,179,44,0.06) 1px, transparent 1px)',
+            'linear-gradient(rgba(88,66,237,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(88,66,237,0.06) 1px, transparent 1px)',
           backgroundSize: '48px 48px',
         }}
       />
@@ -88,11 +88,11 @@ export default function BillingPage() {
       {/* Ambient glow blobs */}
       <div
         className="pointer-events-none absolute top-[-80px] left-[-80px] w-[300px] h-[300px] rounded-full blur-[120px] opacity-20"
-        style={{ background: '#22a653' }}
+        style={{ background: '#7a44ff' }}
       />
       <div
-        className="pointer-events-none absolute bottom-[-80px] right-[-80px] w-[260px] h-[260px] rounded-full blur-[120px] opacity-10"
-        style={{ background: '#15803d' }}
+        className="pointer-events-none absolute bottom-[-80px] right-[-80px] w-[260px] h-[260px] rounded-full blur-[120px] opacity-15"
+        style={{ background: '#5842ed' }}
       />
 
       <div className="relative z-10">
@@ -116,48 +116,48 @@ export default function BillingPage() {
           <section
             className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl px-5 py-4"
             style={{
-              background: 'rgba(255,255,255,0.94)',
-              border: '1px solid #dce5dc',
-              boxShadow: '0 10px 30px rgba(31,52,36,0.08)',
+              background: '#ffffff',
+              border: '1px solid #e4e6f2',
+              boxShadow: '0 10px 30px rgba(88,66,237,0.04)',
             }}
           >
             <div>
               <div className="flex items-center gap-2.5">
-                <p className="text-sm font-bold text-slate-950">Current plan</p>
+                <p className="text-sm font-bold text-[#110d2e]">Current plan</p>
                 {user && (
                   <span
                     className="rounded-full px-2.5 py-0.5 text-xs font-black tracking-wide"
                     style={{
-                      background: 'linear-gradient(135deg, #d99b00 0%, #b77900 100%)',
+                      background: 'linear-gradient(135deg, #5842ed 0%, #4730df 100%)',
                       color: 'white',
-                      boxShadow: '0 1px 8px rgba(217,155,0,0.3)',
+                      boxShadow: '0 2px 10px rgba(88,66,237,0.3)',
                     }}
                   >
                     {user.subscriptionPlan}
                   </span>
                 )}
               </div>
-              <p className="mt-1 text-xs font-medium" style={{ color: '#667069' }}>
+              <p className="mt-1 text-xs font-medium" style={{ color: '#5e6578' }}>
                 {user ? 'Renews monthly · billed automatically' : 'Loading…'}
               </p>
             </div>
 
             {user && (
               <div className="min-w-[180px] flex-1 max-w-[260px]">
-                <div className="mb-1.5 flex justify-between text-xs font-semibold" style={{ color: '#667069' }}>
+                <div className="mb-1.5 flex justify-between text-xs font-semibold" style={{ color: '#5e6578' }}>
                   <span>Clips used</span>
-                  <span style={{ color: '#166534' }}>{clipsUsed} / {clipsLimit}</span>
+                  <span style={{ color: '#5842ed' }}>{clipsUsed} / {clipsLimit}</span>
                 </div>
                 <div
                   className="h-1.5 overflow-hidden rounded-full"
-                  style={{ background: '#eef1f6' }}
+                  style={{ background: '#f1f3f9' }}
                 >
                   <div
                     className="h-full rounded-full transition-all duration-700"
                     style={{
                       width: `${usagePct}%`,
-                      background: 'linear-gradient(90deg, #d99b00 0%, #b77900 100%)',
-                      boxShadow: '0 0 6px rgba(217,155,0,0.4)',
+                      background: 'linear-gradient(90deg, #5842ed 0%, #7c3aed 100%)',
+                      boxShadow: '0 0 6px rgba(88,66,237,0.4)',
                     }}
                   />
                 </div>
@@ -180,13 +180,13 @@ export default function BillingPage() {
                     plan.popular
                       ? {
                           background: '#ffffff',
-                          border: '2px solid rgba(21,128,61,0.52)',
-                          boxShadow: '0 0 0 1px rgba(21,128,61,0.06), 0 14px 38px rgba(31,52,36,0.12)',
+                          border: '2px solid #5842ed',
+                          boxShadow: '0 16px 40px rgba(88,66,237,0.12)',
                         }
                       : {
                           background: '#ffffff',
-                          border: '1px solid #dce5dc',
-                          boxShadow: '0 8px 26px rgba(31,52,36,0.08)',
+                          border: '1px solid #e4e6f2',
+                          boxShadow: '0 10px 30px rgba(88,66,237,0.04)',
                         }
                   }
                 >
@@ -195,9 +195,9 @@ export default function BillingPage() {
                     <span
                       className="absolute -top-px left-1/2 -translate-x-1/2 rounded-b-lg px-3 py-0.5 text-[11px] font-black tracking-wide whitespace-nowrap"
                       style={{
-                        background: 'linear-gradient(135deg, #d99b00 0%, #b77900 100%)',
-                        color: '#493b00',
-                        boxShadow: '0 2px 10px rgba(217,155,0,0.4)',
+                        background: '#5842ed',
+                        color: '#ffffff',
+                        boxShadow: '0 2px 10px rgba(88,66,237,0.3)',
                       }}
                     >
                       Most popular
@@ -206,21 +206,21 @@ export default function BillingPage() {
 
                   {/* Plan name + price */}
                   <div className={plan.popular ? 'mt-4' : ''}>
-                    <h3 className="text-xs font-bold uppercase tracking-widest" style={{ color: '#166534' }}>
+                    <h3 className="text-xs font-bold uppercase tracking-widest" style={{ color: '#5842ed' }}>
                       {plan.label}
                     </h3>
                     <div className="mt-2 flex items-baseline gap-1">
-                      <span className="text-4xl font-black text-slate-950">{plan.priceLabel}</span>
-                      <span className="text-sm font-semibold" style={{ color: '#667069' }}>{plan.subLabel}</span>
+                      <span className="text-4xl font-black text-[#110d2e]">{plan.priceLabel}</span>
+                      <span className="text-sm font-semibold" style={{ color: '#5e6578' }}>{plan.subLabel}</span>
                     </div>
                   </div>
 
-                  <div className="my-4" style={{ borderTop: '1px solid rgba(34,163,83,0.14)' }} />
+                  <div className="my-4" style={{ borderTop: '1px solid #e4e6f2' }} />
 
                   {/* Features */}
                   <ul className="flex flex-1 flex-col gap-2.5">
                     {plan.features.map((f) => (
-                      <li key={f} className="flex items-center gap-2.5 text-sm font-medium text-slate-950">
+                      <li key={f} className="flex items-center gap-2.5 text-sm font-medium text-[#110d2e]">
                         <CheckIcon />
                         {f}
                       </li>
@@ -229,9 +229,9 @@ export default function BillingPage() {
 
                   {/* Config warning */}
                   {!hasPrice && plan.key !== 'FREE' && (
-                    <p className="mt-3 text-xs" style={{ color: '#8a6700' }}>
+                    <p className="mt-3 text-xs" style={{ color: '#8a92a6' }}>
                       Price ID not configured. Set{' '}
-                      <code className="font-mono" style={{ color: '#d99b00' }}>
+                      <code className="font-mono" style={{ color: '#5842ed' }}>
                         NEXT_PUBLIC_STRIPE_PRICE_{plan.key}
                       </code>{' '}
                       in environment.
@@ -243,9 +243,9 @@ export default function BillingPage() {
                     <div
                       className="mt-5 w-full rounded-xl py-2.5 text-center text-xs font-bold uppercase tracking-wider"
                       style={{
-                        background: '#edf7ef',
-                        border: '1px solid rgba(34,163,83,0.16)',
-                        color: '#166534',
+                        background: '#f0eeff',
+                        border: '1px solid #ded7fb',
+                        color: '#5842ed',
                       }}
                     >
                       Current plan
@@ -254,30 +254,30 @@ export default function BillingPage() {
                     <button
                       onClick={() => handleCheckout(plan.priceId)}
                       disabled={isDisabled}
-                      className="mt-5 w-full rounded-xl px-4 py-2.5 text-sm font-black transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="mt-5 w-full rounded-xl px-4 py-2.5 text-sm font-black transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                       style={
                         plan.popular
                           ? {
-                              background: 'linear-gradient(135deg, #d99b00 0%, #b77900 100%)',
-                              color: '#493b00',
-                              boxShadow: '0 2px 14px rgba(217,155,0,0.35)',
+                              background: 'linear-gradient(135deg, #5842ed 0%, #4730df 100%)',
+                              color: '#ffffff',
+                              boxShadow: '0 8px 22px rgba(88,66,237,0.25)',
                             }
                           : {
-                              background: '#edf7ef',
-                              border: '1px solid rgba(34,163,83,0.14)',
-                              color: '#166534',
+                              background: '#f0eeff',
+                              border: '1px solid #ded7fb',
+                              color: '#5842ed',
                             }
                       }
                       onMouseEnter={(e) => {
                         if (!isDisabled && !plan.popular) {
-                        e.currentTarget.style.background = '#e1f2e5'
-                        e.currentTarget.style.borderColor = 'rgba(34,163,83,0.5)'
+                          e.currentTarget.style.background = '#e8e5fc'
+                          e.currentTarget.style.borderColor = '#5842ed'
                         }
                       }}
                       onMouseLeave={(e) => {
                         if (!plan.popular) {
-                        e.currentTarget.style.background = '#edf7ef'
-                        e.currentTarget.style.borderColor = 'rgba(34,163,83,0.14)'
+                          e.currentTarget.style.background = '#f0eeff'
+                          e.currentTarget.style.borderColor = '#ded7fb'
                         }
                       }}
                     >

@@ -377,7 +377,7 @@ const VideoEditor: React.FC = () => {
         </div>
         <div className="flex items-center gap-3">
           <span>
-            Time: <span className="text-emerald-400 font-mono">
+            Time: <span className="text-[#5842ed] font-mono font-bold">
               {formatStatusBarTime(store.currentTime)}
             </span>
           </span>

@@ -172,7 +172,7 @@ const EmptyPreviewState = memo(() => (
       <div className="flex h-20 w-20 animate-[pulse_3s_ease-in-out_infinite] items-center justify-center rounded-2xl border border-white/10 bg-white/5">
         <Clapperboard className="h-9 w-9 text-[#cbd5e1]" strokeWidth={1.5} />
       </div>
-      <div className="absolute -inset-2 animate-[ping_3s_ease-in-out_infinite] rounded-3xl border border-[#22a653]/20" />
+      <div className="absolute -inset-2 animate-[ping_3s_ease-in-out_infinite] rounded-3xl border border-[#5842ed]/20" />
     </div>
     <p className="text-sm font-medium text-[#e2e8f0]">Drop media to preview</p>
     <p className="mt-2 text-xs text-[#cbd5e1]">Add clips to the timeline to get started</p>
@@ -189,7 +189,7 @@ EmptyPreviewState.displayName = 'EmptyPreviewState';
 const LoadingPreviewState = memo<{ name?: string }>(({ name }) => (
   <div className="absolute inset-0 flex flex-col items-center justify-center bg-black select-none">
     <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5">
-      <Loader2 className="h-6 w-6 animate-spin text-[#22a653]" />
+      <Loader2 className="h-6 w-6 animate-spin text-[#5842ed]" />
     </div>
     <p className="text-xs font-medium text-[#e2e8f0]">Loading media...</p>
     {name && <p className="mt-1 max-w-[200px] truncate text-[10px] text-[#94a3b8]">{name}</p>}
@@ -264,23 +264,23 @@ const AudioPreviewState = memo<AudioPreviewProps>(({ mediaName, clipLabel, clipD
       {Array.from({ length: 40 }, (_, i) => (
         <div
           key={i}
-          className="w-1.5 animate-[audioBar_1.2s_ease-in-out_infinite] rounded-full bg-[#22a653]"
+          className="w-1.5 animate-[audioBar_1.2s_ease-in-out_infinite] rounded-full bg-[#5842ed]"
           style={{ height: `${20 + Math.sin(i * 0.5) * 30}%`, animationDelay: `${i * 0.05}s` }}
         />
       ))}
     </div>
     <div className="relative mb-4 z-10">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[#22a653]/20 bg-[#22a653]/10">
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[#5842ed]/20 bg-[#5842ed]/10">
         <Music className="h-8 w-8 text-[#e2e8f0]" />
       </div>
     </div>
     <p className="z-10 max-w-[300px] truncate px-4 text-center text-sm font-medium text-white">{clipLabel || mediaName}</p>
     <p className="z-10 mt-1 text-xs text-[#94a3b8]">Audio clip · {formatTimeCode(clipDuration)}</p>
     <div className="flex items-center gap-1.5 mt-4 z-10">
-      <div className="h-3 w-1 animate-[audioBar_0.6s_ease-in-out_infinite] rounded-full bg-[#22a653]" />
-      <div className="h-4 w-1 animate-[audioBar_0.6s_ease-in-out_infinite_0.2s] rounded-full bg-[#22a653]" />
-      <div className="h-2 w-1 animate-[audioBar_0.6s_ease-in-out_infinite_0.4s] rounded-full bg-[#22a653]" />
-      <span className="ml-1 text-[10px] font-medium text-[#dcfce7]">NOW PLAYING</span>
+      <div className="h-3 w-1 animate-[audioBar_0.6s_ease-in-out_infinite] rounded-full bg-[#5842ed]" />
+      <div className="h-4 w-1 animate-[audioBar_0.6s_ease-in-out_infinite_0.2s] rounded-full bg-[#5842ed]" />
+      <div className="h-2 w-1 animate-[audioBar_0.6s_ease-in-out_infinite_0.4s] rounded-full bg-[#5842ed]" />
+      <span className="ml-1 text-[10px] font-semibold text-violet-300">NOW PLAYING</span>
     </div>
   </div>
 ));
@@ -458,7 +458,7 @@ const TransportControls = memo<TransportProps>(({
         <Button
           variant="ghost"
           size="icon"
-          className="mx-0.5 h-8 w-8 rounded-full bg-gradient-to-br from-[#ffcf5a] to-[#22a653] text-[#18231b] hover:from-[#dcfce7] hover:to-[#22a653] hover:text-[#18231b]"
+          className="mx-0.5 h-8 w-8 rounded-full bg-[#5842ed] text-white hover:bg-[#4730df]"
           onClick={onTogglePlay}
           title="Play / Pause (Space)"
         >
@@ -474,7 +474,7 @@ const TransportControls = memo<TransportProps>(({
         <div className="mx-1 h-5 w-px bg-white/10" />
 
         <div className="flex items-center gap-1.5 text-[11px] font-mono tabular-nums">
-          <span className="text-[#dcfce7]">{formatTimeCode(currentTime)}</span>
+          <span className="text-[#a78bfa] font-semibold">{formatTimeCode(currentTime)}</span>
           <span className="text-[#94a3b8]">/</span>
           <span className="text-[#cbd5e1]">{formatTimeCode(totalDuration)}</span>
           <span className="ml-1.5 text-[#94a3b8]">|</span>
@@ -488,7 +488,7 @@ const TransportControls = memo<TransportProps>(({
             <Button
               variant="ghost"
               size="sm"
-              className={`h-7 gap-1 px-2 font-mono text-[11px] tabular-nums ${playbackSpeed !== 1 ? 'text-[#22a653] hover:text-[#dcfce7]' : 'text-[#cbd5e1] hover:text-white'}`}
+              className={`h-7 gap-1 px-2 font-mono text-[11px] tabular-nums ${playbackSpeed !== 1 ? 'text-[#a78bfa] hover:text-white' : 'text-[#cbd5e1] hover:text-white'}`}
               title="Playback Speed"
             >
               <Gauge className="w-3 h-3" />
@@ -499,11 +499,11 @@ const TransportControls = memo<TransportProps>(({
             {PLAYBACK_SPEEDS.map((speed) => (
               <DropdownMenuItem
                 key={speed}
-                className={`cursor-pointer font-mono text-xs tabular-nums ${playbackSpeed === speed ? 'bg-white/10 text-[#dcfce7]' : 'text-[#cbd5e1] hover:bg-white/10 hover:text-white'}`}
+                className={`cursor-pointer font-mono text-xs tabular-nums ${playbackSpeed === speed ? 'bg-white/10 text-[#a78bfa]' : 'text-[#cbd5e1] hover:bg-white/10 hover:text-white'}`}
                 onClick={() => onSetSpeed(speed)}
               >
                 {speed === 1 ? `${speed}x (Normal)` : `${speed}x`}
-                {playbackSpeed === speed && <span className="ml-auto text-[#dcfce7]">✓</span>}
+                {playbackSpeed === speed && <span className="ml-auto text-[#a78bfa]">✓</span>}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
@@ -1222,7 +1222,7 @@ const VideoPreview: React.FC = () => {
         {/* Buffering indicator */}
         {videoLoading && activeClip && media?.type === 'video' && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/80">
-            <Loader2 className="h-8 w-8 animate-spin text-[#22a653]" />
+            <Loader2 className="h-8 w-8 animate-spin text-[#5842ed]" />
           </div>
         )}
 

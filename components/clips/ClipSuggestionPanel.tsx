@@ -85,9 +85,9 @@ export function ClipSuggestionPanel({
   }
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 0.8) return 'bg-green-500'
-    if (confidence >= 0.6) return 'bg-yellow-500'
-    return 'bg-orange-500'
+    if (confidence >= 0.8) return 'bg-[#5842ed]'
+    if (confidence >= 0.6) return 'bg-violet-500'
+    return 'bg-slate-500'
   }
 
   const getConfidenceLabel = (confidence: number) => {
@@ -100,13 +100,13 @@ export function ClipSuggestionPanel({
 
   if (availableProviders.length === 0) {
     return (
-      <Card className="border-emerald-500/30 bg-emerald-500/10">
+      <Card className="border-[#5842ed]/20 bg-[#f0eeff]">
         <CardContent className="pt-6">
           <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-emerald-300 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-[#5842ed] mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-emerald-100">AI Service Not Configured</p>
-              <p className="text-xs text-emerald-100/70 mt-1">
+              <p className="text-sm font-semibold text-[#110d2e]">AI Service Not Configured</p>
+              <p className="text-xs text-[#5e6578] mt-1">
                 Clip suggestions require OpenAI, Anthropic, or Gemini API key to be configured on the backend.
               </p>
             </div>
@@ -117,15 +117,15 @@ export function ClipSuggestionPanel({
   }
 
   return (
-    <div className="space-y-4 rounded-3xl border border-white/10 bg-[#111827]/90 p-4 text-white shadow-[0_16px_60px_rgba(15,23,42,0.45)]">
+    <div className="space-y-4 rounded-3xl border border-[#e4e6f2] bg-white p-4 text-[#110d2e] shadow-lg">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Wand2 className="w-5 h-5 text-emerald-400" />
-          <h3 className="text-lg font-semibold text-slate-100">AI Clip Suggestions</h3>
+          <Wand2 className="w-5 h-5 text-[#5842ed]" />
+          <h3 className="text-lg font-bold text-[#110d2e]">AI Clip Suggestions</h3>
         </div>
         {hasAnalyzed && (
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="secondary" className="text-xs bg-[#f0eeff] text-[#5842ed]">
             {suggestions.length} suggestions
           </Badge>
         )}
@@ -138,8 +138,8 @@ export function ClipSuggestionPanel({
           variant={selectedProvider === 'auto' ? 'default' : 'outline'}
           onClick={() => setSelectedProvider('auto')}
           className={cn(
-            "text-xs",
-            selectedProvider === 'auto' && "bg-emerald-600 hover:bg-emerald-700"
+            "text-xs font-semibold",
+            selectedProvider === 'auto' ? "bg-[#5842ed] text-white hover:bg-[#4730df]" : "border-[#e4e6f2] text-[#5e6578] hover:text-[#5842ed] hover:bg-[#f0eeff]"
           )}
         >
           Auto
@@ -152,8 +152,8 @@ export function ClipSuggestionPanel({
             onClick={() => setSelectedProvider(provider.id)}
             disabled={!provider.available}
             className={cn(
-              "text-xs",
-              selectedProvider === provider.id && "bg-emerald-600 hover:bg-emerald-700",
+              "text-xs font-semibold",
+              selectedProvider === provider.id ? "bg-[#5842ed] text-white hover:bg-[#4730df]" : "border-[#e4e6f2] text-[#5e6578] hover:text-[#5842ed] hover:bg-[#f0eeff]",
               !provider.available && "opacity-50 cursor-not-allowed"
             )}
           >
@@ -166,7 +166,7 @@ export function ClipSuggestionPanel({
       <Button
         onClick={handleSuggestClips}
         disabled={isLoading}
-        className="w-full bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-500 hover:to-green-400 text-white"
+        className="w-full bg-gradient-to-r from-[#5842ed] to-[#7c3aed] text-white font-semibold shadow-md shadow-[#5842ed]/25 hover:brightness-105"
       >
         {isLoading ? (
           <>
@@ -185,7 +185,7 @@ export function ClipSuggestionPanel({
       {isLoading && (
         <div className="space-y-2">
           <Progress value={undefined} className="h-1" />
-          <p className="text-xs text-slate-400 text-center">
+          <p className="text-xs text-[#5e6578] text-center">
             Extracting audio and transcribing speech...
           </p>
         </div>
@@ -193,11 +193,11 @@ export function ClipSuggestionPanel({
 
       {/* Error Message */}
       {error && (
-        <Card className="border-emerald-500/30 bg-emerald-500/10">
+        <Card className="border-rose-200 bg-rose-50">
           <CardContent className="pt-4">
             <div className="flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-emerald-300 mt-0.5" />
-              <p className="text-sm text-emerald-100">{error}</p>
+              <AlertCircle className="w-4 h-4 text-rose-500 mt-0.5" />
+              <p className="text-sm font-medium text-rose-700">{error}</p>
             </div>
           </CardContent>
         </Card>
@@ -206,10 +206,10 @@ export function ClipSuggestionPanel({
       {/* Suggestions List */}
       {suggestions.length > 0 && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs text-slate-400">
+          <div className="flex items-center justify-between text-xs text-[#5e6578]">
             <span>AI analyzed and found these viral moments:</span>
             {processingTime > 0 && (
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1 font-mono">
                 <Clock className="w-3 h-3" />
                 {Math.round(processingTime / 1000)}s
               </span>
@@ -219,20 +219,20 @@ export function ClipSuggestionPanel({
           {suggestions.map((clip, index) => (
             <Card 
               key={index} 
-              className="border-white/10 bg-[#0f172a]/80 hover:border-emerald-500/50 transition-colors"
+              className="border-[#e4e6f2] bg-[#f8f9fd] hover:border-[#5842ed]/50 transition-all hover:shadow-md"
             >
               <CardContent className="p-3">
                 <div className="space-y-2">
                   {/* Header with rank and confidence */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600 text-xs font-bold text-white">
+                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#5842ed] text-xs font-bold text-white shadow-sm">
                         {index + 1}
                       </span>
                       <Badge 
                         variant="secondary" 
                         className={cn(
-                          "text-xs",
+                          "text-xs font-semibold",
                           getConfidenceColor(clip.confidence),
                           "text-white"
                         )}
@@ -240,27 +240,27 @@ export function ClipSuggestionPanel({
                         {getConfidenceLabel(clip.confidence)} Match
                       </Badge>
                     </div>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs font-mono font-medium text-[#5e6578]">
                       {formatTime(clip.duration)}
                     </span>
                   </div>
 
                   {/* Time range */}
-                  <div className="flex items-center gap-2 text-sm text-slate-300">
-                    <Clock className="w-4 h-4 text-slate-500" />
-                    <span className="font-mono">
+                  <div className="flex items-center gap-2 text-sm text-[#110d2e]">
+                    <Clock className="w-4 h-4 text-[#5842ed]" />
+                    <span className="font-mono font-semibold">
                       {formatTime(clip.startTime)} - {formatTime(clip.endTime)}
                     </span>
                   </div>
 
                   {/* Reason */}
-                  <p className="text-xs text-emerald-100/70 line-clamp-2">
+                  <p className="text-xs text-[#5e6578] line-clamp-2">
                     {clip.reason}
                   </p>
 
                   {/* Transcript preview */}
                   {clip.transcriptSegment && (
-                    <p className="text-xs text-emerald-100/70 italic line-clamp-2 border-l-2 border-emerald-500/20 pl-2">
+                    <p className="text-xs text-[#5e6578] italic line-clamp-2 border-l-2 border-[#5842ed]/30 pl-2">
                       &ldquo;{clip.transcriptSegment}&rdquo;
                     </p>
                   )}
@@ -270,7 +270,7 @@ export function ClipSuggestionPanel({
                     <Button
                       size="sm"
                       variant="outline"
-                      className="flex-1 h-8 text-xs border-slate-600 hover:bg-slate-800"
+                      className="flex-1 h-8 text-xs border-[#e4e6f2] bg-white text-[#110d2e] hover:bg-[#f0eeff] hover:text-[#5842ed]"
                       onClick={() => onClipPreview?.(clip.startTime)}
                     >
                       <Play className="w-3 h-3 mr-1" />
@@ -278,7 +278,7 @@ export function ClipSuggestionPanel({
                     </Button>
                     <Button
                       size="sm"
-                      className="flex-1 h-8 text-xs bg-emerald-600 hover:bg-emerald-700"
+                      className="flex-1 h-8 text-xs bg-[#5842ed] text-white hover:bg-[#4730df] font-semibold shadow-sm"
                       onClick={() => {
                         onClipAdd(clip.startTime, clip.endTime)
                         toast.success('Clip added to timeline!')
@@ -296,7 +296,7 @@ export function ClipSuggestionPanel({
       )}
 
       {/* Info footer */}
-      <p className="text-xs text-emerald-200/70 text-center">
+      <p className="text-xs text-[#94a3b8] text-center">
         AI analyzes speech, identifies hooks, emotional peaks, and viral moments
       </p>
     </div>

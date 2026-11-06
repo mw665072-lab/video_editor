@@ -49,9 +49,9 @@ export default function ForgotPasswordPage() {
       <main
         style={{
           minHeight: '100vh',
-          background: '#f6f7fb',
-          color: '#172033',
-          fontFamily: "'DM Sans', sans-serif",
+          background: '#f8f9fd',
+          color: '#110d2e',
+          fontFamily: "'Manrope', sans-serif",
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -62,37 +62,38 @@ export default function ForgotPasswordPage() {
       >
         <div style={{
           position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
-          background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(21,128,61,0.13) 0%, transparent 65%)',
+          background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(88,66,237,0.08) 0%, transparent 65%)',
         }} />
         <div style={{
           position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
           backgroundImage:
-            'repeating-linear-gradient(0deg,rgba(21,128,61,0.06) 0px,rgba(21,128,61,0.06) 1px,transparent 1px,transparent 48px),repeating-linear-gradient(90deg,rgba(21,128,61,0.06) 0px,rgba(21,128,61,0.06) 1px,transparent 1px,transparent 48px)',
+            'repeating-linear-gradient(0deg,rgba(88,66,237,0.025) 0px,rgba(88,66,237,0.025) 1px,transparent 1px,transparent 48px),repeating-linear-gradient(90deg,rgba(88,66,237,0.025) 0px,rgba(88,66,237,0.025) 1px,transparent 1px,transparent 48px)',
         }} />
-        <div style={{ position: 'fixed', top: '-10%', left: '-5%', width: 500, height: 500, borderRadius: '50%', background: 'rgba(21,128,61,0.09)', filter: 'blur(130px)', pointerEvents: 'none', zIndex: 0 }} />
-        <div style={{ position: 'fixed', bottom: '-10%', right: '-5%', width: 400, height: 400, borderRadius: '50%', background: 'rgba(21,128,61,0.07)', filter: 'blur(110px)', pointerEvents: 'none', zIndex: 0 }} />
+        <div style={{ position: 'fixed', top: '-10%', left: '-5%', width: 500, height: 500, borderRadius: '50%', background: 'rgba(88,66,237,0.07)', filter: 'blur(130px)', pointerEvents: 'none', zIndex: 0 }} />
+        <div style={{ position: 'fixed', bottom: '-10%', right: '-5%', width: 400, height: 400, borderRadius: '50%', background: 'rgba(139,92,246,0.06)', filter: 'blur(110px)', pointerEvents: 'none', zIndex: 0 }} />
 
         <section style={{
           position: 'relative', zIndex: 2,
           width: '100%', maxWidth: 420,
-          background: 'rgba(255,255,255,0.94)',
-          border: '1px solid rgba(23,32,51,0.10)',
+          background: '#ffffff',
+          border: '1px solid #e4e6f2',
           borderRadius: 24,
           padding: '40px 36px',
-          boxShadow: '0 28px 80px rgba(38,49,72,0.16), 0 0 0 1px rgba(23,32,51,0.04) inset',
+          boxShadow: '0 20px 60px rgba(88,66,237,0.08)',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
         }}>
 
           <a href="/" style={{
             display: 'inline-flex', alignItems: 'center', gap: 10,
-            fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 18,
-            letterSpacing: '-0.03em', textDecoration: 'none', color: '#172033', marginBottom: 32,
+            fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: 18,
+            letterSpacing: '-0.03em', textDecoration: 'none', color: '#110d2e', marginBottom: 32,
           }}>
             <div style={{
-              width: 32, height: 32, borderRadius: 8,
-              background: 'linear-gradient(135deg, #15803D, #22A653)',
+              width: 32, height: 32, borderRadius: 10,
+              background: 'linear-gradient(135deg, #7c3aed, #5842ed)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 6px 18px rgba(88,66,237,0.25)',
             }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5">
                 <polygon points="5 3 19 12 5 21 5 3" />
@@ -105,19 +106,19 @@ export default function ForgotPasswordPage() {
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 7,
               padding: '4px 12px 4px 8px', borderRadius: 100,
-              background: 'rgba(21,128,61,0.10)', border: '1px solid rgba(21,128,61,0.22)',
-              fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#22A653', marginBottom: 16,
+              background: '#f0eeff', border: '1px solid #ded7fb',
+              fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: '#5842ed', marginBottom: 16,
             }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#15803D' }} />
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#5842ed' }} />
               Reset Password
             </div>
             <h1 style={{
-              fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 800,
-              letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 8,
+              fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 800,
+              letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 8, color: '#110d2e',
             }}>
               Forgot your password?
             </h1>
-            <p style={{ fontSize: 14, color: 'rgba(104,115,134,0.92)', lineHeight: 1.6 }}>
+            <p style={{ fontSize: 14, color: '#5e6578', lineHeight: 1.6 }}>
               Enter your email and we’ll send a link to reset your password.
             </p>
           </div>
@@ -125,19 +126,19 @@ export default function ForgotPasswordPage() {
           <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
               <label style={{
-                display: 'block', fontFamily: "'DM Mono', monospace",
-                fontSize: 11, color: 'rgba(104,115,134,0.88)',
+                display: 'block', fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11, color: '#5e6578',
                 textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
               }}>Email</label>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 10,
-                background: 'rgba(23,32,51,0.04)', border: '1px solid rgba(23,32,51,0.10)',
+                background: '#fafbff', border: '1px solid #e4e6f2',
                 borderRadius: 12, padding: '0 16px', transition: 'border-color 0.2s',
               }}
-                onFocusCapture={(e) => (e.currentTarget.style.borderColor = 'rgba(21,128,61,0.5)')}
-                onBlurCapture={(e) => (e.currentTarget.style.borderColor = 'rgba(23,32,51,0.10)')}
+                onFocusCapture={(e) => (e.currentTarget.style.borderColor = '#5842ed')}
+                onBlurCapture={(e) => (e.currentTarget.style.borderColor = '#e4e6f2')}
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(104,115,134,0.72)" strokeWidth="2">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8a92a6" strokeWidth="2">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                   <polyline points="22,6 12,13 2,6" />
                 </svg>
@@ -149,7 +150,7 @@ export default function ForgotPasswordPage() {
                   placeholder="you@example.com"
                   style={{
                     flex: 1, background: 'transparent', border: 'none', outline: 'none',
-                    color: '#172033', fontSize: 14, fontFamily: "'DM Sans', sans-serif",
+                    color: '#110d2e', fontSize: 14, fontFamily: "'Manrope', sans-serif",
                     padding: '13px 0',
                   }}
                 />
@@ -160,8 +161,8 @@ export default function ForgotPasswordPage() {
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 8,
                 padding: '12px 14px', borderRadius: 10,
-                background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)',
-                fontSize: 13, color: '#F87171',
+                background: '#fff1f2', border: '1px solid #fecdd3',
+                fontSize: 13, color: '#be123c',
               }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 {error}
@@ -172,8 +173,8 @@ export default function ForgotPasswordPage() {
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 8,
                 padding: '12px 14px', borderRadius: 10,
-                background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.25)',
-                fontSize: 13, color: '#34D399',
+                background: '#f0fdf4', border: '1px solid #bbf7d0',
+                fontSize: 13, color: '#16a34a',
               }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6L9 17l-5-5"/></svg>
                 {success}
@@ -186,19 +187,19 @@ export default function ForgotPasswordPage() {
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 padding: '14px 24px', borderRadius: 100,
-                fontFamily: "'DM Mono', monospace", fontSize: 14, fontWeight: 600,
+                fontFamily: "'IBM Plex Mono', monospace", fontSize: 14, fontWeight: 600,
                 cursor: loading ? 'not-allowed' : 'pointer',
                 border: 'none', letterSpacing: '0.03em', marginTop: 4,
                 background: loading
-                  ? 'rgba(21,128,61,0.4)'
-                  : 'linear-gradient(135deg, #15803D, #166534)',
+                  ? 'rgba(88,66,237,0.4)'
+                  : 'linear-gradient(135deg, #5842ed 0%, #4730df 100%)',
                 color: '#ffffff',
-                boxShadow: loading ? 'none' : '0 4px 24px rgba(21,128,61,0.4)',
+                boxShadow: loading ? 'none' : '0 10px 28px rgba(88,66,237,0.28)',
                 transition: 'all 0.25s cubic-bezier(0.34,1.56,0.64,1)',
                 opacity: loading ? 0.7 : 1,
               }}
-              onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.boxShadow = '0 8px 32px rgba(21,128,61,0.55)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
-              onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 4px 24px rgba(21,128,61,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+              onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.boxShadow = '0 12px 32px rgba(88,66,237,0.36)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+              onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 10px 28px rgba(88,66,237,0.28)'; e.currentTarget.style.transform = 'translateY(0)'; }}
             >
               {loading ? (
                 <>
@@ -213,11 +214,11 @@ export default function ForgotPasswordPage() {
             </button>
           </form>
 
-          <p style={{ textAlign: 'center', fontSize: 14, color: '#687386' }}>
+          <p style={{ textAlign: 'center', fontSize: 14, color: '#5e6578' }}>
             Remembered your password?{' '}
             <Link href="/auth/login" style={{
-              color: '#22A653', textDecoration: 'none', fontWeight: 600,
-              fontFamily: "'DM Mono', monospace", fontSize: 13,
+              color: '#5842ed', textDecoration: 'none', fontWeight: 600,
+              fontFamily: "'IBM Plex Mono', monospace", fontSize: 13,
               transition: 'color 0.2s',
             }}>
               Login →

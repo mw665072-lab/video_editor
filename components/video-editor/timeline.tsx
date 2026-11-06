@@ -276,13 +276,13 @@ const TimelineRuler = memo<RulerProps>(({ width, zoom, scrollX, currentTime, onS
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.strokeStyle = '#22a653';
+        ctx.strokeStyle = '#5842ed';
         ctx.lineWidth = 1.5;
         ctx.moveTo(phX, 0);
         ctx.lineTo(phX, h);
         ctx.stroke();
 
-        ctx.fillStyle = '#22a653';
+        ctx.fillStyle = '#5842ed';
         ctx.beginPath();
         ctx.moveTo(phX, 0);
         ctx.lineTo(phX - 5, 0);
@@ -633,7 +633,7 @@ const TimelineClipComponent = memo<ClipProps>(({
     >
       <div
         className={`relative h-full rounded-sm overflow-hidden cursor-grab active:cursor-grabbing ${isSelected
-          ? 'ring-2 ring-[#22a653] ring-offset-1 ring-offset-[#111827] shadow-lg shadow-[#22a653]/20'
+          ? 'ring-2 ring-[#5842ed] ring-offset-1 ring-offset-[#111827] shadow-lg shadow-[#5842ed]/20'
           : 'hover:ring-1 hover:ring-white/20'
           } ${activeTool === 'cut' ? 'cursor-crosshair' : ''}`}
         style={{
@@ -723,10 +723,10 @@ const TrackHeader = memo<TrackHeaderProps>(({ trackId }) => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-5 w-5 text-white/80 hover:text-[#dcfce7]"
+                  className="h-5 w-5 text-[#5e6578] hover:text-[#5842ed] hover:bg-[#f0eeff]"
                   onClick={() => toggleMute(trackId)}
                 >
-                  {muted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
+                  {muted ? <VolumeX className="w-3 h-3 text-rose-500" /> : <Volume2 className="w-3 h-3" />}
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="text-[10px]">{muted ? 'Unmute' : 'Mute'}</TooltipContent>
@@ -739,10 +739,10 @@ const TrackHeader = memo<TrackHeaderProps>(({ trackId }) => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-5 w-5 text-white/80 hover:text-[#dcfce7]"
+                  className="h-5 w-5 text-[#5e6578] hover:text-[#5842ed] hover:bg-[#f0eeff]"
                   onClick={() => toggleVisibility(trackId)}
                 >
-                  {visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                  {visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3 text-amber-500" />}
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="text-[10px]">{visible ? 'Hide' : 'Show'}</TooltipContent>
@@ -755,10 +755,10 @@ const TrackHeader = memo<TrackHeaderProps>(({ trackId }) => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-5 w-5 text-white/80 hover:text-[#dcfce7]"
+                  className="h-5 w-5 text-[#5e6578] hover:text-[#5842ed] hover:bg-[#f0eeff]"
                   onClick={() => toggleLock(trackId)}
                 >
-                  {locked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                  {locked ? <Lock className="w-3 h-3 text-amber-500" /> : <Unlock className="w-3 h-3" />}
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="text-[10px]">{locked ? 'Unlock' : 'Lock'}</TooltipContent>
@@ -845,13 +845,13 @@ CutToolLine.displayName = 'CutToolLine';
 
 const EmptyDropZone = memo(() => (
   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-    <div className="text-center animate-pulse">
-      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-dashed border-white/10 bg-white/5">
-        <Upload className="h-7 w-7 text-[#cbd5e1]" />
+    <div className="text-center">
+      <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-dashed border-[#dcdff0] bg-[#f8f9fd]">
+        <Upload className="h-6 w-6 text-[#5842ed]" />
       </div>
-      <p className="text-sm font-medium text-[#e2e8f0]">Drop media files here</p>
-      <p className="mt-1.5 text-xs text-[#cbd5e1]">Drag video, audio, or image files from your desktop</p>
-      <p className="mt-3 text-[10px] text-[#94a3b8]">Or drag clips from the media panel to begin editing</p>
+      <p className="text-sm font-bold text-[#110d2e]">Drop media files here</p>
+      <p className="mt-1 text-xs text-[#5e6578]">Drag video, audio, or image files from your desktop</p>
+      <p className="mt-2 text-[11px] text-[#94a3b8]">Or drag clips from the media panel to begin editing</p>
     </div>
   </div>
 ));
@@ -865,17 +865,19 @@ const TrackAddButtons = memo(() => {
   const addTrack = useEditorStore((s) => s.addTrack);
 
   return (
-    <div className="flex items-center gap-1 border-t border-white/10 bg-[#111827] px-2 py-1">
+    <div className="flex items-center gap-1.5 border-t border-[#e4e6f2] bg-[#f8f9fd] px-2.5 py-1.5">
       <TooltipProvider delayDuration={500}>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
-              className="h-6 gap-1 text-[10px] text-white/80 hover:bg-white/10 hover:text-[#dcfce7]"
+              className="h-6 gap-1 rounded-md border-[#e4e6f2] bg-white text-[10px] font-semibold text-[#5e6578] hover:border-[#5842ed]/40 hover:bg-[#f0eeff] hover:text-[#5842ed]"
               onClick={() => addTrack('video')}
             >
-              <Plus className="w-3 h-3" /><Film className="w-3 h-3" />Video
+              <Plus className="w-3 h-3 text-[#5842ed]" />
+              <Film className="w-3 h-3 text-[#5842ed]" />
+              Video
             </Button>
           </TooltipTrigger>
           <TooltipContent side="top" className="text-[10px]">Add video track</TooltipContent>
@@ -886,12 +888,14 @@ const TrackAddButtons = memo(() => {
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
-              className="h-6 gap-1 text-[10px] text-white/80 hover:bg-white/10 hover:text-[#dcfce7]"
+              className="h-6 gap-1 rounded-md border-[#e4e6f2] bg-white text-[10px] font-semibold text-[#5e6578] hover:border-[#5842ed]/40 hover:bg-[#f0eeff] hover:text-[#5842ed]"
               onClick={() => addTrack('audio')}
             >
-              <Plus className="w-3 h-3" /><Music className="w-3 h-3" />Audio
+              <Plus className="w-3 h-3 text-[#5842ed]" />
+              <Music className="w-3 h-3 text-[#5842ed]" />
+              Audio
             </Button>
           </TooltipTrigger>
           <TooltipContent side="top" className="text-[10px]">Add audio track</TooltipContent>
@@ -1174,19 +1178,19 @@ const Timeline: React.FC = () => {
   const playheadLeft = currentTime * zoom;
 
   return (
-    <div className="flex h-full select-none flex-col border-t border-white/10 bg-[#111827]">
+    <div className="flex h-full select-none flex-col border-t border-[#e4e6f2] bg-white text-[#110d2e]">
       {/* Header bar */}
-      <div className="flex items-center justify-between border-b border-white/10 bg-[#111827] px-3 py-1">
+      <div className="flex items-center justify-between border-b border-[#e4e6f2] bg-[#f8f9fd] px-3 py-1.5">
         <div className="flex items-center gap-2">
-          <h3 className="text-xs font-bold text-white uppercase tracking-wider">Timeline</h3>
-          <span className="text-[10px] text-[#cbd5e1]">
+          <h3 className="text-xs font-bold text-[#110d2e] uppercase tracking-wider">Timeline</h3>
+          <span className="text-[11px] font-medium text-[#5e6578]">
             {tracks.length} tracks · {zoom.toFixed(0)}px/s
           </span>
         </div>
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6 text-white/80 hover:text-[#dcfce7]"
+          className="h-6 w-6 text-[#5e6578] hover:text-[#5842ed] hover:bg-[#f0eeff]"
           onClick={() => setShowTrackHeaders((v) => !v)}
         >
           {showTrackHeaders ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -1197,10 +1201,10 @@ const Timeline: React.FC = () => {
       <div className="flex flex-shrink-0">
         {showTrackHeaders && (
           <div
-            className="flex flex-shrink-0 items-center border-b border-r border-white/10 bg-[#111827] px-2"
+            className="flex flex-shrink-0 items-center border-b border-r border-[#e4e6f2] bg-[#f8f9fd] px-2"
             style={{ width: HEADER_WIDTH, minWidth: HEADER_WIDTH, height: RULER_HEIGHT }}
           >
-            <span className="text-[9px] uppercase tracking-wider text-[#cbd5e1]">Tracks</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#5e6578]">Tracks</span>
           </div>
         )}
         <div className="flex-1 overflow-hidden">
@@ -1301,14 +1305,14 @@ const Timeline: React.FC = () => {
                   top: 0,
                   borderLeft: '5px solid transparent',
                   borderRight: '5px solid transparent',
-                  borderTop: '7px solid #22a653',
+                  borderTop: '7px solid #5842ed',
                   transform: 'translateX(-5px)',
                 }}
               />
               <div
                 className="absolute top-1 bottom-0 w-px"
                 style={{
-                  backgroundColor: '#22a653',
+                  backgroundColor: '#5842ed',
                   boxShadow: '0 0 4px rgba(217,155,0,0.4)',
                   transform: 'translateX(-0.5px)',
                 }}

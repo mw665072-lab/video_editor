@@ -3,75 +3,19 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, Captions, Link2, Share2 } from "lucide-react";
-import { clipDurations, platforms } from "./landingData";
-
-const HERO_CSS = `
-.hero-shell {
-  background:
-    radial-gradient(circle at 12% 16%, rgba(34,197,94,.11), transparent 27%),
-    radial-gradient(circle at 88% 13%, rgba(250,204,21,.15), transparent 24%),
-    linear-gradient(180deg,#fbfcf7 0%,#f5f8f1 100%);
-}
-.hero-title-mark {
-  position: relative;
-  display: inline-block;
-  z-index: 0;
-  white-space: nowrap;
-}
-.hero-title-mark::after {
-  content: "";
-  position: absolute;
-  left: -1.5%;
-  right: -1.5%;
-  bottom: .06em;
-  height: .2em;
-  z-index: -1;
-  border-radius: 999px;
-  background: #facc15;
-  transform: rotate(-.8deg);
-  opacity: .78;
-}
-.hero-source-form:focus-within {
-  border-color: rgba(21,128,61,.58);
-  box-shadow: 0 0 0 4px rgba(21,128,61,.10), 0 22px 60px rgba(31,52,36,.11);
-}
-.hero-benefit + .hero-benefit {
-  border-left: 1px solid #dce5dc;
-}
-@media (max-width: 700px) {
-  .hero-title-mark { white-space: normal; }
-  .hero-source-form { flex-wrap: wrap; }
-  .hero-source-form input { width: calc(100% - 34px); }
-  .hero-source-form button { width: 100%; justify-content: center; }
-  .hero-platforms { gap: 7px !important; }
-  .hero-platforms > div { padding: 6px 9px !important; }
-  .hero-benefits { grid-template-columns: 1fr !important; }
-  .hero-benefit + .hero-benefit { border-left: 0; border-top: 1px solid #dce5dc; }
-}
-`;
-
-const benefits = [
-  {
-    icon: Link2,
-    title: "Paste any link",
-    text: "Start from YouTube, TikTok, or a direct video URL.",
-  },
-  {
-    icon: Captions,
-    title: "Get clean clips",
-    text: "Create focused cuts with captions and social framing.",
-  },
-  {
-    icon: Share2,
-    title: "Publish anywhere",
-    text: "Export polished clips ready for every major platform.",
-  },
-];
+import {
+  ArrowRight,
+  Link2,
+  ShieldCheck,
+  Zap,
+  MonitorSmartphone,
+  Youtube,
+  Instagram,
+  Facebook,
+} from "lucide-react";
 
 export default function Hero() {
   const [source, setSource] = useState("");
-  const [selectedDuration, setSelectedDuration] = useState("30s");
   const router = useRouter();
 
   const startEditing = (event: FormEvent) => {
@@ -81,104 +25,154 @@ export default function Hero() {
   };
 
   return (
-    <section className="hero-shell relative flex min-h-[94vh] items-center overflow-hidden px-5 pb-20 pt-32 sm:px-8 lg:pb-24 lg:pt-36">
-      <style>{HERO_CSS}</style>
+    <section className="relative flex min-h-[92vh] items-center justify-center overflow-hidden px-5 pb-20 pt-28 sm:px-8 lg:pb-24 lg:pt-32">
+      {/* Background ambient lighting and liquid curves */}
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        {/* Top center soft radial glow */}
+        <div className="absolute left-1/2 top-0 h-[500px] w-[900px] -translate-x-1/2 rounded-full bg-gradient-to-b from-[#5842ed]/10 via-[#7c3aed]/05 to-transparent blur-[120px]" />
+        
+        {/* Left flowing purple wave ribbon */}
+        <div className="absolute -left-32 top-1/4 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-[#7c3aed]/15 to-[#5842ed]/05 blur-[90px]" />
+        
+        {/* Right flowing purple wave ribbon */}
+        <div className="absolute -right-32 top-1/3 h-[450px] w-[450px] rounded-full bg-gradient-to-bl from-[#5842ed]/15 to-[#a78bfa]/10 blur-[100px]" />
 
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(24,35,27,.032)_1px,transparent_1px),linear-gradient(90deg,rgba(24,35,27,.032)_1px,transparent_1px)] bg-[size:72px_72px] [mask-image:linear-gradient(to_bottom,black,transparent_88%)]" />
-      <div className="pointer-events-none absolute left-1/2 top-28 h-64 w-64 -translate-x-1/2 rounded-full border border-[#dfe7dd] opacity-60 sm:h-96 sm:w-96" />
-      <div className="pointer-events-none absolute left-1/2 top-40 h-40 w-40 -translate-x-1/2 rounded-full border border-[#e5eadf] opacity-70 sm:h-64 sm:w-64" />
+        {/* Subtle grid texture */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(88,66,237,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(88,66,237,.02)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_40%,#000_70%,transparent_100%)]" />
+      </div>
 
-      <div className="relative mx-auto w-full max-w-[1120px] text-center">
+      {/* Floating 3D Play Button Accent (Left) */}
+      <motion.div
+        initial={{ y: -10, rotate: -8 }}
+        animate={{ y: [ -10, 10, -10 ], rotate: [ -8, -4, -8 ] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        className="pointer-events-none absolute left-6 top-36 hidden lg:block xl:left-16"
+      >
+        <div className="relative flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-[#7c3aed] to-[#5842ed] p-1 shadow-[0_20px_40px_rgba(88,66,237,0.35)] ring-1 ring-white/30 backdrop-blur-md">
+          <div className="absolute inset-1 rounded-[22px] bg-gradient-to-t from-transparent via-white/10 to-white/30" />
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="#ffffff">
+            <polygon points="6 3 20 12 6 21 6 3" />
+          </svg>
+        </div>
+      </motion.div>
+
+      {/* Floating 3D Clapperboard Accent (Right) */}
+      <motion.div
+        initial={{ y: 10, rotate: 10 }}
+        animate={{ y: [ 10, -10, 10 ], rotate: [ 10, 6, 10 ] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        className="pointer-events-none absolute right-6 top-40 hidden lg:block xl:right-16"
+      >
+        <div className="relative flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-[#5842ed] to-[#432ec7] p-1 shadow-[0_20px_40px_rgba(88,66,237,0.32)] ring-1 ring-white/30 backdrop-blur-md">
+          <div className="absolute inset-1 rounded-[22px] bg-gradient-to-t from-transparent via-white/10 to-white/30" />
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <rect width="18" height="18" x="3" y="3" rx="3" />
+            <path d="m4 11 3-8" />
+            <path d="m10 11 3-8" />
+            <path d="m16 11 3-8" />
+            <path d="M3 11h18" />
+          </svg>
+        </div>
+      </motion.div>
+
+      <div className="relative z-10 mx-auto w-full max-w-[1080px] text-center">
         <motion.div
-          initial={{ opacity: 0, y: 14 }}
+          initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45 }}
         >
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#cce8d2] bg-white/85 px-4 py-2 text-xs font-extrabold text-[#166534] shadow-[0_8px_26px_rgba(31,52,36,.06)] backdrop-blur-sm">
-            <span className="h-2 w-2 rounded-full bg-[#22a653]" />
-            Fast, focused video editing
+          {/* Badge: Free During Launch */}
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#ded7fb] bg-white/95 px-4 py-1.5 text-xs font-extrabold text-[#5842ed] shadow-[0_6px_20px_rgba(88,66,237,.06)] backdrop-blur-sm">
+            <span className="h-2 w-2 rounded-full bg-[#5842ed] animate-pulse" />
+            Free During Launch
           </div>
 
-          <h1 className="mx-auto mt-7 max-w-[1040px] font-['Plus_Jakarta_Sans'] text-[clamp(3rem,7.2vw,6.8rem)] font-extrabold leading-[.96] tracking-[-.065em] text-[#18231b]">
-            One long video.
+          {/* H1 */}
+          <h1 className="mx-auto mt-6 max-w-[960px] font-['Plus_Jakarta_Sans'] text-[clamp(2.5rem,6vw,5.2rem)] font-extrabold leading-[1.08] tracking-[-0.045em] text-[#110d2e]">
+            Free YouTube Video{" "}
+            <span className="bg-gradient-to-r from-[#5842ed] via-[#7c3aed] to-[#5842ed] bg-clip-text text-transparent">
+              Trimmer &amp;
+            </span>
             <br />
-            <span className="hero-title-mark">All the clips you need.</span>
+            Cutter Online
           </h1>
 
-          <p className="mx-auto mt-7 max-w-[700px] text-base leading-7 text-[#5d6a60] sm:text-lg sm:leading-8">
-            Turn podcasts, interviews, tutorials, and streams into sharp, shareable clips—without learning a complicated editor.
+          {/* Description */}
+          <p className="mx-auto mt-6 max-w-[720px] text-base leading-7 text-[#5e6578] sm:text-lg sm:leading-8 font-medium">
+            Paste a video link, set the start and end time, and cut the exact clip you need. Or let Find Moments pick out the highlights for Shorts, TikTok and Reels.
           </p>
 
+          {/* Search/URL Form */}
           <form
             onSubmit={startEditing}
-            className="hero-source-form mx-auto mt-9 flex max-w-[820px] items-center gap-3 rounded-[22px] border border-[#d8e3d8] bg-white p-2.5 text-left shadow-[0_20px_60px_rgba(31,52,36,.09)] transition"
+            className="mx-auto mt-9 flex max-w-[760px] flex-col sm:flex-row items-center gap-2 sm:gap-3 rounded-[24px] border border-[#e2e4f0] bg-white p-2.5 text-left shadow-[0_20px_60px_rgba(88,66,237,.08)] transition focus-within:border-[#5842ed] focus-within:ring-4 focus-within:ring-[#5842ed]/10"
           >
-            <label htmlFor="hero-video-url" className="sr-only">Video URL</label>
-            <Link2 size={20} className="ml-2 shrink-0 text-[#15803d]" aria-hidden="true" />
-            <input
-              id="hero-video-url"
-              value={source}
-              onChange={(event) => setSource(event.target.value)}
-              placeholder="Paste a YouTube, TikTok, or video URL"
-              className="min-w-0 flex-1 border-0 bg-transparent px-1 py-2.5 text-sm text-[#18231b] outline-none placeholder:text-[#8a948c] sm:text-base"
-            />
+            <div className="flex w-full flex-1 items-center gap-2 px-2">
+              <Link2 size={20} className="shrink-0 text-[#5842ed]" aria-hidden="true" />
+              <input
+                value={source}
+                onChange={(event) => setSource(event.target.value)}
+                placeholder="Paste a YouTube, TikTok, Instagram or Facebook link…"
+                className="w-full border-0 bg-transparent py-2.5 text-sm sm:text-base text-[#110d2e] outline-none placeholder:text-[#8a92a6]"
+              />
+            </div>
             <button
               type="submit"
-              className="inline-flex min-h-12 cursor-pointer items-center gap-2 rounded-2xl bg-[#15803d] px-6 py-3 text-sm font-extrabold text-white shadow-[0_10px_26px_rgba(21,128,61,.23)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#166534]"
+              className="w-full sm:w-auto inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-[#5842ed] px-7 py-3 text-sm font-extrabold text-white shadow-[0_10px_26px_rgba(88,66,237,.25)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#4730df]"
             >
-              Create my clips <ArrowRight size={17} />
+              Get Clips for Free <ArrowRight size={17} />
             </button>
           </form>
 
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-            <span className="mr-1 text-xs font-semibold text-[#758078]">Clip length</span>
-            {clipDurations.map((duration) => (
-              <button
-                key={duration}
-                type="button"
-                onClick={() => setSelectedDuration(duration)}
-                className={`min-h-9 cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-bold transition duration-200 ${
-                  selectedDuration === duration
-                    ? "bg-[#18231b] text-white shadow-sm"
-                    : "border border-[#dce5dc] bg-white/85 text-[#5d6a60] hover:border-[#9ec9a7] hover:text-[#166534]"
-                }`}
-              >
-                {duration}
-              </button>
-            ))}
+          {/* Supported platform chips */}
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs font-semibold text-[#8a92a6]">
+            <span>Works with:</span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#e4e6f2] bg-white/80 px-2.5 py-1 text-xs font-bold text-[#5e6578]">
+              <Youtube size={13} className="text-[#FF0000]" /> YouTube
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#e4e6f2] bg-white/80 px-2.5 py-1 text-xs font-bold text-[#5e6578]">
+              <Instagram size={13} className="text-[#E4405F]" /> Instagram
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#e4e6f2] bg-white/80 px-2.5 py-1 text-xs font-bold text-[#5e6578]">
+              <Facebook size={13} className="text-[#1877F2]" /> Facebook
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#e4e6f2] bg-white/80 px-2.5 py-1 text-xs font-bold text-[#5e6578]">
+              TikTok
+            </span>
           </div>
 
-          <div className="hero-platforms mt-7 flex flex-wrap items-center justify-center gap-3">
-            <span className="text-xs font-semibold text-[#758078]">Works with</span>
-            {platforms.map((platform) => (
-              <div
-                key={platform.name}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#dde5dc] bg-white/80 px-3 py-1.5 text-xs font-bold text-[#465249]"
-              >
-                <span style={{ color: platform.color }}>{platform.icon}</span>
-                {platform.name}
+          {/* 3 Trust Cards (Matching reference screenshot row) */}
+          <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-[840px] mx-auto">
+            <div className="flex items-center gap-3 rounded-2xl border border-[#e4e6f2] bg-white/90 p-4 shadow-[0_10px_30px_rgba(88,66,237,0.03)] text-left">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#f0eeff] text-[#5842ed]">
+                <Zap size={20} />
               </div>
-            ))}
-          </div>
-        </motion.div>
-
-        <motion.div
-          className="hero-benefits mx-auto mt-12 grid max-w-[940px] grid-cols-3 overflow-hidden rounded-[24px] border border-[#dce5dc] bg-white/72 text-left shadow-[0_16px_50px_rgba(31,52,36,.07)] backdrop-blur-md"
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.14 }}
-        >
-          {benefits.map(({ icon: Icon, title, text }) => (
-            <div key={title} className="hero-benefit flex gap-3.5 p-5 sm:p-6">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#edf7ef] text-[#15803d]">
-                <Icon size={19} strokeWidth={2.2} />
-              </span>
               <div>
-                <h2 className="text-sm font-extrabold text-[#18231b]">{title}</h2>
-                <p className="mt-1 text-xs leading-5 text-[#667069]">{text}</p>
+                <div className="text-sm font-extrabold text-[#110d2e]">100% Free</div>
+                <div className="text-xs text-[#5e6578]">No Sign Up Required</div>
               </div>
             </div>
-          ))}
+
+            <div className="flex items-center gap-3 rounded-2xl border border-[#e4e6f2] bg-white/90 p-4 shadow-[0_10px_30px_rgba(88,66,237,0.03)] text-left">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#f0eeff] text-[#5842ed]">
+                <ShieldCheck size={20} />
+              </div>
+              <div>
+                <div className="text-sm font-extrabold text-[#110d2e]">Fast &amp; Secure</div>
+                <div className="text-xs text-[#5e6578]">Your Privacy First</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 rounded-2xl border border-[#e4e6f2] bg-white/90 p-4 shadow-[0_10px_30px_rgba(88,66,237,0.03)] text-left">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#f0eeff] text-[#5842ed]">
+                <MonitorSmartphone size={20} />
+              </div>
+              <div>
+                <div className="text-sm font-extrabold text-[#110d2e]">Works Everywhere</div>
+                <div className="text-xs text-[#5e6578]">Desktop · Mobile · Tablet</div>
+              </div>
+            </div>
+          </div>
         </motion.div>
       </div>
     </section>

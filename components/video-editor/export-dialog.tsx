@@ -489,10 +489,10 @@ const ExportDialog: React.FC<{ open: boolean; onClose: () => void }> = ({ open, 
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
-      <DialogContent className="visual-editor-dialog-theme max-h-[90vh] overflow-y-auto border-[#dce5dc] bg-white text-[#18231b] shadow-[0_30px_100px_rgba(31,52,36,0.20)] sm:max-w-[520px]">
+      <DialogContent className="visual-editor-dialog-theme max-h-[90vh] overflow-y-auto border-[#e4e6f2] bg-white text-[#110d2e] shadow-[0_30px_100px_rgba(88,66,237,0.12)] sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-zinc-50">
-            <Download className="w-4 h-4 text-emerald-400" />
+            <Download className="w-4 h-4 text-[#5842ed]" />
             Export Video
           </DialogTitle>
           <DialogDescription className="text-zinc-400">
@@ -533,7 +533,7 @@ const ExportDialog: React.FC<{ open: boolean; onClose: () => void }> = ({ open, 
                       onClick={() => applyPreset(key)}
                       className={`flex items-center gap-2.5 rounded-lg border p-3 text-left transition-all hover:bg-zinc-800 ${
                         settings.preset === key
-                          ? 'border-emerald-500/60 bg-emerald-500/10 ring-1 ring-emerald-500/30'
+                          ? 'border-[#5842ed]/60 bg-[#5842ed]/10 ring-1 ring-[#5842ed]/30'
                           : 'border-zinc-700 bg-zinc-800/50'
                       }`}
                     >
@@ -674,7 +674,7 @@ const ExportDialog: React.FC<{ open: boolean; onClose: () => void }> = ({ open, 
                     onClick={() => setSettings((p) => ({ ...p, includeAudio: !p.includeAudio }))}
                     className={
                       settings.includeAudio
-                        ? 'bg-emerald-600 hover:bg-emerald-500 text-white h-7 text-xs px-3'
+                        ? 'bg-[#5842ed] hover:bg-[#4730df] text-white shadow-[0_4px_16px_rgba(88,66,237,0.25)] h-7 text-xs px-3'
                         : 'border-zinc-600 text-zinc-400 hover:text-zinc-200 h-7 text-xs px-3'
                     }
                   >
@@ -757,7 +757,7 @@ const ExportDialog: React.FC<{ open: boolean; onClose: () => void }> = ({ open, 
               </Button>
               <Button
                 onClick={handleExport}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white gap-2"
+                className="bg-[#5842ed] hover:bg-[#4730df] text-white shadow-[0_4px_16px_rgba(88,66,237,0.25)] gap-2"
               >
                 <>
                   <Download className="w-4 h-4" />
@@ -773,8 +773,8 @@ const ExportDialog: React.FC<{ open: boolean; onClose: () => void }> = ({ open, 
           <div className="py-8 space-y-4">
             <div className="flex flex-col items-center gap-3">
               <div className="relative">
-                <Loader2 className="w-10 h-10 text-emerald-400 animate-spin" />
-                <div className="absolute -inset-2 rounded-full border-2 border-emerald-500/20 animate-ping" style={{ animationDuration: '2s' }} />
+                <Loader2 className="w-10 h-10 text-[#5842ed] animate-spin" />
+                <div className="absolute -inset-2 rounded-full border-2 border-[#ded7fb] animate-ping" style={{ animationDuration: '2s' }} />
               </div>
               <div className="text-center">
                 <p className="text-sm text-zinc-200 font-medium">Preloading Video Sources</p>
@@ -796,7 +796,7 @@ const ExportDialog: React.FC<{ open: boolean; onClose: () => void }> = ({ open, 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-zinc-300">Rendering...</span>
-                <span className="text-sm font-bold text-emerald-400 tabular-nums">{progress}%</span>
+                <span className="text-sm font-bold text-[#5842ed] tabular-nums">{progress}%</span>
               </div>
               <Progress value={progress} className="h-2.5 bg-zinc-800" />
             </div>
@@ -834,8 +834,8 @@ const ExportDialog: React.FC<{ open: boolean; onClose: () => void }> = ({ open, 
             {/* Active processing indicator */}
             <div className="flex items-center justify-center gap-2 py-1">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#5842ed] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#5842ed]" />
               </span>
               <span className="text-[10px] text-zinc-500">Recording in progress</span>
             </div>
@@ -858,8 +858,8 @@ const ExportDialog: React.FC<{ open: boolean; onClose: () => void }> = ({ open, 
           <div className="py-2 space-y-4">
             {/* Success indicator */}
             <div className="flex flex-col items-center gap-3">
-              <div className="w-14 h-14 rounded-full bg-emerald-500/20 flex items-center justify-center ring-2 ring-emerald-500/30">
-                <Check className="w-7 h-7 text-emerald-400" />
+              <div className="w-14 h-14 rounded-full bg-[#5842ed]/20 flex items-center justify-center ring-2 ring-[#5842ed]/30">
+                <Check className="w-7 h-7 text-[#5842ed]" />
               </div>
               <div className="text-center">
                 <p className="text-sm text-zinc-100 font-semibold">Export Complete!</p>
@@ -894,7 +894,7 @@ const ExportDialog: React.FC<{ open: boolean; onClose: () => void }> = ({ open, 
                 <span className="text-zinc-400">Duration</span>
                 <span className="text-zinc-200 text-right">{formatTime(totalDuration)}</span>
                 <span className="text-zinc-400">{(status === 'done' && actualFileSize) ? 'Actual Size' : 'Est. Size'}</span>
-                <span className="text-emerald-400 text-right">
+                <span className="text-[#5842ed] text-right">
                   {formatFileSize((status === 'done' && actualFileSize) ? actualFileSize : estFileSize)}
                 </span>
               </div>
@@ -923,7 +923,7 @@ const ExportDialog: React.FC<{ open: boolean; onClose: () => void }> = ({ open, 
               </Button>
               <Button
                 onClick={handleDownload}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white gap-2"
+                className="bg-[#5842ed] hover:bg-[#4730df] text-white shadow-[0_4px_16px_rgba(88,66,237,0.25)] gap-2"
               >
                 <Download className="w-4 h-4" />
                 Download
@@ -991,7 +991,7 @@ function InfoRow({
         {icon}
         <span className="text-xs text-zinc-400">{label}</span>
       </div>
-      <span className={`text-xs ${highlight ? 'text-emerald-400 font-semibold' : 'text-zinc-200'}`}>
+      <span className={`text-xs ${highlight ? 'text-[#5842ed] font-semibold' : 'text-zinc-200'}`}>
         {value}
       </span>
     </div>

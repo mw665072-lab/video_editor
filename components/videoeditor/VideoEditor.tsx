@@ -33,7 +33,7 @@ import { Timeline } from '../timeline/Timeline'
 import { ClipList } from '../clips/ClipList'
 import { ExportDialog } from '../dialog/ExportDialog'
 import { ClipSuggestionPanel } from '../clips/ClipSuggestionPanel'
-import { Trash2, FileDown, Wand2, Play, Square } from 'lucide-react'
+import { Trash2, FileDown, Wand2, Play, Square, Plus, RotateCcw, Scissors, Sparkles } from 'lucide-react'
 import { EditorAiTools } from './EditorAiTools'
 
 export function VideoEditor() {
@@ -840,62 +840,73 @@ export function VideoEditor() {
 
   // ─── Shared panel style ───────────────────────────────────────────────────
   const panel =
-    'editor-surface rounded-2xl border border-[#dce5dc] bg-white shadow-[0_12px_34px_rgba(31,52,36,0.08)]'
+    'editor-surface rounded-2xl border border-[#e4e6f2] bg-white shadow-[0_10px_30px_rgba(88,66,237,0.04)]'
 
   return (
-    <div
-      className="clip-editor-theme min-h-screen overflow-x-hidden text-[#18231b]"
-      style={{
-        backgroundColor: '#f7f8f2',
-        backgroundImage: 'radial-gradient(circle at 12% 8%, rgba(34,197,94,0.12) 0%, transparent 30%), radial-gradient(circle at 88% 12%, rgba(250,204,21,0.14) 0%, transparent 26%)',
-      }}
-    >
-      {/* Subtle grid texture overlay */}
-      <div
-        className="pointer-events-none fixed inset-0 z-0 opacity-40"
-        style={{
-          backgroundImage:
-            'linear-gradient(rgba(21,128,61,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(21,128,61,0.035) 1px, transparent 1px)',
-          backgroundSize: '48px 48px',
-        }}
-      />
+    <div className="clip-editor-theme w-full text-[#110d2e]">
+      <div className="relative z-10 mx-auto w-full max-w-[1600px] px-1 sm:px-2 py-1">
 
-      <div className="relative z-10 mx-auto w-full max-w-[1440px] px-3 sm:px-5 md:px-8 py-4 sm:py-6">
+        {state.videoSource && (
+          <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white rounded-2xl border border-[#e4e6f2] px-5 py-3 shadow-[0_4px_20px_rgba(88,66,237,0.03)]">
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f0eeff] border border-[#ded7fb] text-[#5842ed]">
+                <Scissors className="h-4 w-4" />
+              </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-sm font-bold text-[#110d2e]">Clip Editor Studio</h1>
+                  <span className="rounded-full bg-[#f0eeff] border border-[#ded7fb] px-2 py-0.5 text-[10px] font-bold text-[#5842ed]">
+                    {isYouTubePlatform ? 'YouTube' : 'Video loaded'}
+                  </span>
+                </div>
+                <p className="text-xs text-[#5e6578]">Set trim markers, reframe, generate captions, and export clips</p>
+              </div>
+            </div>
 
-        {canUseUrlWorkflow && (
-          <div className="mb-4 flex justify-end">
-            <button
-              onClick={() => {
-                clearVideo()
-                setVideoSummary(null)
-                setVideoSummaryError(null)
-                setVideoSubtitles(null)
-                setVideoSubtitlesError(null)
-                setVideoTranscript(null)
-                setVideoTranscriptError(null)
-                setViralMoments(null)
-                setViralMomentsError(null)
-                setAiClipCandidates(null)
-                setAiClipCandidatesError(null)
-                setShowReframePanel(false)
-              }}
-              className="px-4 py-2 rounded-xl text-sm font-semibold border border-[#cfe0d1] bg-white text-[#166534] hover:border-[#15803d] hover:bg-[#edf7ef] transition-all duration-200 whitespace-nowrap"
-            >
-              Clear Video
-            </button>
+            <div className="flex items-center gap-2 self-end sm:self-auto">
+              <button
+                onClick={() => {
+                  clearVideo()
+                  setVideoSummary(null)
+                  setVideoSummaryError(null)
+                  setVideoSubtitles(null)
+                  setVideoSubtitlesError(null)
+                  setVideoTranscript(null)
+                  setVideoTranscriptError(null)
+                  setViralMoments(null)
+                  setViralMomentsError(null)
+                  setAiClipCandidates(null)
+                  setAiClipCandidatesError(null)
+                  setShowReframePanel(false)
+                }}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold border border-[#e4e6f2] bg-white text-[#5e6578] hover:border-[#5842ed]/40 hover:bg-[#f0eeff] hover:text-[#5842ed] transition-all"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Change Video
+              </button>
+              {sortedClips.length > 0 && (
+                <button
+                  onClick={() => setExportDialogOpen(true)}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#5842ed] hover:bg-[#4730df] text-white shadow-xs transition-all"
+                >
+                  <FileDown className="w-3.5 h-3.5" />
+                  Export ({sortedClips.length})
+                </button>
+              )}
+            </div>
           </div>
         )}
 
         {!state.videoSource ? (
           // ── Upload Step ───────────────────────────────────────────────────
           <div
-            className="relative flex min-h-[560px] flex-1 flex-col items-center justify-center gap-6 rounded-3xl border-2 border-dashed border-[#b9cfbd] bg-[rgba(255,255,255,0.72)] p-5 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] sm:p-8"
+            className="relative flex min-h-[560px] flex-1 flex-col items-center justify-center gap-6 rounded-3xl border-2 border-dashed border-[#ded7fb] bg-white/80 p-5 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] sm:p-8"
             
           >
             {/* Upload glow accent */}
             <div
               className="absolute w-64 h-64 rounded-full pointer-events-none opacity-15 blur-3xl"
-              style={{ background: 'rgba(34,197,94,0.24)' }}
+              style={{ background: 'rgba(88,66,237,0.15)' }}
             />
             <VideoUpload
               onVideoLoaded={(source, duration, fileName, sourceType, originalSource) => {
@@ -921,21 +932,18 @@ export function VideoEditor() {
               <div className={panel + ' p-4 sm:p-5'}>
                 {/* Panel header */}
                 <div
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 pb-3 sm:pb-4 mb-4"
-                  style={{ borderBottom: '1px solid #2a1a08' }}
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 pb-3 sm:pb-4 mb-4 border-b border-[#e4e6f2]"
                 >
                   <div className="flex items-center gap-2">
                     <span
-                      className="w-2 h-2 rounded-full animate-pulse"
-                      style={{ background: '#22a653', boxShadow: '0 0 8px rgba(34,163,83,0.7)' }}
+                      className="w-2 h-2 rounded-full animate-pulse bg-[#5842ed] shadow-[0_0_8px_rgba(88,66,237,0.7)]"
                     />
-                    <h2 className="text-base sm:text-lg font-bold tracking-wide text-white/90">
+                    <h2 className="text-base sm:text-lg font-bold tracking-tight text-[#110d2e]">
                       Preview
                     </h2>
                     {isBuffering && (
                       <span
-                        className="text-xs px-2 py-0.5 rounded-full font-semibold animate-pulse"
-                        style={{ background: 'rgba(34,163,83),0.14)', color: '#bbf7d0', border: '1px solid rgba(34,163,83),0.25)' }}
+                        className="text-xs px-2.5 py-0.5 rounded-full font-semibold animate-pulse border border-[#ded7fb] bg-[#f0eeff] text-[#5842ed]"
                       >
                         Buffering…
                       </span>
@@ -947,24 +955,14 @@ export function VideoEditor() {
                     <button
                       onClick={handlePlaySequence}
                       disabled={!sortedClips.length || isSequencePlaying || isYouTubePlatform}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
-                      style={{
-                        background: 'linear-gradient(135deg, #15803d 0%, #eab308 100%)',
-                        boxShadow: '0 2px 12px rgba(21,128,61,0.35)',
-                        color: 'white',
-                      }}
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-[#5842ed] shadow-sm transition-all duration-200 hover:bg-[#4730df] disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <Play className="w-3.5 h-3.5 fill-white" />
                       Play
                     </button>
                     <button
                       onClick={handleStopSequence}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold border transition-all duration-200 hover:border-emerald-400/40 hover:text-emerald-200"
-                      style={{
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        background: '#172033',
-                        color: '#bbf7d0',
-                      }}
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-[#e4e6f2] bg-white text-[#5e6578] transition-all duration-200 hover:border-[#5842ed]/40 hover:bg-[#f0eeff] hover:text-[#5842ed]"
                     >
                       <Square className="w-3.5 h-3.5" />
                       Stop
@@ -974,8 +972,7 @@ export function VideoEditor() {
 
                 {/* Player area */}
                 <div
-                  className="rounded-xl overflow-hidden"
-                  style={{ border: '1px solid #2a1a08', background: '#080604' }}
+                  className="rounded-2xl border border-[#e4e6f2] bg-[#0c0d14] overflow-hidden shadow-sm"
                 >
                   {isYouTubePlatform && youtubeVideoId ? (
                     <>
@@ -989,7 +986,7 @@ export function VideoEditor() {
                             onClick={() => setShowExternalPreview(true)}
                             className="px-5 py-2 rounded-lg text-sm font-bold transition-all"
                             style={{
-                              background: 'linear-gradient(135deg, #15803d 0%, #eab308 100%)',
+                              background: 'linear-gradient(135deg, #5842ed 0%, #7c3aed 100%)',
                               color: 'white',
                             }}
                           >
@@ -1030,29 +1027,30 @@ export function VideoEditor() {
                           </div>
                           {!isYouTubeReady && (
                             <div
-                              className="p-3 text-sm"
-                              style={{ background: '#172033', borderTop: '1px solid rgba(255,255,255,0.08)', color: '#bbf7d0' }}
+                              className="px-4 py-3 text-xs bg-[#f8f9fd] border-t border-[#e4e6f2] text-[#5e6578]"
                             >
-                              <p className="font-semibold">Loading YouTube preview…</p>
-                              <p className="text-xs opacity-60 mt-0.5 text-emerald-200/70">Check your URL and network if loading fails.</p>
+                              <p className="font-bold text-[#110d2e]">Loading YouTube preview…</p>
+                              <p className="text-[11px] text-[#94a3b8] mt-0.5">Check your URL and network if loading takes longer.</p>
                             </div>
                           )}
                           <div
-                            className="p-3"
-                            style={{ background: '#172033', borderTop: '1px solid rgba(255,255,255,0.08)' }}
+                            className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 px-4 py-2.5 bg-[#f8f9fd] border-t border-[#e4e6f2] text-xs"
                           >
-                            <p className="text-xs font-semibold text-emerald-200">● YouTube — clip preview enabled</p>
-                            <p className="text-xs text-white/40 mt-0.5">Export prepares the source only when you click export.</p>
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-[#5842ed] animate-pulse" />
+                              <span className="font-bold text-[#110d2e]">YouTube Stream Preview</span>
+                              <span className="text-[#5e6578]">· Interactive trim & scrub active</span>
+                            </div>
+                            <span className="text-[11px] font-medium text-[#94a3b8]">Exports directly to MP4/WebM</span>
                           </div>
                           {state.videoDuration <= 0 && (
-                            <div className="p-3 grid grid-cols-1 sm:grid-cols-2 gap-2" style={{ borderTop: '1px solid #2a1a08' }}>
-                              <label className="text-sm text-white/60">Set video duration (seconds)</label>
+                            <div className="p-3 grid grid-cols-1 sm:grid-cols-2 gap-2 border-t border-[#e4e6f2] bg-[#f8f9fd]">
+                              <label className="text-xs font-semibold text-[#5e6578]">Set video duration (seconds)</label>
                               <div className="flex gap-2">
                                 <input
                                   type="number"
                                   min={1}
-                                  className="flex-1 rounded-lg px-3 py-1.5 text-sm text-white outline-none"
-                                  style={{ background: '#1a0e05', border: '1px solid #3a2210' }}
+                                  className="flex-1 rounded-xl px-3 py-1.5 text-xs text-[#110d2e] bg-white border border-[#e4e6f2] outline-none focus:border-[#5842ed]"
                                   value={state.videoDuration || ''}
                                   onChange={(e) => {
                                     const value = Number(e.target.value)
@@ -1060,7 +1058,7 @@ export function VideoEditor() {
                                   }}
                                   placeholder="e.g., 600"
                                 />
-                                <span className="text-xs text-white/30 self-center">For timeline</span>
+                                <span className="text-[11px] text-[#94a3b8] self-center">For timeline</span>
                               </div>
                             </div>
                           )}
@@ -1085,12 +1083,11 @@ export function VideoEditor() {
                             videoRef={htmlVideoRef}
                           />
                           {proxyVideoReady && (
-                            <div className="px-4 py-2.5 flex items-center gap-2" style={{ borderTop: '1px solid #2a1a08' }}>
+                            <div className="px-4 py-2.5 flex items-center gap-2 border-t border-white/10 bg-black/40">
                               <span
-                                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold"
-                                style={{ background: '#172033', border: '1px solid rgba(34,163,83,0.25)', color: '#bbf7d0' }}
+                                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-[#5842ed]/20 border border-[#5842ed]/30 text-white"
                               >
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#5842ed] animate-pulse" />
                                 HLS Stream — live playback
                               </span>
                             </div>
@@ -1100,16 +1097,14 @@ export function VideoEditor() {
                         <>
                           {isProxyPlatform && !proxyVideoReady && (
                             <div
-                              className="flex items-center gap-3 px-4 py-3 m-3 rounded-lg"
-                              style={{ background: '#1a0e05', border: '1px solid #3a2210' }}
+                              className="flex items-center gap-3 px-4 py-3 m-3 rounded-xl bg-white/5 border border-white/10 text-white"
                             >
                               <div
-                                className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin shrink-0"
-                                style={{ borderColor: '#22a653', borderTopColor: 'transparent' }}
+                                className="w-4 h-4 rounded-full border-2 border-[#5842ed] border-t-transparent animate-spin shrink-0"
                               />
                               <div>
-                                <p className="text-sm font-semibold text-emerald-200">Loading via proxy…</p>
-                                <p className="text-xs opacity-60 mt-0.5">yt-dlp extracting stream URL (~5–10s)</p>
+                                <p className="text-sm font-semibold text-white">Loading via proxy…</p>
+                                <p className="text-xs text-white/60 mt-0.5">yt-dlp extracting stream URL (~5–10s)</p>
                               </div>
                             </div>
                           )}
@@ -1134,14 +1129,13 @@ export function VideoEditor() {
                         </>
                       )}
                       {state.videoDuration <= 0 && (isProxyPlatform || useSocialPlayer) && (
-                        <div className="p-3 grid grid-cols-1 sm:grid-cols-2 gap-2 px-4" style={{ borderTop: '1px solid #2a1a08' }}>
-                          <label className="text-sm text-white/50">Set video duration (seconds)</label>
+                        <div className="p-3 grid grid-cols-1 sm:grid-cols-2 gap-2 px-4 border-t border-white/10 bg-black/30">
+                          <label className="text-sm text-white/70">Set video duration (seconds)</label>
                           <div className="flex gap-2">
                             <input
                               type="number"
                               min={1}
-                              className="rounded-lg px-3 py-1.5 text-sm text-white outline-none flex-1"
-                              style={{ background: '#1a0e05', border: '1px solid #3a2210' }}
+                              className="rounded-lg px-3 py-1.5 text-sm text-white bg-white/10 border border-white/15 outline-none flex-1 focus:border-[#5842ed]"
                               value={state.videoDuration || ''}
                               onChange={(e) => {
                                 const value = Number(e.target.value)
@@ -1149,7 +1143,7 @@ export function VideoEditor() {
                               }}
                               placeholder="e.g., 120"
                             />
-                            <span className="text-xs text-white/30 self-center">For timeline</span>
+                            <span className="text-xs text-white/50 self-center">For timeline</span>
                           </div>
                         </div>
                       )}
@@ -1159,26 +1153,35 @@ export function VideoEditor() {
               </div>
 
               {/* Timeline Panel */}
-              <div className={panel + ' p-4 sm:p-5 space-y-3'}>
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 pb-2" style={{ borderBottom: '1px solid #2a1a08' }}>
-                  <h2 className="text-base sm:text-lg font-bold tracking-wide text-white/90">Timeline</h2>
-                  <p className="text-xs text-emerald-200/60">Scroll · Drag · Click to jump · Ctrl+wheel to zoom</p>
-                </div>
-
-                <div className="flex flex-col xs:flex-row xs:flex-wrap items-stretch xs:items-center justify-between gap-2 xs:gap-3">
-                  {sortedClips.length === 0 && (
+              <div className={panel + ' p-4 sm:p-5 space-y-4'}>
+                {/* Timeline Header */}
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pb-3 border-b border-[#e4e6f2]">
+                  <div>
+                    <h2 className="text-base sm:text-lg font-bold tracking-tight text-[#110d2e]">Timeline</h2>
+                    <p className="text-xs text-[#5e6578]">Click to jump playhead · Drag clip handles to trim</p>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={handleAddClip}
-                      className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-                      style={{
-                        background: 'linear-gradient(135deg, #15803d 0%, #eab308 100%)',
-                        color: 'white',
-                        boxShadow: '0 2px 12px rgba(21,128,61,0.3)',
-                      }}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-[#5842ed] hover:bg-[#4730df] shadow-sm shadow-[#5842ed]/25 transition-all"
                     >
-                      + Add Clip
+                      <Plus className="w-3.5 h-3.5" />
+                      Add Clip
                     </button>
-                  )}
+                    {sortedClips.length > 0 && (
+                      <button
+                        onClick={() => {
+                          clearClips()
+                          selectClip(null)
+                          toast.success('All clips cleared')
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border border-[#e4e6f2] bg-white text-[#5e6578] hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 transition-all"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Clear All
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <Timeline
@@ -1197,114 +1200,64 @@ export function VideoEditor() {
                     if (clip) updateClip({ ...clip, endTime })
                   }}
                 />
-              </div>
 
-              {/* Clip length selector */}
-              <div
-                className="flex flex-col sm:flex-row sm:items-center sm:flex-wrap gap-3 rounded-xl p-4"
-                style={{ background: '#13100c', border: '1px solid #2a1a08' }}
-              >
-                <label className="text-sm font-bold text-white/70 tracking-wide whitespace-nowrap">Clip length:</label>
-                <div className="flex flex-wrap gap-2">
-                  {[5, 7, 10, 15, 20].map((sec) => {
-                    const isActive = clipDurationSeconds === sec
-                    return (
-                      <button
-                        key={sec}
-                        onClick={() => setClipDurationSeconds(sec)}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all duration-200 ${
-                          isActive
-                            ? 'text-white shadow-[0_2px_8px_rgba(21,128,61,0.4)]'
-                            : 'text-emerald-200 border border-white/10 hover:bg-[#172033] hover:text-white'
-                        }`}
-                        style={
-                          isActive
-                            ? {
-                                background: 'linear-gradient(135deg, #15803d 0%, #eab308 100%)',
-                              }
-                            : {
-                                background: '#172033',
-                              }
-                        }
-                      >
-                        {sec}s
-                      </button>
-                    )
-                  })}
+                {/* Integrated Clip length & quick controls bar */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-[#e4e6f2] text-xs">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-[#110d2e]">Default clip length:</span>
+                    {[5, 7, 10, 15, 20].map((sec) => {
+                      const isActive = clipDurationSeconds === sec
+                      return (
+                        <button
+                          key={sec}
+                          onClick={() => setClipDurationSeconds(sec)}
+                          className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+                            isActive
+                              ? 'bg-[#5842ed] text-white shadow-xs'
+                              : 'border border-[#e4e6f2] bg-[#f8f9fd] text-[#5e6578] hover:border-[#5842ed]/40 hover:bg-[#f0eeff] hover:text-[#5842ed]'
+                          }`}
+                        >
+                          {sec}s
+                        </button>
+                      )
+                    })}
+                    <div className="flex items-center gap-1 ml-1">
+                      <input
+                        type="number"
+                        min={1}
+                        step={1}
+                        value={clipDurationSeconds}
+                        onChange={(e) => {
+                          const value = Number(e.target.value)
+                          if (!Number.isNaN(value) && value > 0) {
+                            setClipDurationSeconds(value)
+                          }
+                        }}
+                        className="w-14 rounded-lg border border-[#e4e6f2] bg-[#f8f9fd] px-2 py-1 text-center font-bold text-[#110d2e] outline-none focus:border-[#5842ed] focus:bg-white"
+                      />
+                      <span className="text-[#5e6578]">sec</span>
+                    </div>
+                  </div>
+                  <span className="text-[#94a3b8] hidden md:inline">Ctrl + scroll to zoom</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={clipDurationSeconds}
-                    onChange={(e) => {
-                      const value = Number(e.target.value)
-                      if (!Number.isNaN(value) && value > 0) {
-                        setClipDurationSeconds(value)
-                      }
-                    }}
-                    className="w-20 rounded-lg border border-white/10 bg-[#172033] px-3 py-1.5 text-sm font-semibold text-white outline-none transition-colors duration-200 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-500/20"
-                  />
-                  <span className="text-xs text-emerald-200/70">seconds</span>
-                </div>
-                <p className="text-xs text-emerald-200/70 sm:ml-auto">Default for new clips</p>
               </div>
-
-              {/* Quick Actions */}
-              {sortedClips.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <button
-                    onClick={() => handleAddClip()}
-                    className="py-2.5 rounded-xl text-sm font-bold transition-all duration-200"
-                    style={{
-                      background: 'linear-gradient(135deg, #15803d 0%, #eab308 100%)',
-                      color: 'white',
-                      boxShadow: '0 2px 16px rgba(21,128,61,0.3)',
-                    }}
-                  >
-                    + Add Clip at Current Time
-                  </button>
-                  <button
-                    onClick={() => {
-                      clearClips()
-                      selectClip(null)
-                      toast.success('All clips cleared')
-                    }}
-                    className="py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200 hover:border-emerald-400/40 hover:text-emerald-200"
-                    style={{
-                      background: '#172033',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      color: '#bbf7d0',
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Clear All
-                  </button>
-                </div>
-              )}
             </div>
 
             {/* ── Sidebar ───────────────────────────────────────────────────── */}
             <div className="lg:col-span-4 space-y-4 sm:space-y-5">
               {showReframePanel && (
                 <div
-                  className="rounded-2xl p-4 sm:p-5"
-                  style={{
-                    background: '#172033',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    boxShadow: '0 4px 32px rgba(0,0,0),0.45)',
-                  }}
+                  className="rounded-2xl border border-[#e4e6f2] bg-white p-4 sm:p-5 shadow-[0_10px_30px_rgba(88,66,237,0.04)] text-[#110d2e]"
                 >
-                  <div className="mb-4 flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+                  <div className="mb-4 flex items-start justify-between gap-3 border-b border-[#e4e6f2] pb-3">
                     <div>
-                      <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-200">AI Reframe</p>
-                      <h2 className="mt-1 text-lg font-black text-white">Resize for every platform</h2>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#5842ed]">AI Reframe</p>
+                      <h2 className="mt-0.5 text-lg font-bold text-[#110d2e]">Resize for every platform</h2>
                     </div>
                     <button
                       type="button"
                       onClick={() => setShowReframePanel(false)}
-                      className="rounded-lg border border-white/10 bg-[#111827] px-2.5 py-1.5 text-xs font-black text-emerald-200 hover:border-emerald-400/40 hover:text-white"
+                      className="rounded-xl border border-[#e4e6f2] bg-white px-2.5 py-1 text-xs font-semibold text-[#5e6578] transition hover:border-[#5842ed]/40 hover:bg-[#f0eeff] hover:text-[#5842ed]"
                     >
                       Hide
                     </button>
@@ -1312,7 +1265,7 @@ export function VideoEditor() {
 
                   <div className="space-y-4">
                     <div>
-                      <h3 className="mb-2 text-sm font-black text-white">Aspect ratio</h3>
+                      <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-[#110d2e]">Aspect ratio</h3>
                       <div className="grid grid-cols-3 gap-2">
                         {[
                           { id: 'vertical' as const, label: 'Vertical', sub: '9:16', platform: 'tiktok' as const },
@@ -1330,11 +1283,11 @@ export function VideoEditor() {
                               }}
                               className={`rounded-2xl border p-3 text-left transition ${
                                 active
-                                  ? 'border-emerald-400/60 bg-emerald-500/20 text-white'
-                                  : 'border-white/10 bg-[#111827]/90 text-emerald-100 hover:border-emerald-400/40'
+                                  ? 'border-[#5842ed] bg-[#f0eeff] text-[#5842ed] shadow-sm'
+                                  : 'border-[#e4e6f2] bg-[#f8f9fd] text-[#5e6578] hover:border-[#5842ed]/40 hover:text-[#110d2e]'
                               }`}
                             >
-                              <span className="block text-sm font-black">{option.label}</span>
+                              <span className="block text-sm font-bold">{option.label}</span>
                               <span className="mt-1 block text-xs opacity-70">{option.sub}</span>
                             </button>
                           )
@@ -1343,7 +1296,7 @@ export function VideoEditor() {
                     </div>
 
                     <div>
-                      <h3 className="mb-2 text-sm font-black text-white">Fit mode</h3>
+                      <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-[#110d2e]">Fit mode</h3>
                       <div className="grid grid-cols-2 gap-2">
                         {[
                           { id: 'blur' as const, label: 'Blur Fill', desc: 'Keep full frame with blurred background.' },
@@ -1357,11 +1310,11 @@ export function VideoEditor() {
                               onClick={() => setExportResizeMode(option.id)}
                               className={`rounded-2xl border p-3 text-left transition ${
                                 active
-                                  ? 'border-emerald-400/60 bg-emerald-500/20 text-white'
-                                  : 'border-white/10 bg-[#111827]/90 text-emerald-100 hover:border-emerald-400/40'
+                                  ? 'border-[#5842ed] bg-[#f0eeff] text-[#5842ed] shadow-sm'
+                                  : 'border-[#e4e6f2] bg-[#f8f9fd] text-[#5e6578] hover:border-[#5842ed]/40 hover:text-[#110d2e]'
                               }`}
                             >
-                              <span className="block text-sm font-black">{option.label}</span>
+                              <span className="block text-sm font-bold">{option.label}</span>
                               <span className="mt-1 block text-xs leading-5 opacity-70">{option.desc}</span>
                             </button>
                           )
@@ -1369,23 +1322,23 @@ export function VideoEditor() {
                       </div>
                     </div>
 
-                    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#111827]/90 p-3">
+                    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-[#e4e6f2] bg-[#f8f9fd] p-3">
                       <span>
-                        <span className="block text-sm font-black text-white">Safe area guide</span>
-                        <span className="mt-1 block text-xs leading-5 text-emerald-100/65">Use this while framing Shorts/Reels/TikTok UI overlays.</span>
+                        <span className="block text-sm font-bold text-[#110d2e]">Safe area guide</span>
+                        <span className="mt-0.5 block text-xs text-[#5e6578]">Use this while framing Shorts/Reels/TikTok UI overlays.</span>
                       </span>
                       <input
                         type="checkbox"
                         checked={reframeSafeArea}
                         onChange={(event) => setReframeSafeArea(event.target.checked)}
-                        className="h-5 w-5 accent-emerald-500"
+                        className="h-4 w-4 rounded accent-[#5842ed]"
                       />
                     </label>
 
-                    <div className="rounded-2xl border border-white/10 bg-[#111827]/90 p-4">
-                      <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-200">Current Setup</p>
-                      <p className="mt-2 text-sm leading-6 text-emerald-100/80">
-                        Export will use <strong className="text-white">{reframeAspect}</strong> framing with <strong className="text-white">{exportResizeMode}</strong> mode.
+                    <div className="rounded-2xl border border-[#ded7fb] bg-[#f0eeff]/60 p-4">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#5842ed]">Current Setup</p>
+                      <p className="mt-1.5 text-xs leading-relaxed text-[#5e6578]">
+                        Export will use <strong className="text-[#110d2e]">{reframeAspect}</strong> framing with <strong className="text-[#110d2e]">{exportResizeMode}</strong> mode.
                         {reframeSafeArea ? ' Keep the subject centered inside the safe area.' : ''}
                       </p>
                     </div>
@@ -1394,7 +1347,7 @@ export function VideoEditor() {
                       type="button"
                       onClick={() => setExportDialogOpen(true)}
                       disabled={sortedClips.length === 0}
-                      className="w-full rounded-2xl bg-gradient-to-r from-emerald-600 to-green-500 px-4 py-3 text-sm font-black text-white transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="w-full rounded-2xl bg-[#5842ed] px-4 py-3 text-sm font-semibold text-white shadow-md shadow-[#5842ed]/25 transition hover:bg-[#4730df] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       Export Reframed Video
                     </button>
@@ -1404,17 +1357,12 @@ export function VideoEditor() {
 
               {(aiClipCandidates || aiClipCandidatesError) && (
                 <div
-                  className="rounded-2xl p-4 sm:p-5"
-                  style={{
-                    background: '#172033',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    boxShadow: '0 4px 32px rgba(0,0,0),0.45)',
-                  }}
+                  className="rounded-2xl border border-[#e4e6f2] bg-white p-4 sm:p-5 shadow-[0_10px_30px_rgba(88,66,237,0.04)] text-[#110d2e]"
                 >
-                  <div className="mb-4 flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+                  <div className="mb-4 flex items-start justify-between gap-3 border-b border-[#e4e6f2] pb-3">
                     <div>
-                      <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-200">AI Clipping</p>
-                      <h2 className="mt-1 text-lg font-black text-white">Ready-to-cut clips</h2>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#5842ed]">AI Clipping</p>
+                      <h2 className="mt-0.5 text-lg font-bold text-[#110d2e]">Ready-to-cut clips</h2>
                     </div>
                     <button
                       type="button"
@@ -1422,19 +1370,19 @@ export function VideoEditor() {
                         setAiClipCandidates(null)
                         setAiClipCandidatesError(null)
                       }}
-                      className="rounded-lg border border-white/10 bg-[#111827] px-2.5 py-1.5 text-xs font-black text-emerald-200 hover:border-emerald-400/40 hover:text-white"
+                      className="rounded-xl border border-[#e4e6f2] bg-white px-2.5 py-1 text-xs font-semibold text-[#5e6578] transition hover:border-[#5842ed]/40 hover:bg-[#f0eeff] hover:text-[#5842ed]"
                     >
                       Hide
                     </button>
                   </div>
 
                   {aiClipCandidatesError ? (
-                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-3 text-sm leading-6 text-red-100">
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-xs leading-relaxed text-rose-600">
                       {aiClipCandidatesError}
                     </div>
                   ) : aiClipCandidates ? (
                     <div className="space-y-3">
-                      <div className="rounded-xl border border-white/10 bg-[#111827]/90 p-3 text-xs leading-5 text-emerald-100/70">
+                      <div className="rounded-xl border border-[#ded7fb] bg-[#f0eeff]/60 p-3 text-xs leading-relaxed text-[#5842ed]">
                         {aiClipCandidates.data.suggestions.length} AI clips generated. Add the best ones, or add all and export.
                       </div>
                       {aiClipCandidates.data.suggestions.length > 0 && (
@@ -1444,34 +1392,34 @@ export function VideoEditor() {
                             aiClipCandidates.data.suggestions.forEach((candidate) => addClip(candidate.startTime, candidate.endTime))
                             toast.success('All AI clips added')
                           }}
-                          className="w-full rounded-xl bg-gradient-to-r from-emerald-600 to-green-500 px-4 py-2.5 text-sm font-black text-white transition hover:scale-[1.01]"
+                          className="w-full rounded-xl bg-[#5842ed] px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#4730df]"
                         >
                           Add All Clips
                         </button>
                       )}
                       <div className="max-h-[520px] space-y-3 overflow-y-auto pr-1">
                         {aiClipCandidates.data.suggestions.map((candidate, index) => (
-                          <div key={`${candidate.startTime}-${candidate.endTime}-${index}`} className="rounded-xl border border-white/10 bg-[#111827]/90 p-3">
+                          <div key={`${candidate.startTime}-${candidate.endTime}-${index}`} className="rounded-xl border border-[#e4e6f2] bg-[#f8f9fd] p-3">
                             <div className="mb-2 flex flex-wrap items-center gap-2">
-                              <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-black text-emerald-100">
+                              <span className="rounded-full border border-[#ded7fb] bg-white px-2.5 py-0.5 text-xs font-semibold text-[#5842ed]">
                                 Clip {index + 1}
                               </span>
-                              <span className="rounded-full border border-white/10 bg-[#172033] px-2.5 py-1 text-xs font-black text-emerald-100">
+                              <span className="rounded-full border border-[#e4e6f2] bg-white px-2.5 py-0.5 text-xs font-semibold text-[#5e6578]">
                                 {formatTime(candidate.startTime)} - {formatTime(candidate.endTime)}
                               </span>
-                              <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-black text-emerald-100">
+                              <span className="rounded-full border border-[#ded7fb] bg-white px-2.5 py-0.5 text-xs font-semibold text-[#5842ed]">
                                 {Math.round(candidate.confidence * 100)}%
                               </span>
                             </div>
-                            <p className="text-sm font-black leading-6 text-white">{candidate.reason}</p>
+                            <p className="text-sm font-bold leading-relaxed text-[#110d2e]">{candidate.reason}</p>
                             {candidate.transcriptSegment && (
-                              <p className="mt-2 text-xs leading-5 text-emerald-100/65">{candidate.transcriptSegment}</p>
+                              <p className="mt-1 text-xs leading-relaxed text-[#5e6578]">{candidate.transcriptSegment}</p>
                             )}
                             <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                               <button
                                 type="button"
                                 onClick={() => seekToSubtitle(candidate.startTime)}
-                                className="rounded-xl border border-white/10 bg-[#172033] px-3 py-2 text-xs font-black text-emerald-100 transition hover:border-emerald-400/50 hover:text-white"
+                                className="rounded-xl border border-[#e4e6f2] bg-white px-3 py-1.5 text-xs font-semibold text-[#5e6578] transition hover:border-[#5842ed]/40 hover:bg-[#f0eeff] hover:text-[#5842ed]"
                               >
                                 Preview
                               </button>
@@ -1481,7 +1429,7 @@ export function VideoEditor() {
                                   addClip(candidate.startTime, candidate.endTime)
                                   toast.success(`Clip ${index + 1} added`)
                                 }}
-                                className="rounded-xl bg-emerald-500 px-3 py-2 text-xs font-black text-white transition hover:bg-emerald-400"
+                                className="rounded-xl bg-[#5842ed] px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#4730df]"
                               >
                                 Add Clip
                               </button>
@@ -1496,17 +1444,12 @@ export function VideoEditor() {
 
               {(viralMoments || viralMomentsError) && (
                 <div
-                  className="rounded-2xl p-4 sm:p-5"
-                  style={{
-                    background: '#172033',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    boxShadow: '0 4px 32px rgba(0,0,0),0.45)',
-                  }}
+                  className="rounded-2xl border border-[#e4e6f2] bg-white p-4 sm:p-5 shadow-[0_10px_30px_rgba(88,66,237,0.04)] text-[#110d2e]"
                 >
-                  <div className="mb-4 flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+                  <div className="mb-4 flex items-start justify-between gap-3 border-b border-[#e4e6f2] pb-3">
                     <div>
-                      <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-200">Find Moments</p>
-                      <h2 className="mt-1 text-lg font-black text-white">Viral clip candidates</h2>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#5842ed]">Find Moments</p>
+                      <h2 className="mt-0.5 text-lg font-bold text-[#110d2e]">Viral clip candidates</h2>
                     </div>
                     <button
                       type="button"
@@ -1514,41 +1457,41 @@ export function VideoEditor() {
                         setViralMoments(null)
                         setViralMomentsError(null)
                       }}
-                      className="rounded-lg border border-white/10 bg-[#111827] px-2.5 py-1.5 text-xs font-black text-emerald-200 hover:border-emerald-400/40 hover:text-white"
+                      className="rounded-xl border border-[#e4e6f2] bg-white px-2.5 py-1 text-xs font-semibold text-[#5e6578] transition hover:border-[#5842ed]/40 hover:bg-[#f0eeff] hover:text-[#5842ed]"
                     >
                       Hide
                     </button>
                   </div>
 
                   {viralMomentsError ? (
-                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-3 text-sm leading-6 text-red-100">
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-xs leading-relaxed text-rose-600">
                       {viralMomentsError}
                     </div>
                   ) : viralMoments ? (
                     <div className="space-y-3">
-                      <div className="rounded-xl border border-white/10 bg-[#111827]/90 p-3 text-xs leading-5 text-emerald-100/70">
+                      <div className="rounded-xl border border-[#ded7fb] bg-[#f0eeff]/60 p-3 text-xs leading-relaxed text-[#5842ed]">
                         {viralMoments.data.suggestions.length} moments found from {viralMoments.data.platform}. Preview a moment or add it to your clips.
                       </div>
                       <div className="max-h-[520px] space-y-3 overflow-y-auto pr-1">
                         {viralMoments.data.suggestions.map((moment, index) => (
-                          <div key={`${moment.startTime}-${moment.endTime}-${index}`} className="rounded-xl border border-white/10 bg-[#111827]/90 p-3">
+                          <div key={`${moment.startTime}-${moment.endTime}-${index}`} className="rounded-xl border border-[#e4e6f2] bg-[#f8f9fd] p-3">
                             <div className="mb-2 flex flex-wrap items-center gap-2">
-                              <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-black text-emerald-100">
+                              <span className="rounded-full border border-[#ded7fb] bg-white px-2.5 py-0.5 text-xs font-semibold text-[#5842ed]">
                                 {formatTime(moment.startTime)} - {formatTime(moment.endTime)}
                               </span>
-                              <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-black text-emerald-100">
+                              <span className="rounded-full border border-[#ded7fb] bg-white px-2.5 py-0.5 text-xs font-semibold text-[#5842ed]">
                                 {Math.round(moment.confidence * 100)}% confidence
                               </span>
                             </div>
-                            <p className="text-sm font-black leading-6 text-white">{moment.reason}</p>
+                            <p className="text-sm font-bold leading-relaxed text-[#110d2e]">{moment.reason}</p>
                             {moment.transcriptSegment && (
-                              <p className="mt-2 text-xs leading-5 text-emerald-100/65">{moment.transcriptSegment}</p>
+                              <p className="mt-1 text-xs leading-relaxed text-[#5e6578]">{moment.transcriptSegment}</p>
                             )}
                             <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                               <button
                                 type="button"
                                 onClick={() => seekToSubtitle(moment.startTime)}
-                                className="rounded-xl border border-white/10 bg-[#172033] px-3 py-2 text-xs font-black text-emerald-100 transition hover:border-emerald-400/50 hover:text-white"
+                                className="rounded-xl border border-[#e4e6f2] bg-white px-3 py-1.5 text-xs font-semibold text-[#5e6578] transition hover:border-[#5842ed]/40 hover:bg-[#f0eeff] hover:text-[#5842ed]"
                               >
                                 Preview Moment
                               </button>
@@ -1558,7 +1501,7 @@ export function VideoEditor() {
                                   addClip(moment.startTime, moment.endTime)
                                   toast.success('Moment added to clips')
                                 }}
-                                className="rounded-xl bg-gradient-to-r from-emerald-600 to-green-500 px-3 py-2 text-xs font-black text-white transition hover:scale-[1.01]"
+                                className="rounded-xl bg-[#5842ed] px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#4730df]"
                               >
                                 Add Clip
                               </button>
@@ -1573,17 +1516,12 @@ export function VideoEditor() {
 
               {(videoTranscript || videoTranscriptError) && (
                 <div
-                  className="rounded-2xl p-4 sm:p-5"
-                  style={{
-                    background: '#172033',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    boxShadow: '0 4px 32px rgba(0,0,0),0.45)',
-                  }}
+                  className="rounded-2xl border border-[#e4e6f2] bg-white p-4 sm:p-5 shadow-[0_10px_30px_rgba(88,66,237,0.04)] text-[#110d2e]"
                 >
-                  <div className="mb-4 flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+                  <div className="mb-4 flex items-start justify-between gap-3 border-b border-[#e4e6f2] pb-3">
                     <div>
-                      <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-200">Video Transcript</p>
-                      <h2 className="mt-1 text-lg font-black text-white">Full spoken transcript</h2>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#5842ed]">Video Transcript</p>
+                      <h2 className="mt-0.5 text-lg font-bold text-[#110d2e]">Full spoken transcript</h2>
                     </div>
                     <button
                       type="button"
@@ -1591,19 +1529,19 @@ export function VideoEditor() {
                         setVideoTranscript(null)
                         setVideoTranscriptError(null)
                       }}
-                      className="rounded-lg border border-white/10 bg-[#111827] px-2.5 py-1.5 text-xs font-black text-emerald-200 hover:border-emerald-400/40 hover:text-white"
+                      className="rounded-xl border border-[#e4e6f2] bg-white px-2.5 py-1 text-xs font-semibold text-[#5e6578] transition hover:border-[#5842ed]/40 hover:bg-[#f0eeff] hover:text-[#5842ed]"
                     >
                       Hide
                     </button>
                   </div>
 
                   {videoTranscriptError ? (
-                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-3 text-sm leading-6 text-red-100">
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-xs leading-relaxed text-rose-600">
                       {videoTranscriptError}
                     </div>
                   ) : videoTranscript ? (
                     <div className="space-y-3">
-                      <div className="rounded-xl border border-white/10 bg-[#111827]/90 p-3 text-xs leading-5 text-emerald-100/70">
+                      <div className="rounded-xl border border-[#ded7fb] bg-[#f0eeff]/60 p-3 text-xs leading-relaxed text-[#5842ed]">
                         {videoTranscript.segments.length} transcript segments generated. Click any segment to play that part.
                       </div>
                       <div className="max-h-[520px] space-y-2 overflow-y-auto pr-1">
@@ -1612,18 +1550,18 @@ export function VideoEditor() {
                             key={segment.id}
                             type="button"
                             onClick={() => seekToSubtitle(segment.start)}
-                            className="w-full rounded-xl border border-white/10 bg-[#111827]/90 p-3 text-left transition hover:border-emerald-400/40"
+                            className="w-full rounded-xl border border-[#e4e6f2] bg-[#f8f9fd] p-3 text-left transition hover:border-[#5842ed]/50 hover:bg-[#f0eeff]/50"
                           >
-                            <span className="mb-2 inline-flex rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-black text-emerald-100">
+                            <span className="mb-2 inline-flex rounded-full border border-[#ded7fb] bg-white px-2.5 py-0.5 text-xs font-semibold text-[#5842ed]">
                               {formatTime(segment.start)} - {formatTime(segment.end)}
                             </span>
-                            <p className="text-sm leading-6 text-emerald-100/85">{segment.text}</p>
+                            <p className="text-sm leading-relaxed text-[#110d2e]">{segment.text}</p>
                           </button>
                         ))}
                       </div>
-                      <details className="rounded-xl border border-white/10 bg-[#111827]/90 p-3 text-sm text-emerald-100/75">
-                        <summary className="cursor-pointer font-black text-white">Plain transcript</summary>
-                        <p className="mt-3 max-h-72 overflow-y-auto whitespace-pre-wrap leading-6">{videoTranscript.transcript}</p>
+                      <details className="rounded-xl border border-[#e4e6f2] bg-[#f8f9fd] p-3 text-sm text-[#5e6578]">
+                        <summary className="cursor-pointer font-bold text-[#110d2e]">Plain transcript</summary>
+                        <p className="mt-3 max-h-72 overflow-y-auto whitespace-pre-wrap leading-relaxed text-xs">{videoTranscript.transcript}</p>
                       </details>
                     </div>
                   ) : null}
@@ -1632,17 +1570,12 @@ export function VideoEditor() {
 
               {(videoSubtitles || videoSubtitlesError) && (
                 <div
-                  className="rounded-2xl p-4 sm:p-5"
-                  style={{
-                    background: '#172033',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    boxShadow: '0 4px 32px rgba(0,0,0),0.45)',
-                  }}
+                  className="rounded-2xl border border-[#e4e6f2] bg-white p-4 sm:p-5 shadow-[0_10px_30px_rgba(88,66,237,0.04)] text-[#110d2e]"
                 >
-                  <div className="mb-4 flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+                  <div className="mb-4 flex items-start justify-between gap-3 border-b border-[#e4e6f2] pb-3">
                     <div>
-                      <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-200">AI Subtitles</p>
-                      <h2 className="mt-1 text-lg font-black text-white">Editable transcript timeline</h2>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#5842ed]">AI Subtitles</p>
+                      <h2 className="mt-0.5 text-lg font-bold text-[#110d2e]">Editable transcript timeline</h2>
                     </div>
                     <button
                       type="button"
@@ -1650,28 +1583,28 @@ export function VideoEditor() {
                         setVideoSubtitles(null)
                         setVideoSubtitlesError(null)
                       }}
-                      className="rounded-lg border border-white/10 bg-[#111827] px-2.5 py-1.5 text-xs font-black text-emerald-200 hover:border-emerald-400/40 hover:text-white"
+                      className="rounded-xl border border-[#e4e6f2] bg-white px-2.5 py-1 text-xs font-semibold text-[#5e6578] transition hover:border-[#5842ed]/40 hover:bg-[#f0eeff] hover:text-[#5842ed]"
                     >
                       Hide
                     </button>
                   </div>
 
                   {videoSubtitlesError ? (
-                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-3 text-sm leading-6 text-red-100">
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-xs leading-relaxed text-rose-600">
                       {videoSubtitlesError}
                     </div>
                   ) : videoSubtitles ? (
                     <div className="space-y-3">
-                      <div className="rounded-xl border border-white/10 bg-[#111827]/90 p-3 text-xs leading-5 text-emerald-100/70">
+                      <div className="rounded-xl border border-[#ded7fb] bg-[#f0eeff]/60 p-3 text-xs leading-relaxed text-[#5842ed]">
                         {videoSubtitles.segments.length} subtitle lines generated. Click any timestamp to move the video to that exact part, then edit the text inline.
                       </div>
                       <div className="max-h-[520px] space-y-2 overflow-y-auto pr-1">
                         {videoSubtitles.segments.map((subtitle, index) => (
-                          <div key={subtitle.id} className="rounded-xl border border-white/10 bg-[#111827]/90 p-3">
+                          <div key={subtitle.id} className="rounded-xl border border-[#e4e6f2] bg-[#f8f9fd] p-3">
                             <button
                               type="button"
                               onClick={() => seekToSubtitle(subtitle.start)}
-                              className="mb-2 rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-black text-emerald-100 transition hover:border-emerald-300/50 hover:text-white"
+                              className="mb-2 rounded-full border border-[#ded7fb] bg-white px-2.5 py-1 text-xs font-semibold text-[#5842ed] transition hover:bg-[#5842ed] hover:text-white"
                             >
                               {formatTime(subtitle.start)} - {formatTime(subtitle.end)}
                             </button>
@@ -1689,7 +1622,7 @@ export function VideoEditor() {
                                   transcript: nextSegments.map((item) => item.text).join(' '),
                                 })
                               }}
-                              className="min-h-20 w-full resize-y rounded-xl border border-white/10 bg-[#172033] p-3 text-sm leading-6 text-white outline-none transition focus:border-emerald-400/60"
+                              className="min-h-20 w-full resize-y rounded-xl border border-[#e4e6f2] bg-white p-3 text-sm leading-relaxed text-[#110d2e] outline-none transition focus:border-[#5842ed] focus:ring-2 focus:ring-[#5842ed]/10"
                             />
                           </div>
                         ))}
@@ -1701,17 +1634,12 @@ export function VideoEditor() {
 
               {(videoSummary || videoSummaryError) && (
                 <div
-                  className="rounded-2xl p-4 sm:p-5"
-                  style={{
-                    background: '#172033',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    boxShadow: '0 4px 32px rgba(0,0,0),0.45)',
-                  }}
+                  className="rounded-2xl border border-[#e4e6f2] bg-white p-4 sm:p-5 shadow-[0_10px_30px_rgba(88,66,237,0.04)] text-[#110d2e]"
                 >
-                  <div className="mb-4 flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+                  <div className="mb-4 flex items-start justify-between gap-3 border-b border-[#e4e6f2] pb-3">
                     <div>
-                      <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-200">Video Summary</p>
-                      <h2 className="mt-1 text-lg font-black text-white">AI generated overview</h2>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#5842ed]">Video Summary</p>
+                      <h2 className="mt-0.5 text-lg font-bold text-[#110d2e]">AI generated overview</h2>
                     </div>
                     <button
                       type="button"
@@ -1719,27 +1647,27 @@ export function VideoEditor() {
                         setVideoSummary(null)
                         setVideoSummaryError(null)
                       }}
-                      className="rounded-lg border border-white/10 bg-[#111827] px-2.5 py-1.5 text-xs font-black text-emerald-200 hover:border-emerald-400/40 hover:text-white"
+                      className="rounded-xl border border-[#e4e6f2] bg-white px-2.5 py-1 text-xs font-semibold text-[#5e6578] transition hover:border-[#5842ed]/40 hover:bg-[#f0eeff] hover:text-[#5842ed]"
                     >
                       Hide
                     </button>
                   </div>
 
                   {videoSummaryError ? (
-                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-3 text-sm leading-6 text-red-100">
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-xs leading-relaxed text-rose-600">
                       {videoSummaryError}
                     </div>
                   ) : videoSummary ? (
                     <div className="space-y-4">
-                      <p className="text-sm leading-6 text-emerald-100/85">{videoSummary.overview}</p>
+                      <p className="text-sm leading-relaxed text-[#5e6578]">{videoSummary.overview}</p>
 
                       {videoSummary.keyPoints.length > 0 && (
                         <div>
-                          <h3 className="text-sm font-black text-white">Key points</h3>
+                          <h3 className="text-xs font-bold uppercase tracking-wider text-[#110d2e]">Key points</h3>
                           <div className="mt-2 grid gap-2">
                             {videoSummary.keyPoints.map((point, index) => (
-                              <div key={`${point}-${index}`} className="rounded-xl border border-white/10 bg-[#111827]/90 p-3 text-sm leading-6 text-emerald-100/80">
-                                <span className="mr-2 font-black text-emerald-200">{index + 1}.</span>
+                              <div key={`${point}-${index}`} className="rounded-xl border border-[#e4e6f2] bg-[#f8f9fd] p-3 text-xs leading-relaxed text-[#110d2e]">
+                                <span className="mr-2 font-bold text-[#5842ed]">{index + 1}.</span>
                                 {point}
                               </div>
                             ))}
@@ -1749,22 +1677,22 @@ export function VideoEditor() {
 
                       {videoSummary.chapters.length > 0 && (
                         <div>
-                          <h3 className="text-sm font-black text-white">Chapters</h3>
+                          <h3 className="text-xs font-bold uppercase tracking-wider text-[#110d2e]">Chapters</h3>
                           <div className="mt-2 max-h-72 space-y-2 overflow-y-auto pr-1">
                             {videoSummary.chapters.map((chapter, index) => (
                               <button
                                 key={`${chapter.startTime}-${index}`}
                                 type="button"
                                 onClick={() => safeSeek(chapter.startTime)}
-                                className="w-full rounded-xl border border-white/10 bg-[#111827]/90 p-3 text-left transition hover:border-emerald-400/40"
+                                className="w-full rounded-xl border border-[#e4e6f2] bg-[#f8f9fd] p-3 text-left transition hover:border-[#5842ed]/50 hover:bg-[#f0eeff]/50"
                               >
-                                <div className="flex flex-wrap items-center gap-2 text-sm font-black text-white">
-                                  <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2 py-1 text-xs text-emerald-100">
+                                <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-[#110d2e]">
+                                  <span className="rounded-full border border-[#ded7fb] bg-white px-2 py-0.5 text-xs font-semibold text-[#5842ed]">
                                     {formatTime(chapter.startTime)} - {formatTime(chapter.endTime)}
                                   </span>
                                   {chapter.title}
                                 </div>
-                                <p className="mt-2 text-xs leading-5 text-emerald-100/70">{chapter.summary}</p>
+                                <p className="mt-1 text-xs leading-relaxed text-[#5e6578]">{chapter.summary}</p>
                               </button>
                             ))}
                           </div>
@@ -1772,9 +1700,9 @@ export function VideoEditor() {
                       )}
 
                       {(videoSummary.transcript || videoSummary.transcriptPreview) && (
-                        <details className="rounded-xl border border-white/10 bg-[#111827]/90 p-3 text-sm text-emerald-100/75">
-                          <summary className="cursor-pointer font-black text-white">Full transcript</summary>
-                          <p className="mt-3 max-h-72 overflow-y-auto whitespace-pre-wrap leading-6">
+                        <details className="rounded-xl border border-[#e4e6f2] bg-[#f8f9fd] p-3 text-sm text-[#5e6578]">
+                          <summary className="cursor-pointer font-bold text-[#110d2e]">Full transcript</summary>
+                          <p className="mt-3 max-h-72 overflow-y-auto whitespace-pre-wrap leading-relaxed text-xs">
                             {videoSummary.transcript || videoSummary.transcriptPreview}
                           </p>
                         </details>
@@ -1788,30 +1716,21 @@ export function VideoEditor() {
               {canUseUrlWorkflow && (
                 <button
                   onClick={() => setShowAISuggestions(!showAISuggestions)}
-                  className="w-full py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200"
-                  style={{
-                    background: showAISuggestions
-                      ? 'linear-gradient(135deg, #15803d 0%, #eab308 100%)'
-                      : '#172033',
-                    border: showAISuggestions ? 'none' : '1px solid rgba(255,255,255,0.08)',
-                    color: showAISuggestions ? 'white' : '#bbf7d0',
-                    boxShadow: showAISuggestions ? '0 2px 16px rgba(21,128,61,0.3)' : 'none',
-                  }}
+                  className={`w-full py-3 px-4 rounded-2xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200 ${
+                    showAISuggestions
+                      ? 'bg-[#5842ed] text-white shadow-md shadow-[#5842ed]/25 ring-2 ring-[#5842ed]/20'
+                      : 'border border-[#ded7fb] bg-[#f0eeff] text-[#5842ed] hover:bg-[#5842ed] hover:text-white shadow-xs'
+                  }`}
                 >
-                  <Wand2 className="w-4 h-4" />
-                  {showAISuggestions ? 'Hide AI Suggestions' : '✦ AI Suggestions'}
+                  <Sparkles className="w-4 h-4" />
+                  {showAISuggestions ? 'Hide AI Suggestions' : 'Auto-Find Moments & AI Suggestions'}
                 </button>
               )}
 
               {/* AI Suggestions Panel */}
               {showAISuggestions && canUseUrlWorkflow && (
                 <div
-                  className="rounded-2xl p-4 sm:p-5"
-                  style={{
-                    background: '#172033',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    boxShadow: '0 0 0 1px rgba(34,163,83),0.08), 0 8px 32px rgba(0,0,0),0.45)',
-                  }}
+                  className="rounded-2xl border border-[#e4e6f2] bg-white p-4 sm:p-5 shadow-[0_10px_30px_rgba(88,66,237,0.04)]"
                 >
                   <ClipSuggestionPanel
                     videoUrl={sourceForProcessing || ''}
@@ -1823,23 +1742,16 @@ export function VideoEditor() {
 
               {/* Clips Panel */}
               <div
-                className="rounded-2xl p-4 sm:p-5 min-h-[300px] sm:min-h-[380px]"
-                style={{
-                  background: '#172033',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  boxShadow: '0 4px 32px rgba(0,0,0),0.45)',
-                }}
+                className="rounded-2xl border border-[#e4e6f2] bg-white p-4 sm:p-5 min-h-[300px] sm:min-h-[380px] shadow-[0_10px_30px_rgba(88,66,237,0.04)]"
               >
-                <div className="flex items-center gap-2 mb-4 pb-3" style={{ borderBottom: '1px solid #2a1a08' }}>
+                <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#e4e6f2]">
                   <span
-                    className="w-2 h-2 rounded-full"
-                    style={{ background: '#22a653' }}
+                    className="w-2 h-2 rounded-full bg-[#5842ed]"
                   />
-                  <h2 className="text-base sm:text-lg font-bold text-white/90">Clips</h2>
+                  <h2 className="text-base sm:text-lg font-bold text-[#110d2e]">Clips</h2>
                   {sortedClips.length > 0 && (
                     <span
-                      className="ml-auto px-2 py-0.5 rounded-full text-xs font-bold"
-                      style={{ background: 'rgba(34,163,83),0.12)', color: '#bbf7d0' }}
+                      className="ml-auto px-2.5 py-0.5 rounded-full text-xs font-semibold border border-[#ded7fb] bg-[#f0eeff] text-[#5842ed]"
                     >
                       {sortedClips.length}
                     </span>
@@ -1858,16 +1770,10 @@ export function VideoEditor() {
               {/* Export Panel */}
               {sortedClips.length > 0 && (
                 <div className="space-y-3">
-                  <div style={{ borderTop: '1px solid #2a1a08', paddingTop: '1rem' }}>
+                  <div className="border-t border-[#e4e6f2] pt-4">
                     <button
                       onClick={() => setExportDialogOpen(true)}
-                      className="w-full py-3.5 rounded-xl text-base font-black flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-                      style={{
-                        background: 'linear-gradient(135deg, #15803d 0%, #eab308 100%)',
-                        color: 'white',
-                        boxShadow: '0 4px 24px rgba(21,128,61,0.45)',
-                        letterSpacing: '0.04em',
-                      }}
+                      className="w-full py-3.5 rounded-2xl bg-[#5842ed] hover:bg-[#4730df] text-white text-base font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#5842ed]/25 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
                     >
                       <FileDown className="w-5 h-5" />
                       EXPORT VIDEO
@@ -1876,12 +1782,7 @@ export function VideoEditor() {
 
                   {exportDisabledReason && (
                     <div
-                      className="rounded-lg p-3 text-xs text-center"
-                      style={{
-                        background: '#172033',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        color: '#bbf7d0',
-                      }}
+                      className="rounded-xl border border-[#e4e6f2] bg-[#f8f9fd] p-3 text-xs text-center text-[#5e6578]"
                     >
                       {exportDisabledReason}
                     </div>
@@ -1889,12 +1790,7 @@ export function VideoEditor() {
 
                   {!canUseUrlWorkflow && (
                     <div
-                      className="rounded-lg p-3 text-xs text-center"
-                      style={{
-                        background: '#172033',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        color: '#bbf7d0',
-                      }}
+                      className="rounded-xl border border-[#e4e6f2] bg-[#f8f9fd] p-3 text-xs text-center text-[#5e6578]"
                     >
                       Local uploads are best for preview. Use a supported URL for AI suggestions and export.
                     </div>
@@ -1902,23 +1798,21 @@ export function VideoEditor() {
 
                   {previewUrl && (
                     <div
-                      className="rounded-xl p-4 space-y-3"
-                      style={{ background: '#13100c', border: '1px solid #2a1a08' }}
+                      className="rounded-2xl border border-[#e4e6f2] bg-[#f8f9fd] p-4 space-y-3 shadow-sm"
                     >
-                      <p className="text-sm font-semibold text-white/80">Preview</p>
-                      <video src={previewUrl} controls className="w-full max-h-[30vh] sm:max-h-[40vh] object-contain rounded-lg" />
+                      <p className="text-sm font-bold text-[#110d2e]">Preview</p>
+                      <video src={previewUrl} controls className="w-full max-h-[30vh] sm:max-h-[40vh] object-contain rounded-xl border border-[#e4e6f2]" />
                       <a
                         href={previewUrl}
                         download="clip-export.mp4"
-                        className="inline-block text-sm font-bold transition-all"
-                        style={{ color: '#bbf7d0' }}
+                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#5842ed] hover:underline"
                       >
                         ↓ Download Video
                       </a>
                     </div>
                   )}
 
-                  <p className="text-xs text-center text-emerald-200/70">
+                  <p className="text-xs text-center text-[#5e6578]">
                     Backend processing · streamed to browser
                   </p>
                 </div>
