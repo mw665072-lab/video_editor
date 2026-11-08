@@ -40,13 +40,25 @@ export default function Nav() {
     return () => mediaQuery.removeEventListener("change", handleResize);
   }, []);
 
+  const isLegacyBrand = (name?: string) => {
+    if (!name) return true;
+    const s = name.trim().toLowerCase();
+    return (
+      s === "welcomeai" ||
+      s === "welcome ai" ||
+      s.includes("welcome") ||
+      s.includes("clipai") ||
+      s === "clip"
+    );
+  };
+
   useEffect(() => {
     let cancelled = false;
     getPublicCms()
       .then((cms) => {
         if (cancelled) return;
         const name = cms.settings.logoText || cms.settings.siteName;
-        if (name && name !== "CLIPAI" && name !== "WelcomeAI") {
+        if (name && !isLegacyBrand(name)) {
           setSiteName(name);
         } else {
           setSiteName("youtubevideotrimmer");
@@ -80,7 +92,7 @@ export default function Nav() {
             <path d="M17.8 6.2L6.2 17.8" />
           </svg>
         </div>
-        {siteName}
+        {siteName && !isLegacyBrand(siteName) ? siteName : "youtubevideotrimmer"}
       </Link>
 
       <ul style={{ ...S.navLinks, display: isDesktop ? "flex" : "none" }}>

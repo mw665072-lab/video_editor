@@ -198,7 +198,7 @@ export default function RegisterPage() {
                 marginBottom: 8,
               }}
             >
-              Welcome to ClipAI
+              Welcome to youtubevideotrimmer
             </h1>
             <p style={{ fontSize: 14, color: 'rgba(104,115,134,0.92)', lineHeight: 1.6 }}>
               Sign up to unlock the first 150 clips every month.

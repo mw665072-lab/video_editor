@@ -21,11 +21,23 @@ export default function Footer() {
     };
   }, []);
 
-  const brandName = settings?.siteName && settings.siteName !== "CLIPAI" && settings.siteName !== "WelcomeAI"
+  const isLegacyBrand = (name?: string) => {
+    if (!name) return true;
+    const s = name.trim().toLowerCase();
+    return (
+      s === "welcomeai" ||
+      s === "welcome ai" ||
+      s.includes("welcome") ||
+      s.includes("clipai") ||
+      s === "clip"
+    );
+  };
+
+  const brandName = settings?.siteName && !isLegacyBrand(settings.siteName)
     ? settings.siteName 
     : "youtubevideotrimmer";
 
-  const footerBio = settings?.footerDescription && !settings.footerDescription.includes("CLIPAI")
+  const footerBio = settings?.footerDescription && !isLegacyBrand(settings.footerDescription) && !settings.footerDescription.toLowerCase().includes("welcome") && !settings.footerDescription.toLowerCase().includes("clipai")
     ? settings.footerDescription
     : "Free online video trimmer and cutter. Trim YouTube, TikTok, Instagram and Facebook videos into high-impact clips for Shorts and Reels without downloading software.";
 
@@ -123,7 +135,7 @@ export default function Footer() {
               </div>
               <div>
                 <span className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold tracking-[-0.03em] text-[#110d2e]">
-                  {brandName}
+                  {brandName && !isLegacyBrand(brandName) ? brandName : "youtubevideotrimmer"}
                 </span>
                 <span className="ml-2 rounded-full border border-[#ded7fb] bg-[#f0eeff] px-2 py-0.5 text-[10px] font-bold text-[#5842ed]">
                   Free Tool
@@ -171,7 +183,7 @@ export default function Footer() {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-5 text-center sm:text-left">
           
           <div className="text-xs text-[#8a92a6] font-medium">
-            © {new Date().getFullYear()} {brandName}. All rights reserved. Built with modern web performance.
+            © {new Date().getFullYear()} {brandName && !isLegacyBrand(brandName) ? brandName : "youtubevideotrimmer"}. All rights reserved. Built with modern web performance.
           </div>
 
           {/* Social Icons */}
