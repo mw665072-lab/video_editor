@@ -34,8 +34,8 @@ const toolbarActions: Array<{ label: string; command: string; value?: string }> 
 ]
 
 const emptySettings: CmsSettings = {
-  siteName: 'CLIPAI',
-  logoText: 'CLIPAI',
+  siteName: 'youtubevideotrimmer',
+  logoText: 'youtubevideotrimmer',
   tagline: 'AI-powered video clipping and editing.',
   headerTitle: 'Create clips faster',
   headerSubtitle: 'Paste, preview, cut, publish, and manage your creator workflow in one place.',

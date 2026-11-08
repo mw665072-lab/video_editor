@@ -21,9 +21,9 @@ export default function Footer() {
     };
   }, []);
 
-  const brandName = settings?.siteName && settings.siteName !== "CLIPAI" 
+  const brandName = settings?.siteName && settings.siteName !== "CLIPAI" && settings.siteName !== "WelcomeAI"
     ? settings.siteName 
-    : "YouTubeVideoTrimmer";
+    : "youtubevideotrimmer";
 
   const footerBio = settings?.footerDescription && !settings.footerDescription.includes("CLIPAI")
     ? settings.footerDescription

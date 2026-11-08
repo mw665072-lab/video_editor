@@ -104,7 +104,7 @@ export default function LoginPage() {
                 <polygon points="5 3 19 12 5 21 5 3" />
               </svg>
             </div>
-            CLIPAI
+            youtubevideotrimmer
           </a>
 
           {/* heading */}

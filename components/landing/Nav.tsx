@@ -11,7 +11,7 @@ export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
-  const [siteName, setSiteName] = useState("YouTubeVideoTrimmer");
+  const [siteName, setSiteName] = useState("youtubevideotrimmer");
   const [links, setLinks] = useState<CmsNavItem[]>([
     { id: "about", label: "About", href: "/#about", location: "navbar", audience: "public", icon: "", order: 10, isActive: true, external: false },
     { id: "features", label: "Features", href: "/#features", location: "navbar", audience: "public", icon: "", order: 20, isActive: true, external: false },
@@ -45,7 +45,12 @@ export default function Nav() {
     getPublicCms()
       .then((cms) => {
         if (cancelled) return;
-        setSiteName(cms.settings.logoText || cms.settings.siteName || "CLIPAI");
+        const name = cms.settings.logoText || cms.settings.siteName;
+        if (name && name !== "CLIPAI" && name !== "WelcomeAI") {
+          setSiteName(name);
+        } else {
+          setSiteName("youtubevideotrimmer");
+        }
         if (cms.nav.navbar.length) setLinks(cms.nav.navbar.filter((item) => item.isActive));
       })
       .catch(() => undefined);

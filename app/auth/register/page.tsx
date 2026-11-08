@@ -166,7 +166,7 @@ export default function RegisterPage() {
                 <polygon points="5 3 19 12 5 21 5 3" />
               </svg>
             </div>
-            CLIPAI
+            youtubevideotrimmer
           </a>
 
           <div style={{ marginBottom: 28 }}>
