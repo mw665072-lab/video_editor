@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: 'YouTube Video Trimmer & Cutter – Free Online Clip Maker',
   description: 'Trim and cut YouTube videos online for free. Paste a link, set start and end times, find top moments, add subtitles and export clips for Shorts and Reels.',
   generator: 'v0.app',
+  verification: {
+    google: 'BxkoUjNYT7xrfLbQvzP6n2Os7yg4mj5Xz7FPbnCLENI',
+  },
   icons: {
     icon: [
       {
