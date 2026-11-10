@@ -92,7 +92,7 @@ export default function Nav() {
             <path d="M17.8 6.2L6.2 17.8" />
           </svg>
         </div>
-        {siteName && !isLegacyBrand(siteName) ? siteName : "youtubevideotrimmer"}
+        youtubevideotrimmer
       </Link>
 
       <ul style={{ ...S.navLinks, display: isDesktop ? "flex" : "none" }}>
