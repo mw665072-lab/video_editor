@@ -3,11 +3,11 @@ import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://youtubevideotrimmer.cloud'),
+  metadataBase: new URL('https://www.youtubevideotrimmer.cloud'),
   title: 'YouTube Video Trimmer & Cutter – Free Online Clip Maker',
   description: 'Trim and cut YouTube videos online for free. Paste a link, set start and end times, find top moments, add subtitles and export clips for Shorts and Reels.',
   alternates: {
-    canonical: '/',
+    canonical: 'https://www.youtubevideotrimmer.cloud/',
   },
   generator: 'v0.app',
   verification: {
